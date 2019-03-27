@@ -3,11 +3,11 @@
 import math
 
 def get_postings_list(term):
-    ## return dummy value
+    ## return dummy value, to fill in
     return [(0, 6, [0, 1, 2, 3, 4, 5]), (1, 6, [0, 1, 2, 3, 4, 5]), (3, 6, [0, 1, 2, 3, 4, 5]), (5, 6, [0, 1, 2, 3, 4, 5])]
 
 def get_df(term):
-    ## return dummy value
+    ## return dummy value, to fill in
     return 4
 
 DOC_ID_INDEX = 0
@@ -29,6 +29,9 @@ def get_skip_position(list, index, skip_dist):
 def get_docs_from_phrase(phrase):
     '''
     Returns a dictionary of docID to tf mappings for the phrase.
+    Goes through the phrase and performs two-way merge for each contiguous pair in phrase.
+    The results are appended to a merge_results dictionary, which is later processed to ensure
+    that the pairs are contiguous.
     :param phrase: A list of terms which should be contiguous.
     :return:
     '''
@@ -52,6 +55,12 @@ def get_docs_from_phrase(phrase):
     return merge_results
 
 def merge_n_position_lists(position_lists):
+    '''
+    Takes in n position lists which are the output of two-way pair merges.
+    Returns the starting position for phrases which are contiguous.
+    :param position_lists:
+    :return:
+    '''
     first_list = position_lists[0]
     results = []
     for pos in first_list:
