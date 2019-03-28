@@ -157,7 +157,15 @@ class PostingList():
     # Returns a new posting entry format
     def get_new_posting(self, docID, position):
         return { docID : [1, [position] ] }         # tf, list(postiions)
-            
+
+    # Converts a dictionary { docID: [tf, [positions]] } to a sorted list of [docID, tf, position]
+    def flatten(self, posting):
+        sorted_list = list()
+        for docID in sorted(posting):
+            new_entry = [docID] + posting[docID]
+            sorted_list.append(new_entry)
+        return sorted_list
+
     # Saves the posting lists to file, and update offset value in the dictionary
     def save_to_disk(self, length, dictionary):        
         with open(self.file, 'wb') as f:
@@ -166,6 +174,7 @@ class PostingList():
             for t in dictionary.get_terms():
                 termID = dictionary.get_termID(t)
                 posting = self.postings[termID]
+                posting = self.flatten(posting)     # convert dict to sorted list
 
                 dictionary.set_offset(t, f.tell())  # update dictionary with current byte offset
                 pickle.dump(posting, f)
