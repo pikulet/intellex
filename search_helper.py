@@ -1,8 +1,10 @@
 import pickle
+from index import Dictionary, PostingList
 
 ########################### DEFINE CONSTANTS ###########################
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
+INVALID_TERM_IDF = -1
 
 ######################## FILE READING FUNCTIONS ########################
 
@@ -21,6 +23,7 @@ def get_dictionary(dictionary_file):
     return dictionary
 
 ### Retrieve a query format given the query file
+###
 def get_query(query_file):
     with open(query_file, 'r') as f:
         data = f.read().splitlines()
@@ -29,8 +32,25 @@ def get_query(query_file):
     positive_list = [int(x) for x in data[1:] ]
     return query_text, positive_list
 
+### Retrieve the posting list for a particular term
+###
+def get_posting(p, dictionary, t):
+    try:
+        term_data = dictionary[t]
+        idf = term_data[Dictionary.IDF]
+        
+        offset = term_data[Dictionary.TERM_OFFSET]
+        p.seek(offset)
+        data = pickle.load(p)
+        return idf, data
+    except KeyError:
+        # Term does not exist in dictionary
+        return INVALID_TERM_IDF, list()
+    
 ######################## QUERY PROCESSING ########################
 
+### Parse the free-text query for AND operators and phrases (" ")
+###
 def parse_query(q):
     q = q.split(CONJUNCTION_OPERATOR)
     is_phrase = lambda s: s.startswith(PHRASE_MARKER)
