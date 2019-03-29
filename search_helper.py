@@ -3,6 +3,7 @@ import pickle
 ########################### DEFINE CONSTANTS ###########################
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
+
 ######################## FILE READING FUNCTIONS ########################
 
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
@@ -40,12 +41,12 @@ def parse_query(q):
         if is_phrase(t):
             result.append(parse_phrase(t))
         else:
-            result.append(t)
-
-    print(result)
+            result.extend(t.split())
     return result
+
 def process_query(p, dictionary, q):
     lengths = get_lengths(p)
-    return [1, 2, 3]
+    
+    return list()
 
 
