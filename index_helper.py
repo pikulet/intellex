@@ -116,7 +116,13 @@ class Dictionary():
     def set_offset(self, t, offset):
         self.terms[t][Dictionary.TERM_OFFSET] = offset
 
-    def save_to_disk(self):
+    def save_to_disk(self, total_num_documents):
+        idf_transform = lambda x: math.log(total_num_documents/x, 10)
+        
+        for t in self.terms:
+            df = self.terms[t][Dictionary.DF]
+            self.set_idf(t, idf_transform(df))
+            
         with open(self.file, 'wb') as f:
             pickle.dump(self.terms, f)
 
@@ -125,6 +131,7 @@ class Dictionary():
 ###
 class PostingList():
 
+    DOC_ID = None
     TF = 0
     POSITION_LIST = 1
     
@@ -164,6 +171,11 @@ class PostingList():
         for docID in sorted(posting):
             new_entry = [docID] + posting[docID]
             sorted_list.append(new_entry)
+
+        PostingList.DOC_ID = 0
+        PostingList.TF = 1
+        PostingList.POSITION_LIST = 2
+        
         return sorted_list
 
     # Saves the posting lists to file, and update offset value in the dictionary

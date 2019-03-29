@@ -58,16 +58,19 @@ def main():
     NO, DOC_ID, TITLE, CONTENT, DATE_POSTED, COURT = list(df)
 
     df = df.sort_values("document_id", ascending=True)
+    total_num_documents = 0
+    
     for index, row in df.iterrows():
         process_doc(row[DOC_ID], row[CONTENT], dictionary, postings, length)
+        total_num_documents += 1
 
-    save_data(dictionary, postings, length)
+    save_data(dictionary, postings, length, total_num_documents)
 
 ### Save the indexing data to disk
 ###
-def save_data(dictionary, postings, length):
+def save_data(dictionary, postings, length, total_num_documents):
     postings.save_to_disk(length, dictionary)
-    dictionary.save_to_disk()
+    dictionary.save_to_disk(total_num_documents)
 
 main()
     
