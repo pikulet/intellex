@@ -5,8 +5,10 @@ from index_helper import *
 import pandas as pd
 
 ########################### DEFINE CONSTANTS ###########################
-CSV_FILE_TEST = 'first100.csv'
-CSV_FILE = 'dataset.csv'
+LAZY_MODE = True
+CSV_FILE_TEST = 'data\\first100.csv'
+DICTIONARY_FILE_TEST = 'dictionary.txt'
+POSTINGS_FILE_TEST = 'postings.txt'
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -43,8 +45,10 @@ def read_files():
 ######################## DRIVER FUNCTION ########################
 
 def main():
-    #dataset_file, output_file_dictionary, output_file_postings = read_files()
-    dataset_file, output_file_dictionary, output_file_postings = 'first100.csv', 'dictionary.txt', 'postings.txt'
+    if LAZY_MODE:
+        dataset_file, output_file_dictionary, output_file_postings = CSV_FILE_TEST, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
+    else:
+        dataset_file, output_file_dictionary, output_file_postings = read_files()
 
     dictionary = Dictionary(output_file_dictionary)
     postings = PostingList(output_file_postings)
