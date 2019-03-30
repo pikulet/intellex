@@ -51,6 +51,7 @@ def get_posting(p, dictionary, t):
 
 ### Parse the free-text query for AND operators and phrases (" ")
 ### "fertility treatment" AND damages --> [ ['fertility', 'treatment'], 'damages']
+### AND operator is currently ignored, phrases are grouped together in a list.
 ###
 def parse_query(q):
     q = q.split(CONJUNCTION_OPERATOR)
