@@ -5,7 +5,7 @@ from index_helper import *
 from data_helper import *
 
 ########################### DEFINE CONSTANTS ###########################
-LAZY_MODE = True
+LAZY_MODE = False
 CSV_FILE_TEST = 'data\\first100.csv'
 DICTIONARY_FILE_TEST = 'dictionary.txt'
 POSTINGS_FILE_TEST = 'postings.txt'
@@ -55,7 +55,7 @@ def main():
     length = dict()
     
     df = read_csv(dataset_file)
-    NO, DOC_ID, TITLE, CONTENT, DATE_POSTED, COURT = list(df)
+    DOC_ID, TITLE, CONTENT, DATE_POSTED, COURT = list(df)
 
     df = df.sort_values("document_id", ascending=True)
     total_num_documents = 0
