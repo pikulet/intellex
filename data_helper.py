@@ -8,10 +8,7 @@ Backing Protocol:
 Pickle
 Pandas
 '''
-
 import pickle
-import modin.pandas as pd
-
 
 def store_data(filepath, data):
     with open(filepath, 'wb') as f:
