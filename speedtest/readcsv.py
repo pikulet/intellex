@@ -35,14 +35,6 @@ def open_with_pandas_special_read_csv():
     data = df.values
     return data
 
-def open_with_pandas_special_chunked_read_csv():
-    df_list = []
-
-    for df_chunk in pd.read_csv(filename, chunksize=5000, engine='c', na_filter=False, parse_dates=['date_posted']):
-        df_list.append(df_chunk)
-    df = pd.concat(df_list) 
-    data = df.values
-    return data
 
 def simple_timer(func, repeats=3):
     gc.disable()
@@ -59,8 +51,6 @@ def simple_timer(func, repeats=3):
     gc.enable()
     return
 
-
-# simple_timer(open_with_python_csv)
-# simple_timer(open_with_pandas_read_csv)
+simple_timer(open_with_python_csv)
+simple_timer(open_with_pandas_read_csv)
 simple_timer(open_with_pandas_special_read_csv)
-simple_timer(open_with_pandas_special_chunked_read_csv)
