@@ -9,6 +9,7 @@ Pickle
 Pandas
 '''
 import pickle
+import pandas as pd
 
 def store_data(filepath, data):
     with open(filepath, 'wb') as f:

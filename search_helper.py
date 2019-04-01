@@ -14,7 +14,7 @@ INVALID_TERM_IDF = -1
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
 ###
 def get_lengths(p):
-    length_dict = load_data_with_offset(p, 0)
+    length_dict = load_data_with_handler(p, 0)
     return length_dict
 
 ### Retrieve a dictionary format given the dictionary file
