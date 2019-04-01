@@ -5,7 +5,7 @@ Requisite:
 python 3.4 or above
 
 Backing Protocol:
-Pickle Version 4
+Pickle
 
 '''
 
@@ -14,7 +14,7 @@ import pickle
 
 def store_data(filepath, data):
     with open(filepath, 'wb') as f:
-        pickle.dump(data, f,  protocol=4)
+        pickle.dump(data, f,  protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def load_data(filepath):
@@ -24,7 +24,7 @@ def load_data(filepath):
 
 
 def store_data_with_handler(file, data):
-    pickle.dump(data, file, protocol=4)
+    pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def load_data_with_handler(file, offset):
