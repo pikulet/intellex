@@ -4,7 +4,7 @@ import getopt
 import sys
 
 ########################### DEFINE CONSTANTS ###########################
-LAZY_MODE = True
+
 END_LINE_MARKER = '\n'
 QUERY_FILE_TEST = 'queries\\q1.txt'
 OUTPUT_FILE_TEST = 'output.txt'
@@ -46,7 +46,7 @@ def read_files():
 ######################## DRIVER STATEMENTS ########################
 
 def main():
-    if LAZY_MODE:
+    if len(sys.argv) <= 1:
         dictionary_file, postings_file, query_file, file_of_output = DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, QUERY_FILE_TEST, OUTPUT_FILE_TEST
     else:
         dictionary_file, postings_file, file_of_queries, file_of_output = read_files()

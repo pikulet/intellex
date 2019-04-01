@@ -5,7 +5,7 @@ from index_helper import *
 from data_helper import *
 
 ########################### DEFINE CONSTANTS ###########################
-LAZY_MODE = False
+
 CSV_FILE_TEST = 'data\\first100.csv'
 DICTIONARY_FILE_TEST = 'dictionary.txt'
 POSTINGS_FILE_TEST = 'postings.txt'
@@ -45,7 +45,8 @@ def read_files():
 ######################## DRIVER FUNCTION ########################
 
 def main():
-    if LAZY_MODE:
+    # For lazy mode since we are lazy
+    if len(sys.argv) <= 1:
         dataset_file, output_file_dictionary, output_file_postings = CSV_FILE_TEST, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
     else:
         dataset_file, output_file_dictionary, output_file_postings = read_files()

@@ -1,2 +1,2 @@
-python36 index.py
-python36 search.py
+python36 index.py -i "data/dataset.csv" -d "dictionary.txt" -p "postings.txt"
+python36 search.py -d "dictionary.txt" -p "postings.txt"
