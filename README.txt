@@ -1,8 +1,8 @@
 This is the README file for the submission of
-... , A0171426J
+... , A0171426J, A0168355W
 
 e0200996@u.nus.edu
-
+e0176788@u.nus.edu
 
 == Python Version ==
 
@@ -29,7 +29,7 @@ expressly vow that I have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or
 printed) from the discussions. 
 
-[X] I, A01......, certify that I have followed the CS 3245 Information
+[X] I, A0168355W, certify that I have followed the CS 3245 Information
 Retrieval class guidelines for homework assignments.  In particular, I
 expressly vow that I have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or
@@ -43,4 +43,5 @@ printed) from the discussions.
 
 == References ==
 
-# 
+Original source for data storage comparsion, but it was overturned by our own investigations. 
+https://www.benfrederickson.com/dont-pickle-your-data/
