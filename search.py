@@ -1,5 +1,4 @@
-from index import normalise_term
-from index import DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
+from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
 from search_helper import *
 import getopt
 import sys
@@ -62,5 +61,6 @@ def main():
     with open(file_of_output, 'w') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
-main()
+if __name__ == "__main__":
+    main()
 
