@@ -3,6 +3,11 @@ import getopt
 import sys
 from index_helper import *
 from data_helper import *
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = lambda *i, **kwargs: i[0]
+# tqdm = lambda *i, **kwargs: i[0] # this is to disable tqdm
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -61,7 +66,7 @@ def main():
     df = df.sort_values("document_id", ascending=True)
     total_num_documents = 0
     
-    for index, row in df.iterrows():
+    for index, row in tqdm(df.iterrows(), total=df.shape[0]):
         process_doc(row[DOC_ID], row[CONTENT], dictionary, postings, length)
         total_num_documents += 1
 
