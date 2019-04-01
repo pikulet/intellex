@@ -3,6 +3,7 @@ import math
 import nltk
 from nltk.stem.porter import *
 import pickle
+from data_helper import *
 
 ########################### DEFINE CONSTANTS ###########################
 PORTER_STEMMER = PorterStemmer()
@@ -122,9 +123,8 @@ class Dictionary():
         for t in self.terms:
             df = self.terms[t][Dictionary.DF]
             self.set_idf(t, idf_transform(df))
-            
-        with open(self.file, 'wb') as f:
-            pickle.dump(self.terms, f)
+
+        store_data(self.file, self.terms)
 
 ### A Postings class that collects all the posting lists.
 ### Each posting list is a dictionary mapping docIDs to term frequencies
@@ -181,7 +181,7 @@ class PostingList():
     # Saves the posting lists to file, and update offset value in the dictionary
     def save_to_disk(self, length, dictionary):        
         with open(self.file, 'wb') as f:
-            pickle.dump(length, f)
+            store_data_with_handler(f, length)
 
             for t in dictionary.get_terms():
                 termID = dictionary.get_termID(t)
@@ -189,4 +189,4 @@ class PostingList():
                 posting = self.flatten(posting)     # convert dict to sorted list
 
                 dictionary.set_offset(t, f.tell())  # update dictionary with current byte offset
-                pickle.dump(posting, f)
+                store_data_with_handler(f, posting)

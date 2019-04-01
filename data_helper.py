@@ -1,17 +1,39 @@
-import ujson
+'''
+All of the data access calls are stored here. 
+
+Requisite: 
+python 3.4 or above
+
+Backing Protocol:
+Pickle Version 4
+
+'''
+
 import pickle
 
-def store_data(filepath, data): 
-    with open(filepath, 'w') as f:
-        ujson.dump(data, f)
+
+def store_data(filepath, data):
+    with open(filepath, 'wb') as f:
+        pickle.dump(data, f,  protocol=4)
+
 
 def load_data(filepath):
-    with open(filepath, 'r') as f:
-        data = ujson.load(f)
+    with open(filepath, 'rb') as f:
+        data = pickle.load(f)
+    return data
+
+
+def store_data_with_handler(file, data):
+    pickle.dump(data, file, protocol=4)
+
+
+def load_data_with_handler(file, offset):
+    file.seek(offset)
+    data = pickle.load(file)
     return data
 
 # ujson with gzip
-# def store_data(filepath, data): 
+# def store_data(filepath, data):
 #     start = time.time()
 #     with gzip.GzipFile(filepath, 'w') as f:
 #         f.write(ujson.dumps(data).encode('utf-8'))
@@ -27,7 +49,7 @@ def load_data(filepath):
 #     return data
 
 # ujson
-# def store_data(filepath, data): 
+# def store_data(filepath, data):
 #     start = time.time()
 #     with open(filepath, 'w') as f:
 #         ujson.dump(data, f)
@@ -43,7 +65,7 @@ def load_data(filepath):
 #     return data
 
 # json
-# def store_data(filepath, data): 
+# def store_data(filepath, data):
 #     start = time.time()
 #     with open(filepath, 'w') as f:
 #         json.dump(data, f)
@@ -58,8 +80,24 @@ def load_data(filepath):
 #     print(end - start)
 #     return data
 
-# pickle
-# def store_data(filepath, data): 
+# pickle proto 4
+# def store_data(filepath, data):
+#     start = time.time()
+#     with open(filepath, 'wb') as f:
+#         pickle.dump(data, f,  protocol=4)
+#     end = time.time()
+#     print(end - start)
+
+# def load_data(filepath):
+#     start = time.time()
+#     with open(filepath, 'rb') as f:
+#         data = pickle.load(f)
+#     end = time.time()
+#     print(end - start)
+#     return data
+
+# pickle proto 3
+# def store_data(filepath, data):
 #     start = time.time()
 #     with open(filepath, 'wb') as f:
 #         pickle.dump(data, f)

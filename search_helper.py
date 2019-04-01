@@ -2,6 +2,7 @@ import pickle
 from index import Dictionary, PostingList
 from Eval import Eval
 from PositionalMerge import *
+from data_helper import *
 
 ########################### DEFINE CONSTANTS ###########################
 CONJUNCTION_OPERATOR = " AND "
@@ -13,15 +14,13 @@ INVALID_TERM_IDF = -1
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
 ###
 def get_lengths(p):
-    p.seek(0)
-    length_dict = pickle.load(p)
+    length_dict = load_data_with_offset(p, 0)
     return length_dict
 
 ### Retrieve a dictionary format given the dictionary file
 ###
 def get_dictionary(dictionary_file):
-    with open(dictionary_file, 'rb') as f:
-        dictionary = pickle.load(f)
+    dictionary = load_data(dictionary_file)
     return dictionary
 
 ### Retrieve a query format given the query file
@@ -44,8 +43,7 @@ def get_posting(p, dictionary, t):
         idf = term_data[Dictionary.IDF]
         
         offset = term_data[Dictionary.TERM_OFFSET]
-        p.seek(offset)
-        data = pickle.load(p)
+        data = load_data_with_handler(p, offset)
         return idf, data
     except KeyError:
         # Term does not exist in dictionary
