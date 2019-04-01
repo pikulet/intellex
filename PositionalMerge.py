@@ -2,14 +2,6 @@
 # [(docID, tf, []), ...]
 import math
 
-def get_postings_list(term):
-    ## return dummy value, to fill in
-    return [(0, 6, [0, 1, 2, 3, 4, 5]), (1, 6, [0, 1, 2, 3, 4, 5]), (3, 6, [0, 1, 2, 3, 4, 5]), (5, 6, [0, 1, 2, 3, 4, 5])]
-
-def get_df(term):
-    ## return dummy value, to fill in
-    return 4
-
 DOC_ID_INDEX = 0
 TF_INDEX = 1
 POSTINGS_INDEX = 2
@@ -26,7 +18,7 @@ def get_skip_docID(list, index, skip_dist):
 def get_skip_position(list, index, skip_dist):
     return list[index + skip_dist]
 
-def get_docs_from_phrase(phrase):
+def get_postings_from_phrase(phrase, postings_lists):
     '''
     Returns a dictionary of docID to tf mappings for the phrase.
     Goes through the phrase and performs two-way merge for each contiguous pair in phrase.
@@ -38,10 +30,10 @@ def get_docs_from_phrase(phrase):
     all_results = []
     merge_results = {}
     for i in range(len(phrase)-1):
-        postings_list_A = get_postings_list(phrase[i])
-        postings_list_B = get_postings_list(phrase[i+1])
-        df_A = get_df(phrase[i])
-        df_B = get_df(phrase[i+1])
+        postings_list_A = postings_lists[i]
+        postings_list_B = postings_lists[i+1]
+        df_A = len(postings_list_A)
+        df_B = len(postings_list_B)
         docs = AND_docs(postings_list_A, postings_list_B, df_A, df_B)
         all_results += docs
         for doc in docs:
@@ -52,7 +44,7 @@ def get_docs_from_phrase(phrase):
     ## merges position lists for each doc and convert to tf
     for doc in merge_results:
         merge_results[doc] = len(merge_n_position_lists(merge_results[doc]))
-    return merge_results
+    return list(merge_results.items())
 
 def merge_n_position_lists(position_lists):
     '''
@@ -132,5 +124,3 @@ def AND_positional(listA, listB, A_length, B_length):
             else:
                 j += 1
     return result
-
-print(get_docs_from_phrase(["quiet", "phone", "call", "cat"]))

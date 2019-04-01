@@ -1,6 +1,8 @@
 from index import normalise_term
 from index import DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
 from search_helper import *
+import getopt
+import sys
 
 ########################### DEFINE CONSTANTS ###########################
 LAZY_MODE = True
@@ -50,10 +52,11 @@ def main():
     else:
         dictionary_file, postings_file, file_of_queries, file_of_output = read_files()
 
+    query_file = "queries.txt"
     dictionary = get_dictionary(dictionary_file)
-    q = get_query(query_file)
 
     with open(postings_file, 'rb') as p:
+        q = get_query(query_file)
         result = process_query(p, dictionary, q)
 
     with open(file_of_output, 'w') as f:
