@@ -2,7 +2,7 @@
 import getopt
 import sys
 from index_helper import *
-import pandas as pd
+from data_helper import *
 
 ########################### DEFINE CONSTANTS ###########################
 LAZY_MODE = True
@@ -54,7 +54,7 @@ def main():
     postings = PostingList(output_file_postings)
     length = dict()
     
-    df = pd.read_csv(dataset_file)
+    df = read_csv(dataset_file)
     NO, DOC_ID, TITLE, CONTENT, DATE_POSTED, COURT = list(df)
 
     df = df.sort_values("document_id", ascending=True)

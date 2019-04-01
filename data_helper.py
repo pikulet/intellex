@@ -6,10 +6,11 @@ python 3.4 or above
 
 Backing Protocol:
 Pickle
-
+Pandas
 '''
 
 import pickle
+import modin.pandas as pd
 
 
 def store_data(filepath, data):
@@ -31,6 +32,13 @@ def load_data_with_handler(file, offset):
     file.seek(offset)
     data = pickle.load(file)
     return data
+
+
+def read_csv(filepath):
+    df = pd.read_csv(filepath, engine='c', na_filter=False,
+                     parse_dates=['date_posted'])
+    return df
+
 
 # ujson with gzip
 # def store_data(filepath, data):
