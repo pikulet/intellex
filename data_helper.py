@@ -1,16 +1,13 @@
 import ujson
-import codecs
-import gzip
-import time
-import json
+import pickle
 
 def store_data(filepath, data): 
-    with gzip.GzipFile(filepath, 'w') as f:
-        f.write(ujson.dumps(data).encode('utf-8'))
+    with open(filepath, 'w') as f:
+        ujson.dump(data, f)
 
 def load_data(filepath):
-    with gzip.GzipFile(filepath, 'r') as f:
-        data = ujson.loads(f.read().decode('utf-8'))
+    with open(filepath, 'r') as f:
+        data = ujson.load(f)
     return data
 
 # ujson with gzip
@@ -29,7 +26,7 @@ def load_data(filepath):
 #     print(end - start)
 #     return data
 
-# slower ujson
+# ujson
 # def store_data(filepath, data): 
 #     start = time.time()
 #     with open(filepath, 'w') as f:
@@ -45,7 +42,7 @@ def load_data(filepath):
 #     print(end - start)
 #     return data
 
-# # slower json
+# json
 # def store_data(filepath, data): 
 #     start = time.time()
 #     with open(filepath, 'w') as f:
@@ -57,6 +54,22 @@ def load_data(filepath):
 #     start = time.time()
 #     with open(filepath, 'r') as f:
 #         data = json.load(f)
+#     end = time.time()
+#     print(end - start)
+#     return data
+
+# pickle
+# def store_data(filepath, data): 
+#     start = time.time()
+#     with open(filepath, 'wb') as f:
+#         pickle.dump(data, f)
+#     end = time.time()
+#     print(end - start)
+
+# def load_data(filepath):
+#     start = time.time()
+#     with open(filepath, 'rb') as f:
+#         data = pickle.load(f)
 #     end = time.time()
 #     print(end - start)
 #     return data
