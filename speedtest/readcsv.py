@@ -4,7 +4,6 @@ import csv
 import gc
 import sys
 import time
-import tqdm
 
 num_tests = 1
 
