@@ -72,5 +72,6 @@ def save_data(dictionary, postings, length, total_num_documents):
     postings.save_to_disk(length, dictionary)
     dictionary.save_to_disk(total_num_documents)
 
-main()
+if __name__ == "__main__":
+    main()
     
