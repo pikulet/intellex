@@ -7,7 +7,7 @@ from data_helper import *
 ########################### DEFINE CONSTANTS ###########################
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
-INVALID_TERM_IDF = -1
+INVALID_TERM_DF = -1
 
 ######################## FILE READING FUNCTIONS ########################
 
@@ -22,6 +22,20 @@ def get_lengths(p):
 def get_dictionary(dictionary_file):
     dictionary = load_data(dictionary_file)
     return dictionary
+
+### Retrieve the posting list for a particular term
+###
+def get_posting(dictionary, p, t):
+    try:
+        term_data = dictionary.terms[t]
+        df = term_data[Dictionary.DF]
+        
+        offset = term_data[Dictionary.TERM_OFFSET]
+        data = load_data_with_handler(p, offset)
+        return df, data
+    except KeyError:
+        # Term does not exist in dictionary
+        return INVALID_TERM_DF, list()
 
 ### Retrieve a query format given the query file
 ###
@@ -73,12 +87,12 @@ def process_query(p, dictionary, query):
     posting_lists = []
     for term in query_terms:
         if type(term) == list: # phrase query
-            phrase_postings_lists = list(map(lambda word: dictionary.get_posting(p, word)[1], term))
+            phrase_postings_lists = list(map(lambda word: get_posting(dictionary, p, word)[1], term))
             posting_list = get_postings_from_phrase(term, phrase_postings_lists)
             dictionary.terms[tuple(term)] = [len(posting_list), 0] # put phrase into dictionary
             ## need to store idf instead, and take care of 0 cases
         else:
-            posting_list = dictionary.get_posting(p, term)[1] #(idf, posting_list) pair
+            posting_list = get_posting(dictionary, p, term)[1] #(idf, posting_list) pair
         posting_lists.append(posting_list)
     eval = Eval(query_terms, posting_lists, dictionary, doc_lengths, 10000) #need to retrieve num_docs
     print(eval.eval_query())
