@@ -19,7 +19,10 @@ CSV_FILE_TEST = 'data\\first100.csv'
 DICTIONARY_FILE_TEST = 'dictionary.txt'
 POSTINGS_FILE_TEST = 'postings.txt'
 
-DOC_ID_NO, TITLE_NO, CONTENT_NO, DATE_POSTED_NO, COURT_NO = range(5)
+DF_DOC_ID_NO, DF_TITLE_NO, DF_CONTENT_NO, DF_DATE_POSTED_NO, DF_COURT_NO = range(5)
+TEMBUSU_MODE = True if multiprocessing.cpu_count() > 10 else False
+PROCESS_COUNT = 8 if TEMBUSU_MODE else 4
+BATCH_SIZE = 100 if TEMBUSU_MODE else 5
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -67,9 +70,12 @@ def ntlk_tokenise_func(row):
     def normalise_term(t):
         return PORTER_STEMMER.stem(t.lower())
 
-    result = [normalise_term(w) for w in nltk.word_tokenize(row[CONTENT_NO])]
+    content = [normalise_term(w) for w in nltk.word_tokenize(row[DF_CONTENT_NO])]
+    title = [normalise_term(w) for w in nltk.word_tokenize(row[DF_TITLE_NO])]
+    date = row[DF_DATE_POSTED_NO].to_pydatetime()
+    court = str(row[DF_COURT_NO])
 
-    return row[DOC_ID_NO], result
+    return row[DF_DOC_ID_NO], title, content, date, court
 
 
 def main():
@@ -83,6 +89,10 @@ def main():
     postings = PostingList(output_file_postings)
     length = dict()
 
+    dictionary_title = Dictionary("dictionarytitle.txt")
+    postings_title = PostingList("postingtitle.txt")
+    length_title = dict()
+
     df = read_csv(dataset_file)
 
     df = df.sort_values("document_id", ascending=True)
@@ -93,14 +103,17 @@ def main():
     original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     signal.signal(signal.SIGINT, original_sigint_handler)
 
-    with multiprocessing.Pool(4) as pool:
+    with multiprocessing.Pool(PROCESS_COUNT) as pool:
         try:
-            result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False))
+            result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
-                id, content = row
+                id, title, content, date, court = row
                 process_doc_direct(id, content, dictionary, postings, length)
+                process_doc_direct(id, title, dictionary_title, postings_title, length_title)
 
             save_data(dictionary, postings, length, total_num_documents)
+            save_data(dictionary_title, postings_title, length_title, total_num_documents)
+
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()

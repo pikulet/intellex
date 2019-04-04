@@ -168,16 +168,17 @@ class PostingList():
     def get_new_posting(self, docID, position):
         return { docID : [1, [position] ] }         # tf, list(postiions)
 
-    # Converts a dictionary { docID: [tf, [positions]] } to a sorted list of [docID, tf, position]
+    # Converts a dictionary { docID: [tf, [positions]] } to a sorted list of [docID, tf, [positions]]
     def flatten(self, posting):
         sorted_list = list()
         for docID in sorted(posting):
             new_entry = [docID] + posting[docID]
             sorted_list.append(new_entry)
 
-        PostingList.DOC_ID = 0
-        PostingList.TF = 1
-        PostingList.POSITION_LIST = 2
+        # This is the new indexes
+        # PostingList.DOC_ID = 0
+        # PostingList.TF = 1
+        # PostingList.POSITION_LIST = 2
         
         return sorted_list
 

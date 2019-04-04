@@ -12,9 +12,6 @@ filename = "../data/dataset.csv"
 
 def open_with_python_csv():
     csv.field_size_limit(100000000)
-    '''
-    https://docs.python.org/2/library/csv.html
-    '''
     data = []
     with open(filename, 'r', encoding='utf-8') as csvfile:
         csvreader = csv.reader(csvfile)
