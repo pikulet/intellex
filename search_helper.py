@@ -11,6 +11,8 @@ INVALID_TERM_IDF = -1
 
 ######################## FILE READING FUNCTIONS ########################
 
+total_num_documents = 0
+
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
 ###
 def get_lengths(p):
@@ -20,7 +22,10 @@ def get_lengths(p):
 ### Retrieve a dictionary format given the dictionary file
 ###
 def get_dictionary(dictionary_file):
-    dictionary = load_data(dictionary_file).terms
+    temp = load_data(dictionary_file)
+    global total_num_documents
+    total_num_documents = temp.total_num_documents
+    dictionary = temp.terms
     return dictionary
 
 ### Retrieve a query format given the query file
