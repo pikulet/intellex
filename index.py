@@ -6,6 +6,7 @@ from data_helper import *
 import time
 import multiprocessing
 import signal
+import math
 
 try:
     from tqdm import tqdm
@@ -97,6 +98,7 @@ def main():
 
     df = df.sort_values("document_id", ascending=True)
     total_num_documents = df.shape[0]
+    vector_dict = {}
 
     # multiprocessing way
     # The proper way to handle CTRL-C
@@ -111,6 +113,7 @@ def main():
                 process_doc_direct(id, content, dictionary, postings, length)
                 process_doc_direct(id, title, dictionary_title, postings_title, length_title)
 
+            save_vector(dictionary, postings, length, total_num_documents)
             save_data(dictionary, postings, length, total_num_documents)
             save_data(dictionary_title, postings_title, length_title, total_num_documents)
 
@@ -126,12 +129,44 @@ def main():
     #     process_doc(row[DOC_ID], row[CONTENT], dictionary, postings, length)
     # save_data(dictionary, postings, length, total_num_documents)
 
-
 # Save the indexing data to disk
 ###
 def save_data(dictionary, postings, length, total_num_documents):
     postings.save_to_disk(length, dictionary)
     dictionary.save_to_disk(total_num_documents)
+
+
+def save_vector(dictionary, postings, length, total_num_documents):
+    dfile = "dictionaryvector.txt"
+    pfile = "postingvector.txt"
+
+    vector_dict = {}
+    idf_transform = lambda x: math.log(total_num_documents/x, 10)
+
+    pfilehandler = open(pfile, 'wb')
+
+    for docID in tqdm(length.keys(), total=total_num_documents):
+        vector = []
+        for t in dictionary.terms:
+            df = dictionary.terms[t][Dictionary.DF]
+            idf = idf_transform(df)
+            termid = dictionary.terms[t][Dictionary.TERMID]
+            postdict = postings.postings[termid]
+
+            if docID in postdict:
+                tfidf = postdict[docID][PostingList.TF] * idf
+                vector.append(tfidf)
+            else:
+                vector.append(0)
+
+        totaln = math.sqrt(length[docID])
+        vector = [i / totaln for i in vector]
+
+        vector_dict[docID] = pfilehandler.tell()
+        store_data_with_handler(pfilehandler, vector)
+
+    store_data(dfile, vector_dict)
+        
 
 
 if __name__ == "__main__":
