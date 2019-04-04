@@ -4,7 +4,9 @@ import sys
 from index_helper import *
 from data_helper import *
 import time
-import multiprocessing as mp
+import multiprocessing
+import signal
+
 try:
     from tqdm import tqdm
 except ImportError:
@@ -87,14 +89,21 @@ def main():
     total_num_documents = df.shape[0]
 
     # multiprocessing way
-    with mp.Pool(4) as pool:
-        result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False))
+    # The proper way to handle CTRL-C
+    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGINT, original_sigint_handler)
 
-        for row in tqdm(result, total=total_num_documents):
-            id, content = row
-            process_doc_direct(id, content, dictionary, postings, length)
+    with multiprocessing.Pool(4) as pool:
+        try:
+            result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False))
+            for row in tqdm(result, total=total_num_documents):
+                id, content = row
+                process_doc_direct(id, content, dictionary, postings, length)
 
-        save_data(dictionary, postings, length, total_num_documents)
+            save_data(dictionary, postings, length, total_num_documents)
+        except (KeyboardInterrupt):
+            print("Caught KeyboardInterrupt. Terminating workers!")
+            pool.terminate()
 
 
     # non-multiprocessing way
