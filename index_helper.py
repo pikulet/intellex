@@ -7,6 +7,7 @@ from data_helper import *
 ########################### DEFINE CONSTANTS ###########################
 
 PORTER_STEMMER = PorterStemmer()
+INVALID_TERM_IDF = -1
 
 ########################### CONTENT PROCESSING ###########################
 
@@ -131,6 +132,20 @@ class Dictionary():
         #     self.set_idf(t, idf_transform(df))
 
         store_data(self.file, self)
+    
+    ### Retrieve the posting list for a particular term
+    ###
+    def get_posting(self, p, t):
+        try:
+            term_data = self.terms[t]
+            df = term_data[Dictionary.DF]
+            
+            offset = term_data[Dictionary.TERM_OFFSET]
+            data = load_data_with_handler(p, offset)
+            return df, data
+        except KeyError:
+            # Term does not exist in dictionary
+            return INVALID_TERM_IDF, list()
 
 ### A Postings class that collects all the posting lists.
 ### Each posting list is a dictionary mapping docIDs to term frequencies

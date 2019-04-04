@@ -83,7 +83,7 @@ class Eval:
         vector = []
         for term in query_terms:
             tf = term[1]
-            df = self.dictionary[term[0]][0]
+            df = self.dictionary.terms[term[0]][0]
             tf_idf = self.get_tf_idf(tf, df)
             vector.append(tf_idf)
         return vector

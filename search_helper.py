@@ -11,8 +11,6 @@ INVALID_TERM_IDF = -1
 
 ######################## FILE READING FUNCTIONS ########################
 
-total_num_documents = 0
-
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
 ###
 def get_lengths(p):
@@ -22,10 +20,7 @@ def get_lengths(p):
 ### Retrieve a dictionary format given the dictionary file
 ###
 def get_dictionary(dictionary_file):
-    temp = load_data(dictionary_file)
-    global total_num_documents
-    total_num_documents = temp.total_num_documents
-    dictionary = temp.terms
+    dictionary = load_data(dictionary_file)
     return dictionary
 
 ### Retrieve a query format given the query file
@@ -40,19 +35,6 @@ def get_query(query_file):
     positive_list = [int(x) for x in data[1:]]
     return query_text, positive_list, is_boolean
 
-### Retrieve the posting list for a particular term
-###
-def get_posting(p, dictionary, t):
-    try:
-        term_data = dictionary[t]
-        idf = term_data[Dictionary.IDF]
-        
-        offset = term_data[Dictionary.TERM_OFFSET]
-        data = load_data_with_handler(p, offset)
-        return idf, data
-    except KeyError:
-        # Term does not exist in dictionary
-        return INVALID_TERM_IDF, list()
     
 ######################## QUERY PROCESSING ########################
 
@@ -80,6 +62,10 @@ def process_query(p, dictionary, query):
     :param query:
     :return:
     '''
+    # cool stuff for yous
+    print(dictionary.total_num_documents)
+
+
     query_terms = query[0]
     positive_list = query[1]
     query_is_boolean = query[2]  # have to look at boolean case
@@ -87,12 +73,12 @@ def process_query(p, dictionary, query):
     posting_lists = []
     for term in query_terms:
         if type(term) == list: # phrase query
-            phrase_postings_lists = list(map(lambda word: get_posting(p, dictionary, word)[1], term))
+            phrase_postings_lists = list(map(lambda word: dictionary.get_posting(p, word)[1], term))
             posting_list = get_postings_from_phrase(term, phrase_postings_lists)
-            dictionary[tuple(term)] = [len(posting_list), 0] # put phrase into dictionary
+            dictionary.terms[tuple(term)] = [len(posting_list), 0] # put phrase into dictionary
             ## need to store idf instead, and take care of 0 cases
         else:
-            posting_list = get_posting(p, dictionary, term)[1] #(idf, posting_list) pair
+            posting_list = dictionary.get_posting(p, term)[1] #(idf, posting_list) pair
         posting_lists.append(posting_list)
     eval = Eval(query_terms, posting_lists, dictionary, doc_lengths, 10000) #need to retrieve num_docs
     print(eval.eval_query())
