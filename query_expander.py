@@ -1,34 +1,66 @@
-
-from search_helper import Dictionary, PostingList, parse_query
+from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
+from search_helper import *
+import pickle
+from index import Dictionary, PostingList
+from Eval import Eval
+from PositionalMerge import *
+from data_helper import *
+import pprint
 
 topk = 5
 n = 20
 
-def parse_query_with_expander(query):
-    result = parse_query(query)
-    if len(result) > n:
-        pass
-    else:
-        # do something
-        # result needs to keep the original tf-idf vectors of the documents
-        new_query = []
-        docs = result[:topk]
+'''
+Given the docID, get the vector
+'''
+# dictionary = load_data("dictionary.txt")
+# postings = open("postings.txt", 'rb')
+# length_dict = load_data_with_handler(postings, 0)
+vector_dict = load_data("dictionaryvector.txt")
+vector_value = open("postingvector.txt", 'rb')
 
-        # add up all of the topk
-        for i in docs:
-            for dimen in range(len(i)):
-                if len(new_query) <= dimen:
-                    new_query[dimen] = i[dimen]
-                else:
-                    new_query.append(i[dimen])
+def get_vector(docID):
+    offset = vector_dict[docID]
+    data = load_data_with_handler(vector_value, offset)
+    return data
 
-        # take the average
-        for dimen in range(len(new_query)):
-            new_query[dimen] = new_query[dimen] / topk
+# def get_vector2(docID):
+#     vector = []
+#     for term in dictionary:
+#         idf, post = get_posting(postings, dictionary, term)
+        
+#         for i in post:
+#             if i[0] == docID:
+#                 tf = i[1]
+#                 vector.append(tf * idf)
+#                 continue
+#         vector.append(0)
 
-        # run the query again?
-        # new_results = parse_query_as_vector(new_query)
-        new_results = parse_query(new_query)
-        result.extend(new_results[:topk])
+#     return vector
 
-    return result
+def get_new_vector_offset(docIDs):
+    offset = []
+    for docID in docIDs:
+        vector = get_vector(docID)
+        if len(offset) == 0:
+            offset = vector
+        else:
+            for i in range(len(offset)):
+                offset[i] += vector[i]
+    offset = [i / len(docIDs) for i in offset]
+
+    return offset
+
+def get_new_query_vector(original_vector, docIDs):
+    vector = original_vector
+    docs = docIDs[:topk]
+    offset = get_new_vector_offset(docs)
+    for i in range(len(vector)):
+        vector[i] += offset[i]
+    return vector
+
+# get_vector(246788)
+# get_new_vector_offset([246788, 246781])
+
+# print(set(get_vector([246788, 246781])) & set(get_vector2([246788, 246781])))
+
