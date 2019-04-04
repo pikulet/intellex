@@ -20,7 +20,7 @@ def get_lengths(p):
 ### Retrieve a dictionary format given the dictionary file
 ###
 def get_dictionary(dictionary_file):
-    dictionary = load_data(dictionary_file)
+    dictionary = load_data(dictionary_file).terms
     return dictionary
 
 ### Retrieve a query format given the query file

@@ -90,6 +90,7 @@ def get_length(vector):
 ###
 class Dictionary():
 
+    total_num_documents = 0
     DF = 0
     IDF = 0
     TERMID = 1
@@ -121,13 +122,15 @@ class Dictionary():
         self.terms[t][Dictionary.TERM_OFFSET] = offset
 
     def save_to_disk(self, total_num_documents):
-        idf_transform = lambda x: math.log(total_num_documents/x, 10)
+        self.total_num_documents = total_num_documents
+        # idf_transform = lambda x: math.log(total_num_documents/x, 10)
         
-        for t in self.terms:
-            df = self.terms[t][Dictionary.DF]
-            self.set_idf(t, idf_transform(df))
+        ## this saves idf instead of df
+        # for t in self.terms:
+        #     df = self.terms[t][Dictionary.DF]
+        #     self.set_idf(t, idf_transform(df))
 
-        store_data(self.file, self.terms)
+        store_data(self.file, self)
 
 ### A Postings class that collects all the posting lists.
 ### Each posting list is a dictionary mapping docIDs to term frequencies
