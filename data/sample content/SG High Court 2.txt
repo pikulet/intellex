@@ -1,0 +1,279 @@
+MV Balakrishnan v Public Prosecutor
+[1998] SGHC 231
+ 
+ 
+Case Number
+ 
+:
+ 
+Cr M 9/1998
+ 
+ 
+ 
+Decision Date
+ 
+:
+ 
+08 July 1998
+ 
+ 
+ 
+Tribunal/Court
+ 
+:
+ 
+High Court
+ 
+ 
+ 
+Coram
+ 
+:
+ 
+ 
+Yong Pung How CJ
+ 
+ 
+ 
+ 
+Counsel Name(s)
+ 
+:
+ 
+ Michael Hwang SC and Andrew Chan (Allen & Gledhill) for the applicant; Kow Keng Siong (Deputy Public Prosecutor) for the respondent 
+ 
+ 
+ 
+Parties
+ 
+:
+ 
+ MV Balakrishnan — Public Prosecutor 
+ 
+ 
+ 
+Courts and Jurisdiction
+  – 
+Court of appeal
+  – 
+Reference to Court of Appeal
+  – 
+Applicable principles
+  – 
+Whether stated question raised conflict of authority or serious question requiring reference to Court of Criminal Appeal
+  – 
+Whether application veiled appeal Road Traffic
+  – 
+Offences
+  – 
+Sentencing
+  – 
+Disqualification order
+  – 
+Whether circumstances perculiar to offender constituted 'special reasons' to dispense with mandatory disqualification
+  – 
+s 3(1) & (2) Motor Vehicles (Third-Party Risks and Compensation) Act (Cap 189)
+ 
+ 
+Words and Phrases
+  – 
+'Special reasons'
+  – 
+s 3(2) Motor Vehicles (Third-Party Risks and Compensation) Act (Cap 189)
+ 
+ 
+ 
+ 
+Judgment:
+ 
+ 
+ 
+ 1.
+YONG PUNG HOW CJ
+ 
+ Background
+This was a motion arising out of my decision in MA 198/97 dismissing the appellant`s appeal against sentence and conviction. The detailed facts are set out in my grounds of decision dated 18 May 1998. Briefly, the appellant was charged with permitting his employee to use a Class 4 motor vehicle without a valid driving licence and while there was no insurance coverage against third party risks in force, offences under s 35(1) Road Traffic Act (Cap 276) (the RTA) and s 3(1) Motor Vehicles (Third Party Risks Compensation) Act (Cap 189) (the MVA) respectively.
+ 2.In the court below, the appellant`s defence was that he had relied on the seller`s representations that the motor vehicle was a Class 3 vehicle and therefore permitted his employee, a Class 3 driver, to use the motor vehicle. The district judge found the seller`s evidence unreliable and held that the appellant had been wilfully blind to the class of the motor vehicle. The appellant was convicted and fined $1,000 for the RTA offence and $800 for the MVA offence, and disqualified from holding all classes of licence for 12 months. On appeal, I found the appellant strictly liable for the offences charged and upheld the fines. I also found no special reasons within the meaning of s 3(2) MVA to excuse the appellant from the statutory disqualification. It was the construction of the phrase `special reasons` that formed the subject matter of this motion.
+ 3.Pursuant to s 60 Supreme Court of Judicature Act (Cap 322) (the SCJA) the appellant`s previous counsel sought to refer two questions to the Court of Appeal; the first concerned the district judge`s finding of `wilful blindness` while the second question turned on the construction of `special reasons` for the purposes of the MVA. By a letter dated 4 June 1998 this court was informed by the appellant`s newly instructed counsel of his intention to withdraw the first question and re-phrase the second question. In the hearing before me on 8 June 1998, the application proceeded with the second question re-phrased in the terms set out below: (a). whether the Singapore courts other than the Court of Appeal are, in construing the words `special reasons` in s 3(2) of the Motor Vehicles (Third Party Risks Compensation) Act, bound by the majority decision of the Singapore High Court of three judges in 
+R v Lim Kian Soo
+ 
+[1950] MLJ 181
+ construing the words `special reasons` in the context of the predecessor section of s 3(2) of the Motor Vehicles (Third Party Risks Compensation) Act; and,
+ (b). whether, if the Singapore courts other than the Court of Appeal are not bound by the majority decision of the Singapore High Court of three judges in 
+R v Lim Kian Soo
+ 
+[1950] MLJ 181
+ in the manner stated above, the Singapore courts should follow the decision of the majority in 
+R v Lim Kian Soo
+ 
+[1950] MLJ 181
+ .
+ 4.The Public Prosecutor objected to this motion. Having heard the submissions tendered by both counsel, I was satisfied that this matter should proceed no further and accordingly dismissed the application. The appellant`s argument has time and again been canvassed before this court without success. In this regard, the reasons which I now set out for my decision will prevent future waste of the court`s time.
+ 5.
+ The motion
+The question which counsel for the appellant sought to refer to the Court of Criminal Appeal asked whether circumstances particular to the offender could constitute `special reasons` within the meaning of s 3(2) MVA to dispense with the mandatory disqualification stipulated by statute. The key to the question, as submitted by counsel for the appellant, was whether recent decisions such as 
+PP v Balasubramaniam
+ 
+ 
+[1992] 1 SLR 822
+  and 
+ Joseph Roland v PP 
+ 
+[1996] 1 SLR 179
+, upholding the 1947 ruling of Lord Goddard CJ in 
+Whittall v Kirby
+ 
+[1947] KB 194
+, were made in ignorance of the Singapore High Court decision in 
+ R v Lim Kian Soo 
+; and whether this created a conflict of authority requiring reference to the Court of Criminal Appeal. Counsel for the appellant relied on the obiter dictum of Judicial Commissioner Kan Ting Chiu (as he then was) in 
+PP v Akhtar Hussain Mann
+ 
+ 
+[1992] 1 SLR 266
+  to argue that this question had not been unequivocally resolved. Having considered the ruling in 
+ R v Lim Kian Soo 
+, Kan Ting Chiu JC observed, at p 268G, that there appeared some uncertainty in Singapore whether `special reasons` extended to circumstances peculiar to an offender, adding that no such uncertainty existed in Malaya following the decision in 
+PP v Teo Kok Keng
+ 
+ 
+[1989] 1 MLJ 198
+ . He then went on to comment that if put to choose between the construction in 
+ Whittall 
+ and that in 
+ Lim Kian Soo 
+, he would accept the former although on the facts before him he was not restricted to making such a choice.
+ 6.The construction in 
+ Whittall 
+ was an adoption of Lord Goddard CJ`s speech to magistrates and which was expressly considered in 
+R v Crossan
+ 
+[1939] NI 106
+. The following extract from 
+ Whittall 
+ is widely quoted and reads: 
+A special reason within the exception is one which is special to the facts of the particular case, that is, special to the facts which constitute the offence. It is, in other words, a mitigating or extenuating circumstance, not amounting in law to a defence to the charge, yet directly connected with the commission of the offence, and one which the court ought properly to take into consideration when imposing punishment. A circumstance peculiar to the offender as distinguished from the offence is not a `special reason` within the exception.
+ 
+While it is impossible to enumerate or define everything that can amount to a special reason, one may give as an illustration a driver exceeding the speed limit because he has suddenly been called to attend a dying relative or a doctor going to an urgent call. So too it is certainly difficult to visualize what could amount to a special reason in the case of driving under the influence of drink or drugs, though perhaps one might be found if the court was satisfied that a drug had been administered to a driver without his knowledge, as for instance where a driver had taken a dose of medicine which he believed to be an ordinary tonic but which in fact contained a powerful drug. For myself, I would say that I strongly incline to the opinion that a person who drives or causes or permits a vehicle to be driven when there is no policy in force must be disqualified unless the court can find in relation to the particular offence some mitigating circumstance, and that mere forgetfulness or carelessness in not taking out a policy could not amount to a special reason.
+ 7.Goddard CJ`s construction of the phrase `special reasons` in 
+ Whittall v Kirby 
+ was followed not only in 
+ Joseph Roland 
+ and 
+ Balasubramaniam 
+ but also in numerous authorities for guidance on the construction of the phrase `special reasons`. The construction does not rob the court of discretion. It merely provides clear guidance as to the circumstances in which an offender is entitled, by law, for the mandatory disqualification to be dispensed with having regard to the facts of the offence. For example, the same English court some years later chose not to interfere with the magistrate`s decision to dispense with disqualification in 
+Chapman v O`Hagan
+ 
+[1949] 2 KB 690
+ where the driver had taken drugs for a leg injury without knowing that it would make him more susceptible to the effect of alcohol. Closer to home, cases such as 
+PP v M Karthiah
+ 
+[1953] MLJ 52
+ and 
+Re Kanapathipillai
+ 
+[1960] MLJ 243
+ have followed 
+ Whittall 
+. The court in 
+ M Karthiah 
+ overturned the magistrate`s decision not to disqualify the appellant on the basis, stated at p 53 of the report, that `the appellant did not know of any other way of earning his livelihood other than driving a motor car`. Wilkinson J`s excerpt of Goddard CJ`s grounds at p 200 of the 
+ Whittall 
+ report is a fine example of the sound reasoning on which the judgment was founded. It read: 
+It is to be observed that the sections are mandatory and that Parliament has provided that a period of disqualification shall be imposed but they have given a discretion to be exercised only for special reasons. The limited discretion must be exercised judicially. The reasons inducing the court to exercise it must be special, and special is the antithesis of general. The fact that a man is a first offender or that he has committed no motoring offence for many years are reasons of the most general character that can well be imagined. That a man is a professional driver cannot, as it seems to me, by any possibility be called a special reason. The fact that drivers are professional drivers would of itself indicate that they are more likely to be habitually on the roads than people who drive themselves, so there is all the more reason for protecting the public against them. By exercising discretion in favour of an offender because he is a professional driver it is obvious that the court is taking into account the fact that in such cases disqualification is likely to work greater financial hardship than in the case of a person who uses his car for social or casual purposes. There is no indication in the Act that Parliament meant to draw any distinction between drivers who earn their living by driving and any other users of motor cars Had Parliament intended that special consideration was to be shown to professional drivers or first offenders it would have so provided.
+ 8.The decision in 
+ Karthiah 
+ was followed in 
+ Re Kanapathipillai 
+, a case submitted by appellant`s previous counsel. Curiously enough 
+ Re Kanapathipillai 
+ was one of ten summons cases brought by the Deputy Public Prosecutor by way of criminal revision and for which Adams J took the opportunity to set out guidance for magistrates in the following terms (at p 243 H): 
+Magistrates must appreciate that where there is a duty to disqualify a convicted person from holding a licence to drive a motor vehicle such duty falls not within the discretion of the convicting court but is imposed by the act of the legislature. This duty is not identified with the maximum punishment to be mitigated according to established principles. 
+ The duty is mandatory but the act of the legislature has given a limited discretion to a convicting court, to be exercised judicially, to refrain from implementing the law`s clearly expressed requirement for a reason which is special to the offence but not for a reason special to the offender.
+ [Emphasis is mine.]
+ This passage noticeably resembled Goddard CJ`s statements in 
+ Whittall v Kirby 
+. Adams J then proceeded to discuss the reliance on 
+ Whittall 
+ in a number of local and English cases. Interestingly enough, he included the case of 
+ Lim Kean Soo 
+ in this list of cases. Although spelt differently, the case citation is the same as that of 
+ Lim Kian Soo 
+ submitted by counsel in this motion. In the absence of evidence to the contrary, it would not be impossible to infer that Adams J had considered 
+ Lim Kean Soo 
+ and concluded that the court there followed 
+ Whittall 
+. In any case, Adams J`s analysis was considered extensively and approved in the grounds of decision of the magistrate`s appeal from which this application arose. It was my view that over the years, the judgments made pointed to a consistent construction of `special reasons` on the basis of Goddard CJ`s ruling in 
+ Whittall 
+. This decision has clearly withstood the test of time and for good reason. It is clear from case history that consideration of the 
+ Whittall 
+ judgment inevitably led to the decision being upheld and contributed to a healthy examination of the reasons to support such a construction.
+ 9.In this regard, I refer to the decision of Thomson CJ in ordering mandatory disqualification in 
+PP v Mohd Isa
+ 
+[1963] MLJ 135
+ where he made several useful observations. The appellant had pleaded guilty to a charge of permitting an unlicensed person to drive his motor-cycle and of allowing his motor-cycle to be used while an insurance policy was not in force. The magistrate had refrained from making a disqualification order on the ground that the offender required the use of his motor-cycle to get to his place of work; that he had many dependants to support and that he was a sick man. Thomson CJ reminded magistrates that for `special reasons` to dispense with the mandatory disqualification order, they had to be connected with the commission of the offence. With circumspect grace, he noted that there may be a certain amount of misunderstanding because some statements of the law have been over academic and metaphysical. Yet the statutory intention in mandating disqualification remained intact given his experience that the most satisfactory penalty for most motoring offences was disqualification because a fine is paid once and then forgotten. In his view, a disqualification meant that for 365 days the accused person is reminded every morning of his offence and so where an order for disqualification is made, except in serious cases of being drunk in charge or dangerous driving, the quantum of the monetary penalty imposed was of relatively minor importance. 
+ Whittall 
+ was applied again in 
+PP v Hiew Chin Fong
+ 
+ 
+[1988] 1 MLJ 467
+  and the construction appreciated for the reasons that the offence is not to be taken lightly. If an innocent road user is knocked down and injured or killed, he and/or his dependants may have no means of recovering from the uninsured driver any loss or damage he and/or they may have suffered or sustained. It is clear from these authorities that to construe special reasons as being those connected with the offence and not the offender would be the clearest means of giving effect to Parliament`s intention. Parliament could not have intended an offender to be excused from the mandatory punishment by virtue of circumstances unique to his situation but irrelevant to the commission of the offence. The mandatory punishment is designed to take away the right that was abused in committing the offence.
+ 10.Against the weight of authority upholding 
+ Whittall 
+, counsel for the appellant submitted 
+ R v Lim Kian Soo 
+ as a decision inclined to a contrary construction of `special reasons`, thereby arguably creating a conflict of authority that necessitated reference to the Court of Criminal Appeal. In
+ Lim 
+, Murray-Aynsley CJ considered 
+ Whittall 
+ to bear persuasive as opposed to binding authority on the court and was of the opinion that Goddard CJ`s guidance in 
+ Whittall 
+ were open to objection in that they cut down on the discretion given to the courts. He expressed concern that circumstances of a personal nature may sometimes be valid and held that the matter should be treated as a question of discretion. Counsel for the appellant submitted that the decision in 
+ Lim 
+ was of binding authority on the basis of the stare decisis doctrine discussed in 
+Young v Bristol Aeroplane Co Ltd
+ 
+[1944] 2 All ER 293
+: that, subject to three exceptions, courts are bound to follow previous decisions of its own as well as those of courts of a co-ordinate jurisdiction. He argued that the judgment of the court in 
+ Lim 
+, being a High Court sitting with three judges on a special case, was binding on the High Court hearing the appellant`s appeal in MA 198/97.
+ 11.With respect, the Singapore court`s position on this doctrine is well founded in the decision of the Court of Criminal Appeal in 
+Mah Kah Yew v PP
+ [1971] MLJ 1 [1969-1971] SLR 441 , and upheld in 
+Wong Hong Toy v PP
+ [1994] 3 SLR 396 . In 
+Wong Hong Toy v PP
+ 
+ 
+[1986] 2 MLJ 336
+  
+[1986] SLR 86
+ , this jurisdiction`s well-known doctrine of precedents was confirmed in that the High Court is not bound by a previous decision of a High Court judge. Counsel contended that in the interests of promoting certainty, courts sitting in their appellate capacity should be bound by their own decisions. While in agreement with this principle, I had regard to the advice of the court in 
+Chan Hiang Leng Colin v PP
+ 
+ 
+[1995] 1 SLR 687
+  that in the interest of maintaining finality in proceedings, it was better to exercise a discretion to refer sparingly so that the references are not used as an indirect way of appealing against matters that under the law have been finally determined by the High Court. I found this application to be one such veiled appeal. The court is not faced with so many vastly differing views as to suggest there is a rift in the authorities. I did not find the question so exceptional as to require reference; in fact, a glance at the many authorities upholding 
+ Whittall 
+ demonstrates that this was a common question before the High Court hearing appeals from the magistrate`s courts. It has clearly been authoritatively laid down and consistently applied by the courts here and, in the circumstances, there is no conflict of authority: 
+PP v Bridges Christopher
+ 
+ 
+[1997] 2 SLR 217
+ .
+ 12.Finally, counsel submitted that the question sought to be referred was of public interest because its definition bore far-reaching implications in view of the use of the phrase in other statutory provisions. I could not agree. If one examined the other contexts in which the phrase `special reasons` was employed, for example, in s 21A(1) of the Environmental Public Health Act, it became clear that the 
+ Whittall 
+ construction did not necessarily apply to all occasions for which Parliament had chosen to legislate for special circumstances. This is clear from the decision of the court in 
+PP v Lim Niah Liang
+ 
+ [1997] 1 SLR 535 
+ which held that `special reasons` permitted the court to exercise some discretion in deciding whether or not to sentence a physically disabled offender to carry out a corrective work order. The use of the phrase there relates to the viability and effectiveness of meting out such specific sentences as provided by the EPHA. That application can safely be distinguished from the question raised in this motion.
+ 13.
+ Conclusion
+I found it timely, almost half a century after Murray-Aynsley CJ`s remarks in 
+ Lim Kian Soo 
+, to confirm the construction laid out in 
+ Whittall 
+ and thereafter followed in numerous authorities. Accordingly, there was no conflict of authority on any question to be worthy of referral to the Court of Criminal Appeal.
