@@ -2,12 +2,11 @@
 import math
 import nltk
 from nltk.stem.porter import *
-import pickle
 from data_helper import *
 
 ########################### DEFINE CONSTANTS ###########################
+
 PORTER_STEMMER = PorterStemmer()
-END_LINE_MARKER = '\n'
 
 ########################### CONTENT PROCESSING ###########################
 
@@ -16,34 +15,38 @@ END_LINE_MARKER = '\n'
 def normalise_term(t):
     return PORTER_STEMMER.stem(t.lower())
 
+### Process a document content body directly (content must be a list of normalized terms)
+###
+def process_doc_direct(docID, content, dictionary, postings, length):
+    vector = dict()                 # term vector for this document
+    position_counter = 0
+    
+    for t in content:
+        add_data(docID, t, position_counter, dictionary, postings)
+        add_vector_count(t, vector)
+            
+        position_counter += 1   
+
+    convert_tf(vector)
+    length[docID] = get_length(vector)
+
 ### Process a document content body
 ###
 def process_doc(docID, content, dictionary, postings, length):
     vector = dict()                 # term vector for this document
     position_counter = 0
     
-    for l in content.split(END_LINE_MARKER):
-        position_counter = process_line(docID, l, position_counter, vector, dictionary, postings)            
+    # word_tokenize implictly calls sent_tokenize
+    # https://github.com/nltk/nltk/blob/develop/nltk/tokenize/__init__.py#L98
+    for w in nltk.word_tokenize(content):
+        t = normalise_term(w)
+        add_data(docID, t, position_counter, dictionary, postings)
+        add_vector_count(t, vector)
+            
+        position_counter += 1   
 
     convert_tf(vector)
     length[docID] = get_length(vector)
-    
-### Process a line in a document
-###
-def process_line(docID, line, position, vector, dictionary, postings):
-    sentences = nltk.sent_tokenize(line)
-
-    for s in sentences:
-        words = nltk.word_tokenize(s)
-        for w in words:
-            t = normalise_term(w)
-
-            add_data(docID, t, position, dictionary, postings)
-            add_vector_count(t, vector)
-                
-            position += 1
-
-    return position
 
 ### Add information about term and position to dictionary and posting list
 ###
