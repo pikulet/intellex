@@ -1,6 +1,7 @@
 from search_helper import *
 from data_helper import *
 from pprint import pprint
+import multiprocessing
 import heapq
 try:
     from tqdm import tqdm
@@ -13,8 +14,6 @@ IDF_MODE = False
 
 ######################## DRIVER FUNCTION ########################
 
-
-vector_dict = load_data("dictionaryvector.txt")
 vector_value = open("postingsvector.txt", 'rb')
 idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
@@ -25,15 +24,8 @@ def extractValue(tuple):
         return tuple[0]
 
 '''
-Given the docID, get the vector dict
+Given the docID offset, get the vector dict
 '''
-
-def get_vector_from_docID(docID):
-    # vector are stored as sparse indexes
-    # each valid index will map to (tf, idf)
-    offset = vector_dict[docID]
-    data = load_data_with_handler(vector_value, offset)
-    return data
 
 def get_vector_from_offset(offset):
     # vector are stored as sparse indexes
@@ -45,7 +37,6 @@ def get_vector_from_offset(offset):
 '''
 Given a set of docIDs, get the new offset to be used in the formula
 '''
-
 
 def get_new_vector_offset(docIDs):
     # originalTerms = get_dictionary("dictionary.txt").terms
@@ -79,8 +70,6 @@ def query_parallel_util(pair):
                 score += extractValue(docVector[key]) * value
     return docID, score
 
-import multiprocessing
-
 def query_parallel(vector, N):
     vector_dict = load_data("dictionaryvector.txt")
 
@@ -95,6 +84,8 @@ def query_parallel(vector, N):
     return top_documents
 
 def query(vector, N):
+    vector_dict = load_data("dictionaryvector.txt")
+    
     score_list = []
     for docID in tqdm(vector_dict.keys(), total = len(vector_dict.keys())):
         score = 0.
@@ -107,7 +98,7 @@ def query(vector, N):
     top_results = heapq.nsmallest(N, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
     top_documents = list(map(lambda x: str(x[1]), top_results))
     
-    return top_results
+    return top_documents
 
 import random 
 
@@ -116,6 +107,14 @@ def coin_toss(value):
 
 if __name__ == '__main__':
     vector_dict = load_data("dictionaryvector.txt")
+
+    def get_vector_from_docID(docID):
+        # vector are stored as sparse indexes
+        # each valid index will map to (tf, idf)
+        offset = vector_dict[docID]
+        data = load_data_with_handler(vector_value, offset)
+        return data
+
     import time
     start = time.time()
     # get_vector(246788)
