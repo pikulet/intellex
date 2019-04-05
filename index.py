@@ -25,6 +25,12 @@ TEMBUSU_MODE = True if multiprocessing.cpu_count() > 10 else False
 PROCESS_COUNT = 4 if TEMBUSU_MODE else 4
 BATCH_SIZE = 5 if TEMBUSU_MODE else 5
 
+## Extra files
+TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
+TITLE_POSTINGS_FILE = "postingstitle.txt"
+VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
+VECTOR_POSTINGS_FILE = "postingsvector.txt"
+
 ######################## COMMAND LINE ARGUMENTS ########################
 
 # Read in the input files as command-line arguments
@@ -90,30 +96,34 @@ def main():
     postings = PostingList(output_file_postings)
     length = dict()
 
-    dictionary_title = Dictionary("dictionarytitle.txt")
-    postings_title = PostingList("postingtitle.txt")
+    dictionary_title = Dictionary(TITLE_DICTIONARY_FILE)
+    postings_title = PostingList(TITLE_POSTINGS_FILE)
     length_title = dict()
 
     df = read_csv(dataset_file)
 
     df = df.sort_values("document_id", ascending=True)
     total_num_documents = df.shape[0]
-    vector_dict = {}
+    
+    print("Running indexing...")
 
     # multiprocessing way
     # The proper way to handle CTRL-C
     original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     signal.signal(signal.SIGINT, original_sigint_handler)
 
+    vector_store = {}
     with multiprocessing.Pool(PROCESS_COUNT) as pool:
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
                 id, title, content, date, court = row
-                process_doc_direct(id, content, dictionary, postings, length)
+                vector_store[id] = process_doc_direct(id, content, dictionary, postings, length)
                 process_doc_direct(id, title, dictionary_title, postings_title, length_title)
 
-            save_vector(dictionary, postings, length, total_num_documents)
+            print("Saving...")
+
+            save_vector(dictionary, postings, length, total_num_documents, vector_store)
             save_data(dictionary, postings, length, total_num_documents)
             save_data(dictionary_title, postings_title, length_title, total_num_documents)
 
@@ -135,37 +145,28 @@ def save_data(dictionary, postings, length, total_num_documents):
     postings.save_to_disk(length, dictionary)
     dictionary.save_to_disk(total_num_documents)
 
+# Save the vector data to disk
 
-def save_vector(dictionary, postings, length, total_num_documents):
-    dfile = "dictionaryvector.txt"
-    pfile = "postingvector.txt"
+def save_vector(dictionary, postings, length, total_num_documents, vector_store):
+    dfile = VECTOR_DICTIONARY_FILE
+    pfile = VECTOR_POSTINGS_FILE
 
     vector_dict = {}
-    idf_transform = lambda x: math.log(total_num_documents/x, 10)
+
+    def idf_transform(x): return math.log(total_num_documents/x, 10)
 
     pfilehandler = open(pfile, 'wb')
 
-    for docID in tqdm(length.keys(), total=total_num_documents):
-        totaln = math.sqrt(length[docID])
-        vector = {}
-        for t in dictionary.terms:
-            df = dictionary.terms[t][Dictionary.DF]
-            idf = idf_transform(df)
-            termid = dictionary.terms[t][Dictionary.TERMID]
-            postdict = postings.postings[termid]
-
-            if docID in postdict:
-                tfidf = postdict[docID][PostingList.TF] * idf
-                vector[t] = tfidf / totaln
-            else:
-                pass
-
+    for docID in tqdm(vector_store.keys(), total=total_num_documents):
+        vector = vector_store[docID]
+        for t in vector.keys():
+            vector[t] = vector[t] / length[docID] * idf_transform(dictionary.terms[t][Dictionary.DF])
+        
         vector_dict[docID] = pfilehandler.tell()
         store_data_with_handler(pfilehandler, vector)
 
     store_data(dfile, vector_dict)
         
-
 
 if __name__ == "__main__":
     start = time.time()

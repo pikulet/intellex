@@ -3,10 +3,16 @@ import math
 import nltk
 from nltk.stem.porter import *
 from data_helper import *
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = lambda *i, **kwargs: i[0]
 
 ########################### DEFINE CONSTANTS ###########################
 
 PORTER_STEMMER = PorterStemmer()
+
+log_tf = lambda x: 1 + math.log(x, 10)
 
 ########################### CONTENT PROCESSING ###########################
 
@@ -30,23 +36,25 @@ def process_doc_direct(docID, content, dictionary, postings, length):
     convert_tf(vector)
     length[docID] = get_length(vector)
 
+    return vector
+
 ### Process a document content body
 ###
-def process_doc(docID, content, dictionary, postings, length):
-    vector = dict()                 # term vector for this document
-    position_counter = 0
+# def process_doc(docID, content, dictionary, postings, length):
+#     vector = dict()                 # term vector for this document
+#     position_counter = 0
     
-    # word_tokenize implictly calls sent_tokenize
-    # https://github.com/nltk/nltk/blob/develop/nltk/tokenize/__init__.py#L98
-    for w in nltk.word_tokenize(content):
-        t = normalise_term(w)
-        add_data(docID, t, position_counter, dictionary, postings)
-        add_vector_count(t, vector)
+#     # word_tokenize implictly calls sent_tokenize
+#     # https://github.com/nltk/nltk/blob/develop/nltk/tokenize/__init__.py#L98
+#     for w in nltk.word_tokenize(content):
+#         t = normalise_term(w)
+#         add_data(docID, t, position_counter, dictionary, postings)
+#         add_vector_count(t, vector)
             
-        position_counter += 1   
+#         position_counter += 1   
 
-    convert_tf(vector)
-    length[docID] = get_length(vector)
+#     convert_tf(vector)
+#     length[docID] = get_length(vector)
 
 ### Add information about term and position to dictionary and posting list
 ###
@@ -73,7 +81,6 @@ def add_vector_count(t, vector):
 ### Convert a content vector to tf-form for calculating document length
 ###
 def convert_tf(vector):
-    log_tf = lambda x: 1 + math.log(x, 10)
     for t, tf in vector.items():
         vector[t] = log_tf(tf)
 
@@ -191,7 +198,7 @@ class PostingList():
         with open(self.file, 'wb') as f:
             store_data_with_handler(f, length)
 
-            for t in dictionary.get_terms():
+            for t in tqdm(dictionary.get_terms(), total=len(dictionary.get_terms())):
                 termID = dictionary.get_termID(t)
                 posting = self.postings[termID]
                 posting = self.flatten(posting)     # convert dict to sorted list
