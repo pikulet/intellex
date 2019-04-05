@@ -9,15 +9,20 @@ TOPK = 5
 
 ######################## DRIVER FUNCTION ########################
 
+
+vector_dict = load_data("dictionaryvector.txt")
+vector_value = open("postingsvector.txt", 'rb')
+
+def extractValue(tuple):
+    return tuple[0] * tuple[1]
+
 '''
 Given the docID, get the vector dict
 '''
 
-vector_dict = load_data("dictionaryvector.txt")
-vector_value = open("postingvector.txt", 'rb')
-
-
 def get_vector_from_docID(docID):
+    # vector are stored as sparse indexes
+    # each valid index will map to (tf, idf)
     offset = vector_dict[docID]
     data = load_data_with_handler(vector_value, offset)
     return data
@@ -34,7 +39,7 @@ def get_new_vector_offset(docIDs):
     for docID in docIDs:
         vector = get_vector_from_docID(docID)
         for key, value in vector.items():
-            offset[key] = offset.get(key, 0.) + value
+            offset[key] = offset.get(key, 0.) + extractValue(value)
 
     # Take average
     for k in offset.keys():
@@ -59,7 +64,7 @@ def query(vector, N):
         for key, value in vector.items():  
             docVector = get_vector_from_docID(docID)
             if key in docVector:
-                score += docVector[key] * value
+                score += extractValue(docVector[key]) * value
         score_list.append((-score, docID))
     
     top_results = heapq.nsmallest(N, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
@@ -68,7 +73,8 @@ def query(vector, N):
     return top_results
 
 # get_vector(246788)
-new_query = get_new_query_vector(get_vector_from_docID(246788), [246788, 246781])
+old_query = {key: value[0] for key,value in get_vector_from_docID(246788).items()}
+new_query = get_new_query_vector(old_query, [246788, 246781])
 pprint(query(new_query, 10))
 
 # print(set(get_vector([246788, 246781])) & set(get_vector2([246788, 246781])))
