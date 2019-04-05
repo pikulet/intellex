@@ -22,8 +22,8 @@ POSTINGS_FILE_TEST = 'postings.txt'
 
 DF_DOC_ID_NO, DF_TITLE_NO, DF_CONTENT_NO, DF_DATE_POSTED_NO, DF_COURT_NO = range(5)
 TEMBUSU_MODE = True if multiprocessing.cpu_count() > 10 else False
-PROCESS_COUNT = 8 if TEMBUSU_MODE else 4
-BATCH_SIZE = 100 if TEMBUSU_MODE else 5
+PROCESS_COUNT = 4 if TEMBUSU_MODE else 4
+BATCH_SIZE = 5 if TEMBUSU_MODE else 5
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -73,7 +73,7 @@ def ntlk_tokenise_func(row):
 
     content = [normalise_term(w) for w in nltk.word_tokenize(row[DF_CONTENT_NO])]
     title = [normalise_term(w) for w in nltk.word_tokenize(row[DF_TITLE_NO])]
-    date = row[DF_DATE_POSTED_NO].to_pydatetime()
+    date = row[DF_DATE_POSTED_NO]
     court = str(row[DF_COURT_NO])
 
     return row[DF_DOC_ID_NO], title, content, date, court
@@ -146,7 +146,8 @@ def save_vector(dictionary, postings, length, total_num_documents):
     pfilehandler = open(pfile, 'wb')
 
     for docID in tqdm(length.keys(), total=total_num_documents):
-        vector = []
+        totaln = math.sqrt(length[docID])
+        vector = {}
         for t in dictionary.terms:
             df = dictionary.terms[t][Dictionary.DF]
             idf = idf_transform(df)
@@ -155,12 +156,9 @@ def save_vector(dictionary, postings, length, total_num_documents):
 
             if docID in postdict:
                 tfidf = postdict[docID][PostingList.TF] * idf
-                vector.append(tfidf)
+                vector[t] = tfidf / totaln
             else:
-                vector.append(0)
-
-        totaln = math.sqrt(length[docID])
-        vector = [i / totaln for i in vector]
+                pass
 
         vector_dict[docID] = pfilehandler.tell()
         store_data_with_handler(pfilehandler, vector)

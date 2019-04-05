@@ -45,3 +45,6 @@ printed) from the discussions.
 
 Original source for data storage comparsion, but it was overturned by our own investigations. 
 https://www.benfrederickson.com/dont-pickle-your-data/
+
+Parallel Processing of Panda DataFrames
+https://www.tjansson.dk/2018/04/parallel-processing-pandas-dataframes/
