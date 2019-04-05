@@ -1,11 +1,11 @@
 from search_helper import *
 from data_helper import *
 from pprint import pprint
+import heapq
 
 ########################### DEFINE CONSTANTS ###########################
 
 TOPK = 5
-N = 100
 
 ######################## DRIVER FUNCTION ########################
 
@@ -52,18 +52,23 @@ def get_new_query_vector(original_vector, docIDs):
 
     return vector
 
-def query(vector):
-    scores = {}
+def query(vector, N):
+    score_list = []
     for docID in vector_dict.keys():
         score = 0.
         for key, value in vector.items():  
             docVector = get_vector_from_docID(docID)
             if key in docVector:
                 score += docVector[key] * value
-        scores[docID] = score
+        score_list.append((-score, docID))
+    
+    top_results = heapq.nsmallest(N, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
+    top_documents = list(map(lambda x: str(x[1]), top_results))
+    
+    return top_results
 
 # get_vector(246788)
 new_query = get_new_query_vector(get_vector_from_docID(246788), [246788, 246781])
-pprint(query(new_query))
+pprint(query(new_query, 10))
 
 # print(set(get_vector([246788, 246781])) & set(get_vector2([246788, 246781])))

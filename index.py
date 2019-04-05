@@ -159,9 +159,13 @@ def save_vector(dictionary, postings, length, total_num_documents, vector_store)
 
     for docID in tqdm(vector_store.keys(), total=total_num_documents):
         vector = vector_store[docID]
+        total = 0.
         for t in vector.keys():
-            vector[t] = vector[t] / length[docID] * idf_transform(dictionary.terms[t][Dictionary.DF])
+            a = vector[t] * idf_transform(dictionary.terms[t][Dictionary.DF])
+            vector[t] = a
+            total += a
         
+        vector ={k: v / total for k, v in vector.items()}
         vector_dict[docID] = pfilehandler.tell()
         store_data_with_handler(pfilehandler, vector)
 
