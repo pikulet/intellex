@@ -3,6 +3,7 @@ from data_helper import *
 from pprint import pprint
 import multiprocessing
 import heapq
+import math
 try:
     from tqdm import tqdm
 except ImportError:
@@ -27,24 +28,32 @@ def extractValue(tuple):
 Given the docID offset, get the vector dict
 '''
 
-def get_vector_from_offset(offset):
+def get_vector_from_docID_offset(offset):
     # vector are stored as sparse indexes
     # each valid index will map to (tf, idf)
     data = load_data_with_handler(vector_value, offset)
-    return data
+
+    # we need to normalise
+    normalisator = 0.
+    for key, value in data.items():
+        normalisator += extractValue(value) ** 2
+    
+    normalisator = math.sqrt(normalisator)
+
+    return data, normalisator
 
 
 '''
 Given a set of docIDs, get the new offset to be used in the formula
 '''
 
-def get_new_vector_offset(docIDs):
-    # originalTerms = get_dictionary("dictionary.txt").terms
+def get_new_query_offset(docIDs):
+    vector_dict = load_data("dictionaryvector.txt")
     offset = {}
     for docID in docIDs:
-        vector = get_vector_from_docID(docID)
+        vector, normalisator = get_vector_from_docID_offset(vector_dict[docID])
         for key, value in vector.items():
-            offset[key] = offset.get(key, 0.) + extractValue(value)
+            offset[key] = offset.get(key, 0.) + (extractValue(value) / normalisator)
 
     # Take average
     for k in offset.keys():
@@ -55,19 +64,18 @@ def get_new_vector_offset(docIDs):
 
 def get_new_query_vector(original_vector, docIDs):
     vector = original_vector.copy()
-    offset = get_new_vector_offset(docIDs)
+    offset = get_new_query_offset(docIDs)
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
-
     return vector
 
 def query_parallel_util(pair):
     docID, offset, vector = pair
     score = 0.
-    docVector = get_vector_from_offset(offset)
+    docVector, normalisator = get_vector_from_docID_offset(offset)
     for key, value in vector.items():  
             if key in docVector:
-                score += extractValue(docVector[key]) * value
+                score += extractValue(docVector[key]) / normalisator * value 
     return docID, score
 
 def query_parallel(vector, N):
@@ -83,22 +91,22 @@ def query_parallel(vector, N):
     
     return top_documents
 
-def query(vector, N):
-    vector_dict = load_data("dictionaryvector.txt")
+# def query(vector, N):
+#     vector_dict = load_data("dictionaryvector.txt")
     
-    score_list = []
-    for docID in tqdm(vector_dict.keys(), total = len(vector_dict.keys())):
-        score = 0.
-        docVector = get_vector_from_docID(docID)
-        for key, value in vector.items():  
-            if key in docVector:
-                score += extractValue(docVector[key]) * value
-        score_list.append((-score, docID))
+#     score_list = []
+#     for docID in tqdm(vector_dict.keys(), total = len(vector_dict.keys())):
+#         score = 0.
+#         docVector = get_vector_from_docID(docID)
+#         for key, value in vector.items():  
+#             if key in docVector:
+#                 score += extractValue(docVector[key]) * value
+#         score_list.append((-score, docID))
     
-    top_results = heapq.nsmallest(N, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
-    top_documents = list(map(lambda x: str(x[1]), top_results))
+#     top_results = heapq.nsmallest(N, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
+#     top_documents = list(map(lambda x: str(x[1]), top_results))
     
-    return top_documents
+#     return top_documents
 
 import random 
 
@@ -120,7 +128,7 @@ if __name__ == '__main__':
     # get_vector(246788)
     old_query = {key: coin_toss(value[0]) for key,value in get_vector_from_docID(246788).items()}
     new_query = get_new_query_vector(old_query, [246788, 246781])
-    pprint(query_parallel(new_query, 10))
+    pprint(query_parallel(new_query, 15))
     end = time.time()
     print (end-start)
 
