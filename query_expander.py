@@ -12,10 +12,11 @@ IDF_MODE = False
 
 vector_dict = load_data("dictionaryvector.txt")
 vector_value = open("postingsvector.txt", 'rb')
+idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
 def extractValue(tuple):
     if IDF_MODE:
-        return tuple[0] * tuple[1]
+        return tuple[0] * idf_transform(tuple[1])
     else:
         return tuple[0]
 
