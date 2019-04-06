@@ -64,3 +64,5 @@ def main():
 if __name__ == "__main__":
     main()
 
+#python search.py -d ../fulldictionary.txt -p ../fullpostings.txt -q queries.txt -o output.txt
+
