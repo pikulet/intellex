@@ -12,24 +12,19 @@ except ImportError:
 
 ########################### DEFINE CONSTANTS ###########################
 
-IDF_MODE = False
+IDF_MODE = True
 
 ######################## DRIVER FUNCTION ########################
 
 vector_post_file_handler = open("postingsvector.txt", 'rb')
 vector_dict = load_data("properties.txt")
-total_num_documents = load_data("dictionary.txt").total_num_documents
-
-
-def idf_transform(x): return math.log(total_num_documents/x, 10)
-
 
 def extractValue(tuple):
     """
-    Helper method. Since the vector_post stores tf, df as a tuple pair
+    Helper method. Since the vector_post stores tf, idf as a tuple pair
     """
     if IDF_MODE:
-        return tuple[0] * idf_transform(tuple[1])
+        return tuple[0] * tuple[1]
     else:
         return tuple[0]
 
