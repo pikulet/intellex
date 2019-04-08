@@ -32,6 +32,10 @@ VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
 DOCUMENT_PROPERTIES_FILE = "properties.txt"
 
+# docID --> [content_length, title_length, court_priority, date_posted, vector_offset]
+NUM_DOCUMENT_PROPERTIES = 5
+CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET = list(range(NUM_DOCUMENT_PROPERTIES))
+
 ######################## COMMAND LINE ARGUMENTS ########################
 
 # Read in the input files as command-line arguments
@@ -95,12 +99,11 @@ def main():
 
     dictionary = Dictionary(output_file_dictionary)
     postings = PostingList(output_file_postings)
-    length = dict()
 
     dictionary_title = Dictionary(TITLE_DICTIONARY_FILE)
     postings_title = PostingList(TITLE_POSTINGS_FILE)
-    length_title = dict()
 
+    document_properties = dict() # docID --> [content_length, title_length, court_priority, date_posted, vector_offset]
     df = read_csv(dataset_file)
 
     df = df.sort_values("document_id", ascending=True)
@@ -118,9 +121,10 @@ def main():
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
-                id, title, content, date, court = row
-                vector_store[id] = process_doc_direct(id, content, dictionary, postings, length)
-                process_doc_direct(id, title, dictionary_title, postings_title, length_title)
+                docID, title, content, date, court = row
+                document_properties[docID] = list(range(NUM_DOCUMENT_PROPERTIES))
+                vector_store[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH)
+                process_doc_direct(docID, title, dictionary_title, postings_title, document_properties, TITLE_LENGTH)
 
             print("Saving...")
 
