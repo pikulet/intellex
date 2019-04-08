@@ -25,11 +25,10 @@ def get_dictionary(dictionary_file):
     dictionary = load_data(dictionary_file)
     return dictionary
 
-
 ### Retrieve the posting list for a particular term
 ###
 def get_posting(dictionary, p, t):
-    try:
+    try:       
         term_data = dictionary.terms[t]
         df = term_data[Dictionary.DF]
 
@@ -39,7 +38,6 @@ def get_posting(dictionary, p, t):
     except KeyError:
         # Term does not exist in dictionary
         return INVALID_TERM_DF, list()
-
 
 ### Retrieve a query format given the query file
 ###
@@ -77,12 +75,12 @@ def get_posting_lists(p, query_terms, dictionary, query_is_boolean):
     posting_lists = []
     for term in query_terms:
         if type(term) == list:  # phrase query
-            phrase_postings_lists = list(map(lambda word: get_posting(p, dictionary, word)[1], term))
+            phrase_postings_lists = list(map(lambda word: get_posting(dictionary, p, word)[1], term))
             posting_list = get_postings_from_phrase(term, phrase_postings_lists)
             posting_list = (len(posting_list), posting_list) # (df, posting_list) pair
-            dictionary[tuple(term)] = [len(posting_list), 0]  # put phrase into dictionary
+            dictionary.terms[tuple(term)] = [len(posting_list), 0]  # put phrase into dictionary
         else:
-            posting_list = get_posting(p, dictionary, term)  # (df, posting_list) pair
+            posting_list = get_posting(dictionary, p, term)  # (df, posting_list) pair
         posting_lists.append(posting_list)
 
     empty_lists = list(filter(lambda x: x[0] == 0, posting_lists))  # filter out empty lists
