@@ -30,6 +30,7 @@ TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
 TITLE_POSTINGS_FILE = "postingstitle.txt"
 VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
+DOCUMENT_PROPERTIES_FILE = "properties.txt"
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -123,9 +124,9 @@ def main():
 
             print("Saving...")
 
-            save_vector(dictionary, postings, length, total_num_documents, vector_store)
-            save_data(dictionary, postings, length, total_num_documents)
-            save_data(dictionary_title, postings_title, length_title, total_num_documents)
+            save_vector(dictionary, postings, total_num_documents, vector_store)
+            save_data(dictionary, postings, total_num_documents)
+            save_data(dictionary_title, postings_title, total_num_documents)
 
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
@@ -141,13 +142,13 @@ def main():
 
 # Save the indexing data to disk
 ###
-def save_data(dictionary, postings, length, total_num_documents):
-    postings.save_to_disk(length, dictionary)
+def save_data(dictionary, postings, total_num_documents):
+    postings.save_to_disk(dictionary)
     dictionary.save_to_disk(total_num_documents)
 
 # Save the vector data to disk
 
-def save_vector(dictionary, postings, length, total_num_documents, vector_store):
+def save_vector(dictionary, postings, total_num_documents, vector_store):
     dfile = VECTOR_DICTIONARY_FILE
     pfile = VECTOR_POSTINGS_FILE
 

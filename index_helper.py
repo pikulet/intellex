@@ -194,10 +194,8 @@ class PostingList():
         return sorted_list
 
     # Saves the posting lists to file, and update offset value in the dictionary
-    def save_to_disk(self, length, dictionary):        
+    def save_to_disk(self, dictionary):        
         with open(self.file, 'wb') as f:
-            store_data_with_handler(f, length)
-
             for t in tqdm(dictionary.get_terms(), total=len(dictionary.get_terms())):
                 termID = dictionary.get_termID(t)
                 posting = self.postings[termID]
