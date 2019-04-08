@@ -9,3 +9,4 @@ postingstitle.txt
 postingsvector.txt
 postings.txt
 *.pyc
+__pycache__
