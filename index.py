@@ -116,21 +116,23 @@ def main():
     original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     signal.signal(signal.SIGINT, original_sigint_handler)
 
-    vector_store = {}
+    document_vectors = dict()
     with multiprocessing.Pool(PROCESS_COUNT) as pool:
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
                 document_properties[docID] = list(range(NUM_DOCUMENT_PROPERTIES))
-                vector_store[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH)
+                
+                document_vectors[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH)
                 process_doc_direct(docID, title, dictionary_title, postings_title, document_properties, TITLE_LENGTH)
 
             print("Saving...")
 
-            save_vector(dictionary, postings, total_num_documents, vector_store)
+            save_vector(dictionary, total_num_documents, document_vectors, document_properties)
             save_data(dictionary, postings, total_num_documents)
             save_data(dictionary_title, postings_title, total_num_documents)
+            store_data(DOCUMENT_PROPERTIES_FILE, document_properties)
 
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
@@ -152,27 +154,19 @@ def save_data(dictionary, postings, total_num_documents):
 
 # Save the vector data to disk
 
-def save_vector(dictionary, postings, total_num_documents, vector_store):
-    dfile = VECTOR_DICTIONARY_FILE
-    pfile = VECTOR_POSTINGS_FILE
-
-    vector_dict = {}
+def save_vector(dictionary, total_num_documents, document_vectors, document_properties):
 
     def idf_transform(x): return math.log(total_num_documents/x, 10)
 
+    pfile = VECTOR_POSTINGS_FILE
     pfilehandler = open(pfile, 'wb')
 
-    for docID in tqdm(vector_store.keys(), total=total_num_documents):
-        vector = vector_store[docID]
-        new_vector = {}
-        for t in vector.keys():
-            new_vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
+    for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
+        for t in vector:
+            vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
         
-        vector_dict[docID] = pfilehandler.tell()
-        store_data_with_handler(pfilehandler, new_vector)
-
-    store_data(dfile, vector_dict)
-        
+        document_properties[docID][VECTOR_OFFSET] = pfilehandler.tell()
+        store_data_with_handler(pfilehandler, vector)      
 
 if __name__ == "__main__":
     start = time.time()
