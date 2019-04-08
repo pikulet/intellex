@@ -49,9 +49,8 @@ def main():
     if len(sys.argv) <= 1:
         dictionary_file, postings_file, query_file, file_of_output = DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, QUERY_FILE_TEST, OUTPUT_FILE_TEST
     else:
-        dictionary_file, postings_file, file_of_queries, file_of_output = read_files()
+        dictionary_file, postings_file, query_file, file_of_output = read_files()
 
-    query_file = "queries.txt"
     dictionary = get_dictionary(dictionary_file)
 
     with open(postings_file, 'rb') as p:
@@ -64,5 +63,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-#python search.py -d ../fulldictionary.txt -p ../fullpostings.txt -q queries.txt -o output.txt
+#python search.py -d ../dictionary.txt -p ../postings.txt -q queries.txt -o output.txt
 
