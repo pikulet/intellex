@@ -31,8 +31,10 @@ TITLE_POSTINGS_FILE = "postingstitle.txt"
 VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
 DOCUMENT_PROPERTIES_FILE = "properties.txt"
+BIGRAM_INDEX_FILE = "bigram.txt"
+TRIGRAM_INDEX_FILE = "trigram.txt"
 
-# docID --> [content_length, title_length, court_priority, date_posted, vector_offset]
+# docID --> [content_length, title_length, court_priority, date_posted, vector_offset, bigram_normalise_Factor, trigram_normalise_Factor]
 NUM_DOCUMENT_PROPERTIES = 5
 CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET = list(range(NUM_DOCUMENT_PROPERTIES))
 
@@ -117,6 +119,9 @@ def main():
     signal.signal(signal.SIGINT, original_sigint_handler)
 
     document_vectors = dict()
+    bigram_index = dict()
+    trigram_index = dict()
+    bitriword_frequency = dict()
     with multiprocessing.Pool(PROCESS_COUNT) as pool:
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
@@ -124,7 +129,8 @@ def main():
                 docID, title, content, date, court = row
                 document_properties[docID] = list(range(NUM_DOCUMENT_PROPERTIES))
                 
-                document_vectors[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH)
+                document_vectors[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH, bigram_index, trigram_index, bitriword_frequency)
+
                 process_doc_direct(docID, title, dictionary_title, postings_title, document_properties, TITLE_LENGTH)
 
             print("Saving...")
@@ -133,6 +139,9 @@ def main():
             save_data(dictionary, postings, total_num_documents)
             save_data(dictionary_title, postings_title, total_num_documents)
             store_data(DOCUMENT_PROPERTIES_FILE, document_properties)
+            save_gram_data(BIGRAM_INDEX_FILE, bigram_index, bitriword_frequency, total_num_documents)
+            save_gram_data(TRIGRAM_INDEX_FILE, trigram_index, bitriword_frequency, total_num_documents)
+
 
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
@@ -153,10 +162,11 @@ def save_data(dictionary, postings, total_num_documents):
     dictionary.save_to_disk(total_num_documents)
 
 # Save the vector data to disk
-
+###
 def save_vector(dictionary, total_num_documents, document_vectors, document_properties):
 
-    def idf_transform(x): return math.log(total_num_documents/x, 10)
+    idf_transform = lambda x: math.log(total_num_documents/x, 10)
+
 
     pfile = VECTOR_POSTINGS_FILE
     pfilehandler = open(pfile, 'wb')
@@ -167,6 +177,22 @@ def save_vector(dictionary, total_num_documents, document_vectors, document_prop
         
         document_properties[docID][VECTOR_OFFSET] = pfilehandler.tell()
         store_data_with_handler(pfilehandler, vector)      
+
+# Save the gram data to disk
+###
+def save_gram_data(GRAM_INDEX_FILE, gram_index, bitriword_frequency, total_num_documents):
+    log_tf = lambda x: 1 + math.log(x, 10)
+    idf_transform = lambda x: math.log(total_num_documents/x, 10)
+
+    docID_gram_normalisator = dict()
+    for docID, gram_index_t in gram_index.items():
+        normalisator = 0.
+        for term, count in gram_index_t.items():
+            normalisator += (log_tf(count) * idf_transform(bitriword_frequency[term]) ) ** 2
+
+        docID_gram_normalisator[docID] = math.sqrt(normalisator)
+
+    store_data(GRAM_INDEX_FILE, docID_gram_normalisator)
 
 if __name__ == "__main__":
     start = time.time()
