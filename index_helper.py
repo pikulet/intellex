@@ -23,7 +23,7 @@ def normalise_term(t):
 
 ### Process a document content body directly (content must be a list of normalized terms)
 ###
-def process_doc_direct(docID, content, dictionary, postings, length):
+def process_doc_direct(docID, content, dictionary, postings, document_properties, property_index):
     vector = dict()                 # term vector for this document
     position_counter = 0
     
@@ -34,7 +34,7 @@ def process_doc_direct(docID, content, dictionary, postings, length):
         position_counter += 1   
 
     convert_tf(vector)
-    length[docID] = get_length(vector)
+    document_properties[docID][property_index] = get_length(vector)
 
     return vector
 
@@ -194,10 +194,8 @@ class PostingList():
         return sorted_list
 
     # Saves the posting lists to file, and update offset value in the dictionary
-    def save_to_disk(self, length, dictionary):        
+    def save_to_disk(self, dictionary):        
         with open(self.file, 'wb') as f:
-            store_data_with_handler(f, length)
-
             for t in tqdm(dictionary.get_terms(), total=len(dictionary.get_terms())):
                 termID = dictionary.get_termID(t)
                 posting = self.postings[termID]

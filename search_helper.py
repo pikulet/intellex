@@ -15,10 +15,9 @@ INVALID_TERM_DF = -1
 
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
 ###
-def get_lengths(p):
-    length_dict = load_data_with_handler(p, 0)
-    return length_dict
-
+def get_document_properties(properties_file):
+    document_properties = load_data(properties_file)
+    return document_properties
 
 ### Retrieve a dictionary format given the dictionary file
 ###
@@ -96,10 +95,11 @@ def get_posting_lists(p, query_terms, dictionary, query_is_boolean):
     return posting_lists
 
 
-def process_query(p, dictionary, query):
+def process_query(p, dictionary, document_properties, query):
     '''
     :param p:
     :param dictionary:
+    :param document_properties:
     :param query:
     :return:
     '''
@@ -107,7 +107,6 @@ def process_query(p, dictionary, query):
     query_terms = query[0]
     positive_list = query[1]
     query_is_boolean = query[2]
-    doc_lengths = get_lengths(p)
     posting_lists = get_posting_lists(p, query_terms, dictionary, query_is_boolean)
-    eval = Eval(query_terms, posting_lists, dictionary, doc_lengths, num_docs)
+    eval = Eval(query_terms, posting_lists, dictionary, document_properties, num_docs)
     return eval.eval_query()

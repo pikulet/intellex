@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import math
 import heapq
+from index import CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET
 
 class Eval:
     '''
@@ -8,16 +9,16 @@ class Eval:
     evaluating queries.
     '''
 
-    def __init__(self, query, postings_lists, dictionary, length_dictionary, N):
+    def __init__(self, query, postings_lists, dictionary, document_properties, N):
         '''
         Creates an Eval object.
         :param dictionary: the dictionary mapping terms to (document frequency, pointer to postings lists) tuples.
-        :param length_dictionary: the dictionary mapping documents to the length of each document vector.
+        :param document_properties: the dictionary mapping docID to the document properties.
         :param query:
         :param N: the total number of documents.
         '''
         self.dictionary = dictionary
-        self.length_dictionary = length_dictionary
+        self.document_properties = document_properties
         self.query = query
         self.postings_lists = postings_lists
         self.N = N
@@ -126,14 +127,14 @@ class Eval:
         idf = math.log(self.N / df, 10)
         return tf * idf
 
-    def normalise(self, score, document):
+    def normalise(self, score, docID):
         '''
         Normalises a score by dividing by the normalisation factor i.e.
-        the document vector length stored in the length_dictionary.
+        the document vector length stored in the document_properties.
         :param score: the score before normalisation.
-        :param document: the docID of the document.
+        :param docID: the docID of the document.
         :return: the normalised cosine score.
         '''
-        normalisation_factor = self.length_dictionary[document]
+        normalisation_factor = self.document_properties[docID][CONTENT_LENGTH]
         normalised_score = score / normalisation_factor
         return normalised_score

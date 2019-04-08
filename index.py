@@ -30,6 +30,11 @@ TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
 TITLE_POSTINGS_FILE = "postingstitle.txt"
 VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
+DOCUMENT_PROPERTIES_FILE = "properties.txt"
+
+# docID --> [content_length, title_length, court_priority, date_posted, vector_offset]
+NUM_DOCUMENT_PROPERTIES = 5
+CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET = list(range(NUM_DOCUMENT_PROPERTIES))
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -94,12 +99,11 @@ def main():
 
     dictionary = Dictionary(output_file_dictionary)
     postings = PostingList(output_file_postings)
-    length = dict()
 
     dictionary_title = Dictionary(TITLE_DICTIONARY_FILE)
     postings_title = PostingList(TITLE_POSTINGS_FILE)
-    length_title = dict()
 
+    document_properties = dict() # docID --> [content_length, title_length, court_priority, date_posted, vector_offset]
     df = read_csv(dataset_file)
 
     df = df.sort_values("document_id", ascending=True)
@@ -117,15 +121,16 @@ def main():
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
-                id, title, content, date, court = row
-                vector_store[id] = process_doc_direct(id, content, dictionary, postings, length)
-                process_doc_direct(id, title, dictionary_title, postings_title, length_title)
+                docID, title, content, date, court = row
+                document_properties[docID] = list(range(NUM_DOCUMENT_PROPERTIES))
+                vector_store[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH)
+                process_doc_direct(docID, title, dictionary_title, postings_title, document_properties, TITLE_LENGTH)
 
             print("Saving...")
 
-            save_vector(dictionary, postings, length, total_num_documents, vector_store)
-            save_data(dictionary, postings, length, total_num_documents)
-            save_data(dictionary_title, postings_title, length_title, total_num_documents)
+            save_vector(dictionary, postings, total_num_documents, vector_store)
+            save_data(dictionary, postings, total_num_documents)
+            save_data(dictionary_title, postings_title, total_num_documents)
 
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
@@ -141,13 +146,13 @@ def main():
 
 # Save the indexing data to disk
 ###
-def save_data(dictionary, postings, length, total_num_documents):
-    postings.save_to_disk(length, dictionary)
+def save_data(dictionary, postings, total_num_documents):
+    postings.save_to_disk(dictionary)
     dictionary.save_to_disk(total_num_documents)
 
 # Save the vector data to disk
 
-def save_vector(dictionary, postings, length, total_num_documents, vector_store):
+def save_vector(dictionary, postings, total_num_documents, vector_store):
     dfile = VECTOR_DICTIONARY_FILE
     pfile = VECTOR_POSTINGS_FILE
 

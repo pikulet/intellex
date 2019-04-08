@@ -1,4 +1,4 @@
-from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
+from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, DOCUMENT_PROPERTIES_FILE
 from search_helper import *
 import getopt
 import sys
@@ -52,10 +52,11 @@ def main():
         dictionary_file, postings_file, query_file, file_of_output = read_files()
 
     dictionary = get_dictionary(dictionary_file)
+    document_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
 
     with open(postings_file, 'rb') as p:
-        q = get_query(query_file)
-        result = process_query(p, dictionary, q)
+        query = get_query(query_file)
+        result = process_query(p, dictionary, document_properties, query)
 
     with open(file_of_output, 'w') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
