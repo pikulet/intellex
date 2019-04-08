@@ -28,7 +28,7 @@ def get_dictionary(dictionary_file):
 ### Retrieve the posting list for a particular term
 ###
 def get_posting(dictionary, p, t):
-    try:       
+    try:
         term_data = dictionary.terms[t]
         df = term_data[Dictionary.DF]
 
