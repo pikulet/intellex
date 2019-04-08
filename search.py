@@ -55,7 +55,7 @@ def main():
     document_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
 
     with open(postings_file, 'rb') as p:
-        query = get_query(query_file)
+        query = get_query(query_file, dictionary)
         result = process_query(p, dictionary, document_properties, query)
 
     with open(file_of_output, 'w') as f:
