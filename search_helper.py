@@ -10,7 +10,6 @@ CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
 
-
 ######################## FILE READING FUNCTIONS ########################
 
 ### Retrieve a dictionary mapping docIDs to normalised document lengths
@@ -24,7 +23,6 @@ def get_document_properties(properties_file):
 def get_dictionary(dictionary_file):
     dictionary = load_data(dictionary_file)
     return dictionary
-
 
 ### Retrieve the posting list for a particular term
 ###
@@ -40,7 +38,6 @@ def get_posting(dictionary, p, t):
         # Term does not exist in dictionary
         return INVALID_TERM_DF, list()
 
-
 ### Retrieve a query format given the query file
 ###
 def get_query(query_file):
@@ -52,7 +49,6 @@ def get_query(query_file):
     is_boolean = "AND" in query
     positive_list = [int(x) for x in data[1:]]
     return query_text, positive_list, is_boolean
-
 
 ######################## QUERY PROCESSING ########################
 
