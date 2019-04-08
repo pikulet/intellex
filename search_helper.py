@@ -26,8 +26,8 @@ def get_dictionary(dictionary_file):
 
 ### Retrieve the posting list for a particular term
 ###
-def get_posting(dictionary, p, t):
-    try:
+def get_posting(p, dictionary, t):
+    try:    
         term_data = dictionary.terms[t]
         df = term_data[Dictionary.DF]
 
@@ -76,7 +76,7 @@ def get_posting_lists(p, query_terms, dictionary, query_is_boolean):
             phrase_postings_lists = list(map(lambda word: get_posting(p, dictionary, word)[1], term))
             posting_list = get_postings_from_phrase(term, phrase_postings_lists)
             posting_list = (len(posting_list), posting_list) # (df, posting_list) pair
-            dictionary[tuple(term)] = [len(posting_list), 0]  # put phrase into dictionary
+            dictionary.terms[tuple(term)] = [len(posting_list), 0]  # put phrase into dictionary
         else:
             posting_list = get_posting(p, dictionary, term)  # (df, posting_list) pair
         posting_lists.append(posting_list)
