@@ -11,50 +11,57 @@ except ImportError:
 ########################### DEFINE CONSTANTS ###########################
 
 PORTER_STEMMER = PorterStemmer()
-
 log_tf = lambda x: 1 + math.log(x, 10)
 
 ########################### CONTENT PROCESSING ###########################
 
-### Normalise a term
-###
+### Normalisea term by case folding and porter stemming
 def normalise_term(t):
     return PORTER_STEMMER.stem(t.lower())
 
 ### Process a document content body directly (content must be a list of normalized terms)
 ###
-def process_doc_direct(docID, content, dictionary, postings, document_properties, property_index):
+def process_doc_direct(docID, content, dictionary, postings, biword_index=None, triword_index=None, bitriword_frequency=None):
     vector = dict()                 # term vector for this document
     position_counter = 0
     
+    biword_flag = ""
+    triword_index_flag = ["", ""]
+    biword_index_t = dict()         # biword vector for this document
+    triword_index_t = dict()        # triword vector for this document
     for t in content:
         add_data(docID, t, position_counter, dictionary, postings)
         add_vector_count(t, vector)
+
+        if biword_index is not None and triword_index is not None:
+            # store biword
+            biword_index_t[(biword_flag,t)]  = biword_index_t.get((biword_flag,t),0) + 1
+            # after storing, move the flag
+            biword_flag = t
+
+            # store triword
+            triword_index_t[(triword_index_flag[0],triword_index_flag[1] ,t)]  = triword_index_t.get((triword_index_flag[0],triword_index_flag[1],t),0) + 1
+            # after storing, move the flag
+            triword_index_flag[0] = triword_index_flag[1]
+            triword_index_flag[1] = t
             
+
         position_counter += 1   
 
     convert_tf(vector)
-    document_properties[docID][property_index] = get_length(vector)
+   
+    if biword_index is not None and triword_index is not None:
+        # store them into the main index for calculation later
+        biword_index[docID] = biword_index_t
+        triword_index[docID] = triword_index_t
 
-    return vector
+        # for calculating idf
+        for term, count in biword_index_t.items():
+            bitriword_frequency[term] = bitriword_frequency.get(term, 0) + 1
+        for term, count in triword_index_t.items():
+            bitriword_frequency[term] = bitriword_frequency.get(term, 0) + 1
 
-### Process a document content body
-###
-# def process_doc(docID, content, dictionary, postings, length):
-#     vector = dict()                 # term vector for this document
-#     position_counter = 0
-    
-#     # word_tokenize implictly calls sent_tokenize
-#     # https://github.com/nltk/nltk/blob/develop/nltk/tokenize/__init__.py#L98
-#     for w in nltk.word_tokenize(content):
-#         t = normalise_term(w)
-#         add_data(docID, t, position_counter, dictionary, postings)
-#         add_vector_count(t, vector)
-            
-#         position_counter += 1   
-
-#     convert_tf(vector)
-#     length[docID] = get_length(vector)
+    return vector, get_length(vector)
 
 ### Add information about term and position to dictionary and posting list
 ###

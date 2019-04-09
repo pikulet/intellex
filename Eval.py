@@ -1,7 +1,8 @@
 #!/usr/bin/python
 import math
 import heapq
-from index import CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET
+from properties_helper import CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR
+
 
 class Eval:
     '''
