@@ -8,6 +8,7 @@ postings.txt
 postingstitle.txt
 postingsvector.txt
 postings.txt
+__pycache__/
 *.pyc
-__pycache__
-*.pyc
+*.swp
+*~.*
