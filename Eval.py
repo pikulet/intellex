@@ -1,8 +1,6 @@
 #!/usr/bin/python
 import math
-import heapq
 from properties_helper import CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR
-
 
 class Eval:
     '''
@@ -134,6 +132,12 @@ class Eval:
         :param docID: the docID of the document.
         :return: the normalised cosine score.
         '''
-        normalisation_factor = self.document_properties[docID][CONTENT_LENGTH] ## need to change by term length
+        if self.term_length == 1:
+            length = CONTENT_LENGTH
+        elif self.term_length == 2:
+            length = BIGRAM_FACTOR
+        else:
+            length = TRIGRAM_FACTOR
+        normalisation_factor = self.document_properties[docID][length]
         normalised_score = score / normalisation_factor
         return normalised_score
