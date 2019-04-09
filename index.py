@@ -29,14 +29,12 @@ BATCH_SIZE = 5 if TEMBUSU_MODE else 5
 ## Extra files
 TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
 TITLE_POSTINGS_FILE = "postingstitle.txt"
-VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
 # Read in the input files as command-line arguments
 ###
-
 
 def read_files():
     def usage():
@@ -102,12 +100,15 @@ def main():
     signal.signal(signal.SIGINT, original_sigint_handler)
 
     document_vectors = dict()
-    bigram_index = dict()
-    trigram_index = dict()
-    bitriword_frequency = dict()
+    bigram_index = dict()           # document bigram vectors
+    trigram_index = dict()          # document trigam vectors
+    bitriword_frequency = dict()    # total frequency used for idf calculation
+    
     with multiprocessing.Pool(PROCESS_COUNT) as pool:
         try:
+            # run nltk tokenisation on all documents in parallel
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
+            
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
 
@@ -134,14 +135,6 @@ def main():
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()
 
-
-    # non-multiprocessing way
-    # DOC_ID, TITLE, CONTENT, DATE_POSTED, COURT = list(df)
-
-    # for index, row in tqdm(df.iterrows(), total=total_num_documents):
-    #     process_doc(row[DOC_ID], row[CONTENT], dictionary, postings, length)
-    # save_data(dictionary, postings, length, total_num_documents)
-
 # Save the indexing data to disk
 ###
 def save_data(dictionary, postings, total_num_documents):
@@ -151,11 +144,9 @@ def save_data(dictionary, postings, total_num_documents):
 # Save the vector data to disk
 ###
 def save_vector(dictionary, total_num_documents, document_vectors):
-
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
-    pfile = VECTOR_POSTINGS_FILE
-    pfilehandler = open(pfile, 'wb')
+    pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
 
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
         for t in vector:
