@@ -144,26 +144,22 @@ def get_phrase_posting_lists(postings_handler, query_terms, dictionary, query_is
         posting_lists.append(posting_list)
     return posting_lists
 
-def get_posting_list_intersection(posting_lists):
-    posting_lists = list(map(lambda x: [len(x), x], posting_lists))
-    #empty_lists = list(filter(lambda x: x[0] == 0, posting_lists))  # filter out empty lists
-    #if query_is_boolean and not empty_lists:
-    posting_lists = get_intersected_posting_lists(posting_lists)
-    #elif query_is_boolean and empty_lists:
-    #    return []
-    #else:
-    #    posting_lists = list(map(lambda x: x[1], posting_lists))  # remove df
-    return posting_lists
+def get_posting_list_intersection(single, biword, triword):
+    single = list(map(lambda x: [len(x), x], single))
+    biword = list(map(lambda x: [len(x), x], biword))
+    triword = list(map(lambda x: [len(x), x], triword))
+    reduced_single, reduced_biword, reduced_triword = get_intersected_posting_lists(single, biword, triword)
+    return reduced_single, reduced_biword, reduced_triword
 
 SINGLE_TERMS_WEIGHT = 1
 BIWORD_PHRASES_WEIGHT = 1
 TRIWORD_PHRASES_WEIGHT = 1
 
-def process_query(postings_handler, dictionary, document_properties, query):
+def process_query(postings_handler, dictionary, doc_properties, query):
     '''
     :param postings_handler:
     :param dictionary:
-    :param document_properties:
+    :param doc_properties:
     :param query:
     :return:
     '''
@@ -173,30 +169,34 @@ def process_query(postings_handler, dictionary, document_properties, query):
     query_is_boolean = query[2]
 
     single_terms = list(filter(lambda x: type(x) != list, query_terms))
-    biword_phrases = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
-    triword_phrases = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
+    biwords = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
+    triwords = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
 
-    single_term_posting_lists = get_posting_lists(postings_handler, single_terms, dictionary, query_is_boolean)
-    biword_posting_lists = get_phrase_posting_lists(postings_handler, biword_phrases, dictionary, query_is_boolean)
-    triword_posting_lists = get_phrase_posting_lists(postings_handler, triword_phrases, dictionary, query_is_boolean)
+    single_term_plists = get_posting_lists(postings_handler, single_terms, dictionary, query_is_boolean)
+    biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary, query_is_boolean)
+    triword_plists = get_phrase_posting_lists(postings_handler, triwords, dictionary, query_is_boolean)
 
-    single_term_scores = Eval(single_terms, single_term_posting_lists, dictionary, document_properties, num_docs).eval_query()
-    biword_phrase_scores = Eval(biword_phrases, biword_posting_lists, dictionary, document_properties, num_docs, term_length=2).eval_query()
-    triword_phrase_scores = Eval(triword_phrases, triword_posting_lists, dictionary, document_properties, num_docs, term_length=3).eval_query()
+    if query_is_boolean:
+        single_term_plists, biword_plists, triword_plists = get_posting_list_intersection(single_term_plists,
+                                                                                          biword_plists, triword_plists)
+
+    single_term_scores = Eval(single_terms, single_term_plists, dictionary, doc_properties, num_docs).eval_query()
+    biword_scores = Eval(biwords, biword_plists, dictionary, doc_properties, num_docs, term_length=2).eval_query()
+    triword_scores = Eval(triwords, triword_plists, dictionary, doc_properties, num_docs, term_length=3).eval_query()
 
     score_dict = {}
     for doc in single_term_scores:
         if doc not in score_dict:
             score_dict[doc] = 0
         score_dict[doc] += SINGLE_TERMS_WEIGHT * single_term_scores[doc]
-    for doc in biword_phrase_scores:
+    for doc in biword_scores:
         if doc not in score_dict:
             score_dict[doc] = 0
-        score_dict[doc] += BIWORD_PHRASES_WEIGHT * biword_phrase_scores[doc]
-    for doc in triword_phrase_scores:
+        score_dict[doc] += BIWORD_PHRASES_WEIGHT * biword_scores[doc]
+    for doc in triword_scores:
         if doc not in score_dict:
             score_dict[doc] = 0
-        score_dict[doc] += TRIWORD_PHRASES_WEIGHT * triword_phrase_scores[doc]
+        score_dict[doc] += TRIWORD_PHRASES_WEIGHT * triword_scores[doc]
 
     doc_score_pairs = list(score_dict.items())
     score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))

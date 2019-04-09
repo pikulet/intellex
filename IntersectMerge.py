@@ -18,12 +18,14 @@ def get_skip_docID(list, index, skip_dist):
 def get_skip_position(list, index, skip_dist):
     return list[index + skip_dist]
 
-def get_intersected_posting_lists(lists):
-    lists = sorted(lists, key = lambda x: x[0], reverse= True)
+def get_intersected_posting_lists(single, biword, triword):
+    lists = single + biword + triword
+    lists = sorted(lists, key = lambda x: x[0], reverse = True)
     common_doc_IDs = merge_n_lists(lists)
-    merged_lists = list(filter(lambda list: list[0] in common_doc_IDs, lists))
-    merged_lists = list(map(lambda x: x[1], merged_lists))
-    return merged_lists
+    reduced_single = list(map(lambda x: x[1], list(filter(lambda list: list[0] in common_doc_IDs, single))))
+    reduced_biword = list(map(lambda x: x[1], list(filter(lambda list: list[0] in common_doc_IDs, biword))))
+    reduced_triword = list(map(lambda x: x[1], list(filter(lambda list: list[0] in common_doc_IDs, triword))))
+    return reduced_single, reduced_biword, reduced_triword
 
 def merge_n_lists(lists):
     '''
