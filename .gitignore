@@ -10,3 +10,4 @@ postingsvector.txt
 postings.txt
 *.pyc
 __pycache__
+*.pyc
