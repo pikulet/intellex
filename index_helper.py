@@ -11,19 +11,13 @@ except ImportError:
 ########################### DEFINE CONSTANTS ###########################
 
 PORTER_STEMMER = PorterStemmer()
-
 log_tf = lambda x: 1 + math.log(x, 10)
 
 ########################### CONTENT PROCESSING ###########################
 
-### Normalise a term
-###
-def normalise_term(t):
-    return PORTER_STEMMER.stem(t.lower())
-
 ### Process a document content body directly (content must be a list of normalized terms)
 ###
-def process_doc_direct(docID, content, dictionary, postings, document_properties, property_index, biword_index=None, triword_index=None, bitriword_frequency=None):
+def process_doc_direct(docID, content, dictionary, postings, biword_index=None, triword_index=None, bitriword_frequency=None):
     vector = dict()                 # term vector for this document
     position_counter = 0
     
@@ -51,8 +45,6 @@ def process_doc_direct(docID, content, dictionary, postings, document_properties
         position_counter += 1   
 
     convert_tf(vector)
-    document_properties[docID][property_index] = get_length(vector)
-
    
     if biword_index is not None and triword_index is not None:
         # store them into the main index for calculation later
@@ -65,7 +57,7 @@ def process_doc_direct(docID, content, dictionary, postings, document_properties
         for term, count in triword_index_t.items():
             bitriword_frequency[term] = bitriword_frequency.get(term, 0) + 1
 
-    return vector
+    return vector, get_length(vector)
 
 ### Add information about term and position to dictionary and posting list
 ###

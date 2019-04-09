@@ -3,6 +3,7 @@ import getopt
 import sys
 from index_helper import *
 from data_helper import *
+from properties_helper import *
 import time
 import multiprocessing
 import signal
@@ -30,13 +31,8 @@ TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
 TITLE_POSTINGS_FILE = "postingstitle.txt"
 VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
-DOCUMENT_PROPERTIES_FILE = "properties.txt"
 BIGRAM_INDEX_FILE = "bigram.txt"
 TRIGRAM_INDEX_FILE = "trigram.txt"
-
-# docID --> [content_length, title_length, court_priority, date_posted, vector_offset, bigram_normalise_Factor, trigram_normalise_Factor]
-NUM_DOCUMENT_PROPERTIES = 5
-CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET = list(range(NUM_DOCUMENT_PROPERTIES))
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -75,7 +71,6 @@ def read_files():
 
 ######################## DRIVER FUNCTION ########################
 
-
 def ntlk_tokenise_func(row):
     import nltk
     from nltk.stem.porter import PorterStemmer
@@ -91,7 +86,6 @@ def ntlk_tokenise_func(row):
 
     return row[DF_DOC_ID_NO], title, content, date, court
 
-
 def main():
     # For lazy mode since we are lazy
     if len(sys.argv) <= 1:
@@ -105,9 +99,7 @@ def main():
     dictionary_title = Dictionary(TITLE_DICTIONARY_FILE)
     postings_title = PostingList(TITLE_POSTINGS_FILE)
 
-    document_properties = dict() # docID --> [content_length, title_length, court_priority, date_posted, vector_offset]
     df = read_csv(dataset_file)
-
     df = df.sort_values("document_id", ascending=True)
     total_num_documents = df.shape[0]
     
@@ -127,15 +119,19 @@ def main():
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
-                document_properties[docID] = list(range(NUM_DOCUMENT_PROPERTIES))
-                
-                document_vectors[docID] = process_doc_direct(docID, content, dictionary, postings, document_properties, CONTENT_LENGTH, bigram_index, trigram_index, bitriword_frequency)
 
-                process_doc_direct(docID, title, dictionary_title, postings_title, document_properties, TITLE_LENGTH)
+                create_empty_property_list(docID)                
+                content_vector, content_length = process_doc_direct(docID, content, dictionary, postings, bigram_index, trigram_index, bitriword_frequency)
+                title_vector, title_length = process_doc_direct(docID, title, dictionary_title, postings_title)
+                
+                document_vectors[docID] = content_vector
+                assign_property(docID, CONTENT_LENGTH, content_length)
+                assign_property(docID, TITLE_LENGTH, title_length)
+                assign_property(docID, COURT_PRIORITY, get_court_priority)
 
             print("Saving...")
 
-            save_vector(dictionary, total_num_documents, document_vectors, document_properties)
+            save_vector(dictionary, total_num_documents, document_vectors)
             save_data(dictionary, postings, total_num_documents)
             save_data(dictionary_title, postings_title, total_num_documents)
             store_data(DOCUMENT_PROPERTIES_FILE, document_properties)
@@ -163,10 +159,9 @@ def save_data(dictionary, postings, total_num_documents):
 
 # Save the vector data to disk
 ###
-def save_vector(dictionary, total_num_documents, document_vectors, document_properties):
+def save_vector(dictionary, total_num_documents, document_vectors):
 
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
-
 
     pfile = VECTOR_POSTINGS_FILE
     pfilehandler = open(pfile, 'wb')
@@ -175,7 +170,7 @@ def save_vector(dictionary, total_num_documents, document_vectors, document_prop
         for t in vector:
             vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
         
-        document_properties[docID][VECTOR_OFFSET] = pfilehandler.tell()
+        assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
         store_data_with_handler(pfilehandler, vector)      
 
 # Save the gram data to disk
