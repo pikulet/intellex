@@ -30,11 +30,6 @@ COURT_HIERARCHY = {
 
 CURRENT_TIME = dt.datetime.now()
 
-########################### GET METHODS ###########################
-
-def get_property(docID, property_index):
-    return document_properties[docID][property_index]
-
 ########################### SETTER METHODS ###########################
 
 document_properties = dict()
