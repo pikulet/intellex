@@ -37,6 +37,9 @@ def read_csv(filepath):
                      parse_dates=['date_posted'], index_col=False)
     return df
 
+########################## SPEED TESTING ##########################
+
+# The file writing and reading was done using different modules for comparison
 
 # ujson with gzip
 # def store_data(filepath, data):
