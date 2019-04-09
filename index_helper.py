@@ -15,6 +15,10 @@ log_tf = lambda x: 1 + math.log(x, 10)
 
 ########################### CONTENT PROCESSING ###########################
 
+### Normalisea term by case folding and porter stemming
+def normalise_term(t):
+    return PORTER_STEMMER.stem(t.lower())
+
 ### Process a document content body directly (content must be a list of normalized terms)
 ###
 def process_doc_direct(docID, content, dictionary, postings, biword_index=None, triword_index=None, bitriword_frequency=None):

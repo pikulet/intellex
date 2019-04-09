@@ -76,9 +76,6 @@ def ntlk_tokenise_func(row):
     from nltk.stem.porter import PorterStemmer
     PORTER_STEMMER = PorterStemmer()
 
-    def normalise_term(t):
-        return PORTER_STEMMER.stem(t.lower())
-
     content = [normalise_term(w) for w in nltk.word_tokenize(row[DF_CONTENT_NO])]
     title = [normalise_term(w) for w in nltk.word_tokenize(row[DF_TITLE_NO])]
     date = row[DF_DATE_POSTED_NO]
@@ -127,7 +124,7 @@ def main():
                 document_vectors[docID] = content_vector
                 assign_property(docID, CONTENT_LENGTH, content_length)
                 assign_property(docID, TITLE_LENGTH, title_length)
-                assign_property(docID, COURT_PRIORITY, get_court_priority)
+                assign_property(docID, COURT_PRIORITY, get_court_priority(court))
 
             print("Saving...")
 
