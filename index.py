@@ -31,8 +31,6 @@ TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
 TITLE_POSTINGS_FILE = "postingstitle.txt"
 VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
-BIGRAM_INDEX_FILE = "bigram.txt"
-TRIGRAM_INDEX_FILE = "trigram.txt"
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -131,9 +129,10 @@ def main():
             save_vector(dictionary, total_num_documents, document_vectors)
             save_data(dictionary, postings, total_num_documents)
             save_data(dictionary_title, postings_title, total_num_documents)
+            save_gram_data(BIGRAM_FACTOR, bigram_index, bitriword_frequency, total_num_documents)
+            save_gram_data(TRIGRAM_FACTOR, trigram_index, bitriword_frequency, total_num_documents)
             store_data(DOCUMENT_PROPERTIES_FILE, document_properties)
-            save_gram_data(BIGRAM_INDEX_FILE, bigram_index, bitriword_frequency, total_num_documents)
-            save_gram_data(TRIGRAM_INDEX_FILE, trigram_index, bitriword_frequency, total_num_documents)
+
 
 
         except (KeyboardInterrupt):
@@ -172,7 +171,7 @@ def save_vector(dictionary, total_num_documents, document_vectors):
 
 # Save the gram data to disk
 ###
-def save_gram_data(GRAM_INDEX_FILE, gram_index, bitriword_frequency, total_num_documents):
+def save_gram_data(DOCUMENT_TYPE, gram_index, bitriword_frequency, total_num_documents):
     log_tf = lambda x: 1 + math.log(x, 10)
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
@@ -182,9 +181,8 @@ def save_gram_data(GRAM_INDEX_FILE, gram_index, bitriword_frequency, total_num_d
         for term, count in gram_index_t.items():
             normalisator += (log_tf(count) * idf_transform(bitriword_frequency[term]) ) ** 2
 
-        docID_gram_normalisator[docID] = math.sqrt(normalisator)
-
-    store_data(GRAM_INDEX_FILE, docID_gram_normalisator)
+        normalisator = math.sqrt(normalisator)
+        assign_property(docID, DOCUMENT_TYPE, normalisator)
 
 if __name__ == "__main__":
     start = time.time()
