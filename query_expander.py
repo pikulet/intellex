@@ -1,4 +1,5 @@
 import random
+from index import VECTOR_POSTINGS_FILE
 from search_helper import *
 from data_helper import *
 from properties_helper import DOCUMENT_PROPERTIES_FILE, VECTOR_OFFSET
@@ -17,7 +18,7 @@ IDF_MODE = True
 
 ######################## DRIVER FUNCTION ########################
 
-vector_post_file_handler = open("postingsvector.txt", 'rb')
+vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 document_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE) # this is actually called in search.py already.
 
 def extractValue(tuple):
