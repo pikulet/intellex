@@ -70,10 +70,6 @@ def read_files():
 ######################## DRIVER FUNCTION ########################
 
 def ntlk_tokenise_func(row):
-    import nltk
-    from nltk.stem.porter import PorterStemmer
-    PORTER_STEMMER = PorterStemmer()
-
     content = [normalise_term(w) for w in nltk.word_tokenize(row[DF_CONTENT_NO])]
     title = [normalise_term(w) for w in nltk.word_tokenize(row[DF_TITLE_NO])]
     date = row[DF_DATE_POSTED_NO]
@@ -123,6 +119,7 @@ def main():
                 assign_property(docID, CONTENT_LENGTH, content_length)
                 assign_property(docID, TITLE_LENGTH, title_length)
                 assign_property(docID, COURT_PRIORITY, get_court_priority(court))
+                assign_property(docID, DATE_POSTED, get_recent_level(date))
 
             print("Saving...")
 
@@ -132,8 +129,6 @@ def main():
             save_gram_data(BIGRAM_FACTOR, bigram_index, bitriword_frequency, total_num_documents)
             save_gram_data(TRIGRAM_FACTOR, trigram_index, bitriword_frequency, total_num_documents)
             store_data(DOCUMENT_PROPERTIES_FILE, document_properties)
-
-
 
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")

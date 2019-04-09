@@ -13,7 +13,15 @@ I'm using Python Version <3.6> for this assignment.
 
 == Files included with this submission ==
 
-# ...
+# data_helper.py - Manage the direct file reading and writing
+# index.py - The driver file for indexing
+# index-helper.py - The helper file for indexing, includes helper methods and data structures
+# search.py - The driver file for query processing
+# search_helper.py - The helper file for query parsing and evaluation
+# PositionalMerge.py - 
+# IntersectMerge.py
+# Eval.py - Evaluator file for query
+# query_expander.py 
 
 == Statement of individual work ==
 
@@ -48,3 +56,6 @@ https://www.benfrederickson.com/dont-pickle-your-data/
 
 Parallel Processing of Panda DataFrames
 https://www.tjansson.dk/2018/04/parallel-processing-pandas-dataframes/
+
+Date Processing
+https://stackabuse.com/converting-strings-to-datetime-in-python/
