@@ -1,3 +1,5 @@
+import datetime as dt
+
 ########################### DEFINE CONSTANTS ###########################
 
 DOCUMENT_PROPERTIES_FILE = "properties.txt"
@@ -25,6 +27,9 @@ COURT_HIERARCHY = {
     "NSW Court of Criminal Appeal"              : 2,
     "NSW Supreme Court"                         : 2
     }
+
+CURRENT_TIME = dt.datetime.now()
+
 ########################### GET METHODS ###########################
 
 def get_property(docID, property_index):
@@ -45,5 +50,7 @@ def assign_property(docID, property_index, value):
 def get_court_priority(court):
     return COURT_HIERARCHY.get(court, 3)
 
-def get_recent_level(date):
-    return
+def get_recent_level(timestamp):
+    timestamp = timestamp.to_pydatetime()
+    difference = CURRENT_TIME - timestamp
+    return difference.total_seconds()

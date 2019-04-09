@@ -123,6 +123,7 @@ def main():
                 assign_property(docID, CONTENT_LENGTH, content_length)
                 assign_property(docID, TITLE_LENGTH, title_length)
                 assign_property(docID, COURT_PRIORITY, get_court_priority(court))
+                assign_property(docID, DATE_POSTED, get_recent_level(date))
 
             print("Saving...")
 
