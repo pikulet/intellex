@@ -56,7 +56,7 @@ def main():
 
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
-        result = process_query(p, dictionary, document_properties, query)
+        result = get_best_documents(p, dictionary, document_properties, query)
 
     with open(file_of_output, 'w') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)

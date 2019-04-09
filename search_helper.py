@@ -6,12 +6,16 @@ from IntersectMerge import get_intersected_posting_lists
 from data_helper import *
 from nltk import PorterStemmer
 import heapq
+from properties_helper import COURT_HIERARCHY
+#from dateutil.parser import parse
 
 ########################### DEFINE CONSTANTS ###########################
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
 PORTER_STEMMER = PorterStemmer()
+TITLE_DICT_FILE = "dictionarytitle.txt"
+TITLE_POSTINGS_FILE = "postingstitle.txt"
 
 ######################## FILE READING FUNCTIONS ########################
 
@@ -62,9 +66,8 @@ def normalise_term(term):
 def parse_query(query, dictionary):
     '''
     Parse the free-text non-boolean query for phrases, performing normalisation.
-    For example, "fertility treatment" damages --> [ ['fertility', 'treatment'], 'damages']
     :param query: a query string
-    :return: a list of terms, with phrases represented as lists of terms
+    :return: a list of single word terms with normalisation.
     '''
     query = query.split()
     start_phrase = lambda s: s.startswith(PHRASE_MARKER)
@@ -89,16 +92,14 @@ def parse_query(query, dictionary):
         else:
             result.append(normalise_term(query[index]))
             index += 1
-
-    final_query = list(filter(lambda term: type(term) == list or term in dictionary.terms, result))
-    return final_query
+    return result
 
 def parse_boolean_query(query, dictionary):
     '''
     Parse the free-text query for AND operators and phrases (" ")
     For example, "fertility treatment" AND damages --> [ ['fertility', 'treatment'], 'damages']
     :param query: a query string
-    :return: a list of terms, with phrases represented as lists of terms
+    :return: a list of phrases represented as lists of single words.
     '''
     query = query.split(CONJUNCTION_OPERATOR)
     is_phrase = lambda s: s.startswith(PHRASE_MARKER)
@@ -110,9 +111,7 @@ def parse_boolean_query(query, dictionary):
             result.append(list(map(lambda x: normalise_term(x), parse_phrase(term))))
         else:
             result.extend(list(map(lambda x: normalise_term(x), term.split())))
-
-    final_query = list(filter(lambda x: type(x) == list or term in dictionary.terms, result))
-    return final_query
+    return result
 
 ######################## QUERY PROCESSING ########################
 
@@ -140,7 +139,7 @@ def get_phrase_posting_lists(postings_handler, query_terms, dictionary, query_is
     for phrase in query_terms:
         phrase_postings_lists = list(map(lambda word: get_posting(postings_handler, dictionary, word)[1], phrase))
         posting_list = get_postings_from_phrase(phrase, phrase_postings_lists)
-        dictionary.terms[tuple(phrase)] = [len(posting_list), 0]  # put phrase into dictionary
+        dictionary.terms[tuple(phrase)] = [len(posting_list), -1]  # put phrase into dictionary
         posting_lists.append(posting_list)
     return posting_lists
 
@@ -155,6 +154,16 @@ SINGLE_TERMS_WEIGHT = 1
 BIWORD_PHRASES_WEIGHT = 1
 TRIWORD_PHRASES_WEIGHT = 1
 
+def merge_doc_to_score_dicts(dicts, weights):
+    score_dict = {}
+    for dict_no in range(len(dicts)):
+        curr_dict = dicts[dict_no]
+        for doc in curr_dict:
+            if doc not in score_dict:
+                score_dict[doc] = 0
+            score_dict[doc] += weights[dict_no] * curr_dict[doc]
+    return score_dict
+
 def process_query(postings_handler, dictionary, doc_properties, query):
     '''
     :param postings_handler:
@@ -164,7 +173,7 @@ def process_query(postings_handler, dictionary, doc_properties, query):
     :return:
     '''
     num_docs = dictionary.total_num_documents
-    query_terms = query[0]
+    query_terms = list(filter(lambda x: type(x) != list and x in dictionary.terms, query[0])) # remove terms not in dic
     positive_list = query[1]
     query_is_boolean = query[2]
 
@@ -184,22 +193,39 @@ def process_query(postings_handler, dictionary, doc_properties, query):
     biword_scores = Eval(biwords, biword_plists, dictionary, doc_properties, num_docs, term_length=2).eval_query()
     triword_scores = Eval(triwords, triword_plists, dictionary, doc_properties, num_docs, term_length=3).eval_query()
 
-    score_dict = {}
-    for doc in single_term_scores:
-        if doc not in score_dict:
-            score_dict[doc] = 0
-        score_dict[doc] += SINGLE_TERMS_WEIGHT * single_term_scores[doc]
-    for doc in biword_scores:
-        if doc not in score_dict:
-            score_dict[doc] = 0
-        score_dict[doc] += BIWORD_PHRASES_WEIGHT * biword_scores[doc]
-    for doc in triword_scores:
-        if doc not in score_dict:
-            score_dict[doc] = 0
-        score_dict[doc] += TRIWORD_PHRASES_WEIGHT * triword_scores[doc]
+    score_dict = merge_doc_to_score_dicts([single_term_scores, biword_scores, triword_scores],
+                             [SINGLE_TERMS_WEIGHT, BIWORD_PHRASES_WEIGHT, TRIWORD_PHRASES_WEIGHT])
+    return score_dict
+
+TITLE_WEIGHT = 1
+CONTENT_WEIGHT = 1
+
+def get_best_documents(postings_handler, dictionary, document_properties, query):
+    '''
+    Returns the top documents based on content, title, courts and dates field.
+    :return:
+    '''
+    content_doc_to_scores = process_query(postings_handler, dictionary, document_properties, query)
+    title_dictionary = load_data(TITLE_DICT_FILE)
+    title_postings = load_data(TITLE_POSTINGS_FILE)
+    title_doc_to_scores = process_query(title_postings, title_dictionary, document_properties, query)
+
+    score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
+    ## factor in court and date
 
     doc_score_pairs = list(score_dict.items())
     score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))
     top_results = heapq.nsmallest(10, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
     top_documents = list(map(lambda x: str(x[1]), top_results))
     return top_documents
+
+def identify_courts(query_string):
+    '''
+    Returns courts that exist within a query string.
+    :return: 
+    '''
+    courts = []
+    for court in COURT_HIERARCHY:
+        if court in query_string:
+            courts.append(court)
+    return courts
