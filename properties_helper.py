@@ -25,6 +25,11 @@ COURT_HIERARCHY = {
     "NSW Court of Criminal Appeal"              : 2,
     "NSW Supreme Court"                         : 2
     }
+########################### GET METHODS ###########################
+
+def get_property(docID, property_index):
+    return document_properties[docID][property_index]
+
 ########################### SETTER METHODS ###########################
 
 document_properties = dict()
@@ -39,3 +44,6 @@ def assign_property(docID, property_index, value):
 
 def get_court_priority(court):
     return COURT_HIERARCHY.get(court, 3)
+
+def get_recent_level(date):
+    return
