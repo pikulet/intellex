@@ -9,7 +9,7 @@ class Eval:
     evaluating queries.
     '''
 
-    def __init__(self, query, postings_lists, dictionary, document_properties, N):
+    def __init__(self, query, postings_lists, dictionary, document_properties, N, term_length=1):
         '''
         Creates an Eval object.
         :param dictionary: the dictionary mapping terms to (document frequency, pointer to postings lists) tuples.
@@ -22,6 +22,7 @@ class Eval:
         self.query = query
         self.postings_lists = postings_lists
         self.N = N
+        self.term_length = term_length
 
     def eval_query(self):
         '''
@@ -40,15 +41,12 @@ class Eval:
         terms = self.get_term_frequencies(self.query)
         query_vector = self.get_query_vector(terms)
         document_vectors = self.get_cosine_scores(query_vector)
-        score_list = []
+        score_dict = {}
         for document in document_vectors:
             score = document_vectors[document]
             normalised_score = self.normalise(score, document)
-            score_list.append((-normalised_score, int(document)))
-
-        top_results = heapq.nsmallest(10, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
-        top_documents = list(map(lambda x: str(x[1]), top_results))
-        return top_documents
+            score_dict[int(document)] = normalised_score
+        return score_dict
 
     def get_term_frequencies(self, query):
         '''
@@ -135,6 +133,6 @@ class Eval:
         :param docID: the docID of the document.
         :return: the normalised cosine score.
         '''
-        normalisation_factor = self.document_properties[docID][CONTENT_LENGTH]
+        normalisation_factor = self.document_properties[docID][CONTENT_LENGTH] ## need to change by term length
         normalised_score = score / normalisation_factor
         return normalised_score

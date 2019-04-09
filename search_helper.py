@@ -5,6 +5,7 @@ from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
 from data_helper import *
 from nltk import PorterStemmer
+import heapq
 
 ########################### DEFINE CONSTANTS ###########################
 CONJUNCTION_OPERATOR = " AND "
@@ -55,8 +56,6 @@ def get_query(query_file, dictionary):
     positive_list = [int(x) for x in data[1:]]
     return query_text, positive_list, is_boolean
 
-######################## QUERY PROCESSING ########################
-
 def normalise_term(term):
     return PORTER_STEMMER.stem(term.lower())
 
@@ -77,15 +76,15 @@ def parse_query(query, dictionary):
     while index < len(query):
         if start_phrase(query[index]):
             phrase_bool = True
-            phrase.append(query[index][1:])
+            phrase.append(normalise_term(query[index][1:]))
             index += 1
             while phrase_bool:
                 if end_phrase(query[index]):
-                    phrase.append(query[index][:-1])
+                    phrase.append(normalise_term(query[index][:-1]))
                     result.append(phrase)
                     phrase = []
                     phrase_bool = False
-                phrase.append(query[index])
+                phrase.append(normalise_term(query[index]))
                 index += 1
         else:
             result.append(normalise_term(query[index]))
@@ -115,9 +114,11 @@ def parse_boolean_query(query, dictionary):
     final_query = list(filter(lambda x: type(x) == list or term in dictionary.terms, result))
     return final_query
 
+######################## QUERY PROCESSING ########################
+
 def get_posting_lists(postings_handler, query_terms, dictionary, query_is_boolean):
     '''
-
+    Get posting lists for single terms.
     :param postings_handler:
     :param query_terms:
     :param dictionary:
@@ -125,26 +126,38 @@ def get_posting_lists(postings_handler, query_terms, dictionary, query_is_boolea
     :return:
     '''
     posting_lists = []
-
     for term in query_terms:
-        if type(term) == list:  # phrase query
-            phrase_postings_lists = list(map(lambda word: get_posting(postings_handler, dictionary, word)[1], term))
-            posting_list = get_postings_from_phrase(term, phrase_postings_lists)
-            posting_list = (len(posting_list), posting_list) # (df, posting_list) pair
-            dictionary.terms[tuple(term)] = [len(posting_list), 0]  # put phrase into dictionary
-        else:
-            posting_list = get_posting(postings_handler, dictionary, term)  # (df, posting_list) pair
+        posting_list = get_posting(postings_handler, dictionary, term)[1]
         posting_lists.append(posting_list)
-
-    empty_lists = list(filter(lambda x: x[0] == 0, posting_lists))  # filter out empty lists
-    if query_is_boolean and not empty_lists:
-        posting_lists = get_intersected_posting_lists(posting_lists)
-    elif query_is_boolean and empty_lists:
-        return []
-    else:
-        posting_lists = list(map(lambda x: x[1], posting_lists))  # remove df
     return posting_lists
 
+def get_phrase_posting_lists(postings_handler, query_terms, dictionary, query_is_boolean):
+    '''
+    Get posting lists for phrase queries
+    :return:
+    '''
+    posting_lists = []
+    for phrase in query_terms:
+        phrase_postings_lists = list(map(lambda word: get_posting(postings_handler, dictionary, word)[1], phrase))
+        posting_list = get_postings_from_phrase(phrase, phrase_postings_lists)
+        dictionary.terms[tuple(phrase)] = [len(posting_list), 0]  # put phrase into dictionary
+        posting_lists.append(posting_list)
+    return posting_lists
+
+def get_posting_list_intersection(posting_lists):
+    posting_lists = list(map(lambda x: [len(x), x], posting_lists))
+    #empty_lists = list(filter(lambda x: x[0] == 0, posting_lists))  # filter out empty lists
+    #if query_is_boolean and not empty_lists:
+    posting_lists = get_intersected_posting_lists(posting_lists)
+    #elif query_is_boolean and empty_lists:
+    #    return []
+    #else:
+    #    posting_lists = list(map(lambda x: x[1], posting_lists))  # remove df
+    return posting_lists
+
+SINGLE_TERMS_WEIGHT = 1
+BIWORD_PHRASES_WEIGHT = 1
+TRIWORD_PHRASES_WEIGHT = 1
 
 def process_query(postings_handler, dictionary, document_properties, query):
     '''
@@ -158,6 +171,35 @@ def process_query(postings_handler, dictionary, document_properties, query):
     query_terms = query[0]
     positive_list = query[1]
     query_is_boolean = query[2]
-    posting_lists = get_posting_lists(postings_handler, query_terms, dictionary, query_is_boolean)
-    eval = Eval(query_terms, posting_lists, dictionary, document_properties, num_docs)
-    return eval.eval_query()
+
+    single_terms = list(filter(lambda x: type(x) != list, query_terms))
+    biword_phrases = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
+    triword_phrases = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
+
+    single_term_posting_lists = get_posting_lists(postings_handler, single_terms, dictionary, query_is_boolean)
+    biword_posting_lists = get_phrase_posting_lists(postings_handler, biword_phrases, dictionary, query_is_boolean)
+    triword_posting_lists = get_phrase_posting_lists(postings_handler, triword_phrases, dictionary, query_is_boolean)
+
+    single_term_scores = Eval(single_terms, single_term_posting_lists, dictionary, document_properties, num_docs).eval_query()
+    biword_phrase_scores = Eval(biword_phrases, biword_posting_lists, dictionary, document_properties, num_docs, term_length=2).eval_query()
+    triword_phrase_scores = Eval(triword_phrases, triword_posting_lists, dictionary, document_properties, num_docs, term_length=3).eval_query()
+
+    score_dict = {}
+    for doc in single_term_scores:
+        if doc not in score_dict:
+            score_dict[doc] = 0
+        score_dict[doc] += SINGLE_TERMS_WEIGHT * single_term_scores[doc]
+    for doc in biword_phrase_scores:
+        if doc not in score_dict:
+            score_dict[doc] = 0
+        score_dict[doc] += BIWORD_PHRASES_WEIGHT * biword_phrase_scores[doc]
+    for doc in triword_phrase_scores:
+        if doc not in score_dict:
+            score_dict[doc] = 0
+        score_dict[doc] += TRIWORD_PHRASES_WEIGHT * triword_phrase_scores[doc]
+
+    doc_score_pairs = list(score_dict.items())
+    score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))
+    top_results = heapq.nsmallest(10, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
+    top_documents = list(map(lambda x: str(x[1]), top_results))
+    return top_documents
