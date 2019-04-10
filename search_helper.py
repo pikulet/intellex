@@ -10,6 +10,7 @@ from properties_helper import COURT_HIERARCHY
 #from dateutil.parser import parse
 
 ########################### DEFINE CONSTANTS ###########################
+MAX_DOCS = 50
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
@@ -215,7 +216,7 @@ def get_best_documents(postings_handler, dictionary, document_properties, query)
 
     doc_score_pairs = list(score_dict.items())
     score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))
-    top_results = heapq.nsmallest(10, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
+    top_results = heapq.nsmallest(MAX_DOCS, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
     top_documents = list(map(lambda x: str(x[1]), top_results))
     return top_documents
 
