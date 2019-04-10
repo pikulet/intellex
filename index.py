@@ -158,14 +158,12 @@ def main():
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()
 
-# Save the indexing data to disk
-###
+### Save the indexing data to disk
 def save_data(dictionary, postings, total_num_documents):
     postings.save_to_disk(dictionary)
     dictionary.save_to_disk(total_num_documents)
 
-# Save the vector data to disk
-###
+### Save the vector data to disk
 def save_vector(dictionary, total_num_documents, document_vectors):
 
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
@@ -176,9 +174,11 @@ def save_vector(dictionary, total_num_documents, document_vectors):
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
         for t in vector:
             vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
-        
+       
         assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
-        store_data_with_handler(pfilehandler, vector)      
+        store_data_with_handler(pfilehandler, vector)
+
+    pfilehandler.close()
 
 if __name__ == "__main__":
     start = time.time()
