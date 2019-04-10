@@ -1,5 +1,10 @@
 .idea/
 *.pyc
+__pycache__/
+*.pyc
+*.swp
+*~.*
+
 dictionary.txt
 dictionarytitle.txt
 dictionary.txt
@@ -8,7 +13,4 @@ postings.txt
 postingstitle.txt
 postingsvector.txt
 postings.txt
-__pycache__/
-*.pyc
-*.swp
-*~.*
+properties.txt
