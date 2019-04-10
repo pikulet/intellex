@@ -34,7 +34,7 @@ def load_data_with_handler(file, offset):
 
 def read_csv(filepath):
     df = pd.read_csv(filepath, na_filter=False,
-                     parse_dates=['date_posted'], index_col=False)
+                     parse_dates=['date_posted'], index_col=False, encoding="utf-8")
     return df
 
 ########################## SPEED TESTING ##########################
