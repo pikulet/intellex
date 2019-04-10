@@ -118,8 +118,9 @@ def main():
                 docID, title, content, date, court = row
 
                 if docID in document_properties:
-                    print(docID, "is a repeated docID)
+                    # only the highest court priority is saved
                     update_court(docID, get_court_priority(court))
+                    continue
                     
                 create_empty_property_list(docID)                
                 content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
