@@ -10,58 +10,61 @@ except ImportError:
 
 ########################### DEFINE CONSTANTS ###########################
 
-PORTER_STEMMER = PorterStemmer()
 log_tf = lambda x: 1 + math.log(x, 10)
 
 ########################### CONTENT PROCESSING ###########################
 
-### Normalisea term by case folding and porter stemming
-def normalise_term(t):
-    return PORTER_STEMMER.stem(t.lower())
-
 ### Process a document content body directly (content must be a list of normalized terms)
 ###
-def process_doc_direct(docID, content, dictionary, postings, biword_index=None, triword_index=None, bitriword_frequency=None):
+def process_doc_vector(docID, content, dictionary, postings):
     vector = dict()                 # term vector for this document
     position_counter = 0
-    
-    biword_flag = ""
-    triword_index_flag = ["", ""]
-    biword_index_t = dict()         # biword vector for this document
-    triword_index_t = dict()        # triword vector for this document
+
     for t in content:
         add_data(docID, t, position_counter, dictionary, postings)
         add_vector_count(t, vector)
-
-        if biword_index is not None and triword_index is not None:
-            # store biword
-            biword_index_t[(biword_flag,t)]  = biword_index_t.get((biword_flag,t),0) + 1
-            # after storing, move the flag
-            biword_flag = t
-
-            # store triword
-            triword_index_t[(triword_index_flag[0],triword_index_flag[1] ,t)]  = triword_index_t.get((triword_index_flag[0],triword_index_flag[1],t),0) + 1
-            # after storing, move the flag
-            triword_index_flag[0] = triword_index_flag[1]
-            triword_index_flag[1] = t
-            
-
+        
         position_counter += 1   
 
     convert_tf(vector)
-   
-    if biword_index is not None and triword_index is not None:
-        # store them into the main index for calculation later
-        biword_index[docID] = biword_index_t
-        triword_index[docID] = triword_index_t
 
-        # for calculating idf
-        for term, count in biword_index_t.items():
-            bitriword_frequency[term] = bitriword_frequency.get(term, 0) + 1
-        for term, count in triword_index_t.items():
-            bitriword_frequency[term] = bitriword_frequency.get(term, 0) + 1
+    return vector
 
-    return vector, get_length(vector)
+### Process a document content body directly (content must be a list of normalized terms)
+###
+def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
+    vector = dict()                 # term vector for this document
+    biword_vector = dict()         # biword vector for this document
+    triword_vector = dict()        # triword vector for this document
+
+    position_counter = 0
+    biword_flag = ""
+    triword_flag = ["", ""]
+
+    for t in content:
+        add_data(docID, t, position_counter, dictionary, postings)
+        add_vector_count(t, vector)
+        add_vector_count((biword_flag, t), biword_vector)
+        add_vector_count((triword_flag[0], triword_flag[1], t), triword_vector)
+
+        # after storing, move the flag
+        biword_flag = t
+        triword_flag[0] = triword_flag[1]
+        triword_flag[1] = t
+        position_counter += 1   
+
+    convert_tf(vector)
+    convert_tf(biword_vector)
+    convert_tf(triword_vector)
+
+    # for calculating idf for biword and triword and saving into the dictionary
+    # for term, count in biword_vector.items():
+    #     add_data_no_posting(docID, term, dictionary)
+        
+    # for term, count in triword_vector.items():
+    #     add_data_no_posting(docID, term, dictionary)
+
+    return vector, biword_vector, triword_vector
 
 ### Add information about term and position to dictionary and posting list
 ###
@@ -76,6 +79,14 @@ def add_data(docID, t, position, dictionary, postings):
     else:
         termID = postings.add_new_term_data(docID, position)
         dictionary.add_term(t, termID)      
+
+### Add information about term to dictionary. Posting List not updated
+###
+def add_data_no_posting(docID, tPair, dictionary):
+    if tPair in dictionary.termPair:
+        dictionary.termPair[tPair] += 1
+    else:
+        dictionary.termPair[tPair] = 1
 
 ### Add the term count to the vector, for calculating document length
 ###
@@ -111,6 +122,7 @@ class Dictionary():
     
     def __init__(self, file):
         self.terms = {} # every term maps to a tuple of document_frequency/idf, termID/ term_offset
+        self.termPair = {} # every term pair maps to a document_frequency/idf only
         self.file = file
         self.total_num_documents = 0
 

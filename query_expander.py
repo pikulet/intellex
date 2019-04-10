@@ -1,6 +1,8 @@
 import random
+from index import VECTOR_POSTINGS_FILE
 from search_helper import *
 from data_helper import *
+from properties_helper import DOCUMENT_PROPERTIES_FILE, VECTOR_OFFSET
 from pprint import pprint
 import multiprocessing
 import heapq
@@ -16,8 +18,8 @@ IDF_MODE = True
 
 ######################## DRIVER FUNCTION ########################
 
-vector_post_file_handler = open("postingsvector.txt", 'rb')
-vector_dict = load_data("properties.txt")
+vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
+document_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE) # this is actually called in search.py already.
 
 def extractValue(tuple):
     """
@@ -137,7 +139,7 @@ if __name__ == '__main__':
     def get_vector_from_docID(docID):
         # vector are stored as sparse indexes
         # each valid index will map to (tf, idf)
-        offset = vector_dict[docID][4]
+        offset = document_properties[docID][VECTOR_OFFSET]
         data = load_data_with_handler(vector_post_file_handler, offset)
         return data
 

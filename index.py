@@ -8,6 +8,9 @@ import time
 import multiprocessing
 import signal
 import math
+import nltk
+from nltk.stem.porter import PorterStemmer
+
 
 try:
     from tqdm import tqdm
@@ -23,7 +26,7 @@ POSTINGS_FILE_TEST = 'postings.txt'
 
 DF_DOC_ID_NO, DF_TITLE_NO, DF_CONTENT_NO, DF_DATE_POSTED_NO, DF_COURT_NO = range(5)
 TEMBUSU_MODE = True if multiprocessing.cpu_count() > 10 else False
-PROCESS_COUNT = 4 if TEMBUSU_MODE else 4
+PROCESS_COUNT = 6 if TEMBUSU_MODE else 4
 BATCH_SIZE = 5 if TEMBUSU_MODE else 5
 
 ## Extra files
@@ -32,12 +35,12 @@ TITLE_POSTINGS_FILE = "postingstitle.txt"
 VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
 VECTOR_POSTINGS_FILE = "postingsvector.txt"
 
+PORTER_STEMMER = PorterStemmer()
+
 ######################## COMMAND LINE ARGUMENTS ########################
 
 # Read in the input files as command-line arguments
 ###
-
-
 def read_files():
     def usage():
         print(
@@ -69,6 +72,11 @@ def read_files():
 
 ######################## DRIVER FUNCTION ########################
 
+### Normalisea term by case folding and porter stemming
+def normalise_term(t):
+    return PORTER_STEMMER.stem(t.lower())
+
+### Data parallelization method to speed up nltk word_tokenize
 def ntlk_tokenise_func(row):
     content = [normalise_term(w) for w in nltk.word_tokenize(row[DF_CONTENT_NO])]
     title = [normalise_term(w) for w in nltk.word_tokenize(row[DF_TITLE_NO])]
@@ -101,10 +109,8 @@ def main():
     original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     signal.signal(signal.SIGINT, original_sigint_handler)
 
-    document_vectors = dict()
-    bigram_index = dict()
-    trigram_index = dict()
-    bitriword_frequency = dict()
+    uniword_vectors = dict()
+
     with multiprocessing.Pool(PROCESS_COUNT) as pool:
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
@@ -112,35 +118,36 @@ def main():
                 docID, title, content, date, court = row
 
                 create_empty_property_list(docID)                
-                content_vector, content_length = process_doc_direct(docID, content, dictionary, postings, bigram_index, trigram_index, bitriword_frequency)
-                title_vector, title_length = process_doc_direct(docID, title, dictionary_title, postings_title)
+                content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
+                title_vector = process_doc_vector(docID, title, dictionary_title, postings_title)
                 
-                document_vectors[docID] = content_vector
-                assign_property(docID, CONTENT_LENGTH, content_length)
+                content_uniword_length = get_length(content_uniword_vector)
+                content_biword_length = get_length(content_biword_vector)
+                content_triword_length = get_length(content_triword_vector)
+
+                title_length = get_length(title_vector)
+
+                uniword_vectors[docID] = content_uniword_vector
+                # biword_vectors[docID] = content_biword_vector
+                # triword_vectors[docID] = content_triword_vector
+                
+                assign_property(docID, CONTENT_LENGTH, content_uniword_length)
                 assign_property(docID, TITLE_LENGTH, title_length)
                 assign_property(docID, COURT_PRIORITY, get_court_priority(court))
-                assign_property(docID, DATE_POSTED, get_recent_level(date))
+                assign_property(docID, BIGRAM_FACTOR, content_biword_length) # save normalisation with tf only
+                assign_property(docID, TRIGRAM_FACTOR, content_triword_length) # save normalisation with tf only
 
             print("Saving...")
 
-            save_vector(dictionary, total_num_documents, document_vectors)
+            save_vector(dictionary, total_num_documents, uniword_vectors)
             save_data(dictionary, postings, total_num_documents)
             save_data(dictionary_title, postings_title, total_num_documents)
-            save_gram_data(BIGRAM_FACTOR, bigram_index, bitriword_frequency, total_num_documents)
-            save_gram_data(TRIGRAM_FACTOR, trigram_index, bitriword_frequency, total_num_documents)
             store_data(DOCUMENT_PROPERTIES_FILE, document_properties)
+
 
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()
-
-
-    # non-multiprocessing way
-    # DOC_ID, TITLE, CONTENT, DATE_POSTED, COURT = list(df)
-
-    # for index, row in tqdm(df.iterrows(), total=total_num_documents):
-    #     process_doc(row[DOC_ID], row[CONTENT], dictionary, postings, length)
-    # save_data(dictionary, postings, length, total_num_documents)
 
 # Save the indexing data to disk
 ###
@@ -164,23 +171,24 @@ def save_vector(dictionary, total_num_documents, document_vectors):
         assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
         store_data_with_handler(pfilehandler, vector)      
 
-# Save the gram data to disk
+# Save the vector normalisation factor with tfxidf
 ###
-def save_gram_data(DOCUMENT_TYPE, gram_index, bitriword_frequency, total_num_documents):
-    log_tf = lambda x: 1 + math.log(x, 10)
-    idf_transform = lambda x: math.log(total_num_documents/x, 10)
+# def save_vector_factor_only(bitriword_frequency, total_num_documents, DOCUMENT_TYPE, gram_index):
 
-    docID_gram_normalisator = dict()
-    for docID, gram_index_t in gram_index.items():
-        normalisator = 0.
-        for term, count in gram_index_t.items():
-            normalisator += (log_tf(count) * idf_transform(bitriword_frequency[term]) ) ** 2
+#     idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
-        normalisator = math.sqrt(normalisator)
-        assign_property(docID, DOCUMENT_TYPE, normalisator)
+#     docID_gram_normalisator = dict()
+#     for docID, gram_index_t in gram_index.items():
+#         normalisator = 0.
+#         for term, count in gram_index_t.items():
+#             normalisator += (log_tf(count) * idf_transform(bitriword_frequency[term]) ) ** 2
+
+#         normalisator = math.sqrt(normalisator)
+#         assign_property(docID, DOCUMENT_TYPE, normalisator)
 
 if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time()
     print("Time Taken: " + str(end - start))
+
