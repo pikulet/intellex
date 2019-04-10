@@ -24,7 +24,7 @@ VECTOR_POSTINGS_FILE = "postingsvector.txt"
 DOCUMENT_PROPERTIES_FILE = "properties.txt"
 
 ## Cut off points
-RICCO_MIN_CUTOFF_POINT = 0.05
+RICCO_MIN_CUTOFF_POINT = 0.01
 
 ## Weights
 SINGLE_TERMS_WEIGHT = 1
