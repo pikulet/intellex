@@ -26,7 +26,7 @@ POSTINGS_FILE_TEST = 'postings.txt'
 
 DF_DOC_ID_NO, DF_TITLE_NO, DF_CONTENT_NO, DF_DATE_POSTED_NO, DF_COURT_NO = range(5)
 TEMBUSU_MODE = True if multiprocessing.cpu_count() > 10 else False
-PROCESS_COUNT = 6 if TEMBUSU_MODE else 4
+PROCESS_COUNT = 6 if TEMBUSU_MODE else 3
 BATCH_SIZE = 5 if TEMBUSU_MODE else 5
 
 ## Extra files
@@ -137,7 +137,7 @@ def main():
                 assign_property(docID, BIGRAM_FACTOR, content_biword_length) # save normalisation with tf only
                 assign_property(docID, TRIGRAM_FACTOR, content_triword_length) # save normalisation with tf only
 
-            print("Saving...")
+            print("Saving... There are 3 progress bars.")
 
             save_vector(dictionary, total_num_documents, uniword_vectors)
             save_data(dictionary, postings, total_num_documents)
