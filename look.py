@@ -20,7 +20,10 @@ print("Please wait...")
 filepath = "data/dataset.csv"
 df = read_csv(filepath)
 
-row = df[df["document_id"] == int(file_no)].iloc[0]
-print(row["document_id"])
-line = '\r\n'.join([x for x in row["content"].splitlines() if x.strip()])
-sys.stdout.buffer.write(line.encode('utf-8'))
+rows = df[df["document_id"] == int(file_no)].iterrows()
+for idx, row in rows:
+    print(row.loc["document_id"])
+    print(row.loc["court"])
+    line = '\r\n'.join([x for x in row.loc["content"].splitlines() if x.strip()])
+    sys.stdout.buffer.write(line.encode('utf-8'))
+    print("\n\n")

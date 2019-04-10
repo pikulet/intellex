@@ -99,7 +99,7 @@ def main():
     postings_title = PostingList(TITLE_POSTINGS_FILE)
 
     df = read_csv(dataset_file)
-    df = df.sort_values("document_id", ascending=True)
+    
     total_num_documents = df.shape[0]
     
     print("Running indexing...")
