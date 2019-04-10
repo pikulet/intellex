@@ -117,6 +117,10 @@ def main():
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
 
+                if docID in document_properties:
+                    print(docID, "is a repeated docID)
+                    update_court(docID, get_court_priority(court))
+                    
                 create_empty_property_list(docID)                
                 content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
                 title_uniword_vector, title_biword_vector, title_triword_vector = process_doc_vector_and_bigram_trigram(docID, title, dictionary_title, postings_title)
@@ -140,7 +144,6 @@ def main():
                 assign_property(docID, CONTENT_LENGTH, content_uniword_length)
                 assign_property(docID, BIGRAM_CONTENT_LENGTH, content_biword_length)
                 assign_property(docID, TRIGRAM_CONTENT_LENGTH, content_triword_length)
-
 
             print("Saving... There are 3 progress bars.")
 
