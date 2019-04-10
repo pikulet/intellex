@@ -22,9 +22,14 @@ def get_intersected_posting_lists(single, biword, triword):
     lists = single + biword + triword
     lists = sorted(lists, key = lambda x: x[0], reverse = True)
     common_doc_IDs = merge_n_lists(lists)
-    reduced_single = list(map(lambda x: x[1], list(filter(lambda list: list[0] in common_doc_IDs, single))))
-    reduced_biword = list(map(lambda x: x[1], list(filter(lambda list: list[0] in common_doc_IDs, biword))))
-    reduced_triword = list(map(lambda x: x[1], list(filter(lambda list: list[0] in common_doc_IDs, triword))))
+
+    single = list(map(lambda x: x[1], single))
+    biword = list(map(lambda x: x[1], biword))
+    triword = list(map(lambda x: x[1], triword))
+
+    reduced_single = list(map(lambda plist: list(filter(lambda list: list[0] in common_doc_IDs, plist)), single))
+    reduced_biword = list(map(lambda plist: list(filter(lambda list: list[0] in common_doc_IDs, plist)), biword))
+    reduced_triword = list(map(lambda plist: list(filter(lambda list: list[0] in common_doc_IDs, plist)), triword))
     return reduced_single, reduced_biword, reduced_triword
 
 def merge_n_lists(lists):

@@ -7,10 +7,10 @@ from data_helper import *
 from nltk import PorterStemmer
 import heapq
 from properties_helper import COURT_HIERARCHY
-#from dateutil.parser import parse
+from query_expander import get_new_query_vector
 
 ########################### DEFINE CONSTANTS ###########################
-MAX_DOCS = 50
+MAX_DOCS = 200
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
@@ -165,6 +165,15 @@ def merge_doc_to_score_dicts(dicts, weights):
             score_dict[doc] += weights[dict_no] * curr_dict[doc]
     return score_dict
 
+def get_top_scores_from_dict(score_dict):
+    doc_score_pairs = list(score_dict.items())
+    score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))
+    top_results = heapq.nsmallest(MAX_DOCS, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
+    top_documents = list(map(lambda x: str(x[1]), top_results))
+    return top_documents
+
+### deal with one word phrases!!
+
 def process_query(postings_handler, dictionary, doc_properties, query):
     '''
     :param postings_handler:
@@ -173,14 +182,12 @@ def process_query(postings_handler, dictionary, doc_properties, query):
     :param query:
     :return:
     '''
-    num_docs = dictionary.total_num_documents
-    query_terms = list(filter(lambda x: type(x) != list and x in dictionary.terms, query[0])) # remove terms not in dic
-    positive_list = query[1]
+    query_terms = list(filter(lambda x: type(x) == list or x in dictionary.terms, query[0])) # remove terms not in dic
     query_is_boolean = query[2]
 
     single_terms = list(filter(lambda x: type(x) != list, query_terms))
     biwords = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
-    triwords = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
+    triwords = list(filter(lambda x: type(x) == list and len(x) == 3, query_terms))
 
     single_term_plists = get_posting_lists(postings_handler, single_terms, dictionary, query_is_boolean)
     biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary, query_is_boolean)
@@ -190,9 +197,9 @@ def process_query(postings_handler, dictionary, doc_properties, query):
         single_term_plists, biword_plists, triword_plists = get_posting_list_intersection(single_term_plists,
                                                                                           biword_plists, triword_plists)
 
-    single_term_scores = Eval(single_terms, single_term_plists, dictionary, doc_properties, num_docs).eval_query()
-    biword_scores = Eval(biwords, biword_plists, dictionary, doc_properties, num_docs, term_length=2).eval_query()
-    triword_scores = Eval(triwords, triword_plists, dictionary, doc_properties, num_docs, term_length=3).eval_query()
+    single_term_scores = Eval(single_terms, single_term_plists, dictionary, doc_properties).eval_query()
+    biword_scores = Eval(biwords, biword_plists, dictionary, doc_properties, term_length=2).eval_query()
+    triword_scores = Eval(triwords, triword_plists, dictionary, doc_properties, term_length=3).eval_query()
 
     score_dict = merge_doc_to_score_dicts([single_term_scores, biword_scores, triword_scores],
                              [SINGLE_TERMS_WEIGHT, BIWORD_PHRASES_WEIGHT, TRIWORD_PHRASES_WEIGHT])
@@ -201,23 +208,35 @@ def process_query(postings_handler, dictionary, doc_properties, query):
 TITLE_WEIGHT = 1
 CONTENT_WEIGHT = 1
 
-def get_best_documents(postings_handler, dictionary, document_properties, query):
+def get_best_documents(postings_handler, dictionary, doc_properties, query):
     '''
     Returns the top documents based on content, title, courts and dates field.
     :return:
     '''
-    content_doc_to_scores = process_query(postings_handler, dictionary, document_properties, query)
+    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query)
     title_dictionary = get_dictionary(TITLE_DICT_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
-    title_doc_to_scores = process_query(title_postings, title_dictionary, document_properties, query)
+    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query)
 
     score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
     ## factor in court and date
-    doc_score_pairs = list(score_dict.items())
-    score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))
-    top_results = heapq.nsmallest(MAX_DOCS, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
-    top_documents = list(map(lambda x: str(x[1]), top_results))
-    return top_documents
+    top_docs = get_top_scores_from_dict(score_dict)
+    return top_docs
+
+def expand_query(postings_handler, dictionary, doc_properties, query):
+    query_terms = query[0]
+    positive_list = query[1]
+    query = list(filter(lambda x: type(x) != list, query_terms))
+    eval = Eval(query, [], dictionary, doc_properties)
+    terms = eval.get_term_frequencies(query)
+    query_vector = eval.get_query_vector(terms)
+    new_query_vector = list(get_new_query_vector(query_vector, positive_list).items())
+    terms = list(map(lambda x: x[0], new_query_vector))
+    tf_idf = list(map(lambda x: x[1], new_query_vector))
+    posting_lists = get_posting_lists(postings_handler, terms, dictionary, query_is_boolean=False)
+    new_query_scores = Eval(query, posting_lists, dictionary, doc_properties, tf_idf).eval_query()
+    top_docs = get_top_scores_from_dict(new_query_scores)
+    return top_docs
 
 def identify_courts(query_string):
     '''
@@ -229,5 +248,3 @@ def identify_courts(query_string):
         if court in query_string:
             courts.append(court)
     return courts
-
-# "Palaniappan Sundararaj" judge

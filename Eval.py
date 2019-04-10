@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import math
-from properties_helper import CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR
+from properties_helper import CONTENT_LENGTH, TITLE_LENGTH, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR
 
 class Eval:
     '''
@@ -8,7 +8,7 @@ class Eval:
     evaluating queries.
     '''
 
-    def __init__(self, query, postings_lists, dictionary, document_properties, N, term_length=1):
+    def __init__(self, query, postings_lists, dictionary, document_properties, term_length=1, query_vector=None):
         '''
         Creates an Eval object.
         :param dictionary: the dictionary mapping terms to (document frequency, pointer to postings lists) tuples.
@@ -20,8 +20,11 @@ class Eval:
         self.document_properties = document_properties
         self.query = query
         self.postings_lists = postings_lists
-        self.N = N
+        self.N = self.dictionary.total_num_documents
         self.term_length = term_length
+        self.query_vector = False
+        if query_vector is not None:
+            self.query_vector = query_vector
 
     def eval_query(self):
         '''
@@ -37,8 +40,11 @@ class Eval:
         :param query: a list of terms in the query.
         :return: the top ten or fewer documents with the highest cosine scores.
         '''
-        terms = self.get_term_frequencies(self.query)
-        query_vector = self.get_query_vector(terms)
+        if self.query_vector:
+            query_vector = self.query_vector
+        else:
+            terms = self.get_term_frequencies(self.query)
+            query_vector = self.get_query_vector(terms)
         document_vectors = self.get_cosine_scores(query_vector)
         score_dict = {}
         for document in document_vectors:

@@ -2,7 +2,7 @@ import datetime as dt
 
 ########################### DEFINE CONSTANTS ###########################
 
-DOCUMENT_PROPERTIES_FILE = "properties.txt"
+DOCUMENT_PROPERTIES_FILE = "../properties.txt"
 
 # docID --> [content_length, title_length, court_priority, date_posted, vector_offset, bigram_normalise_Factor, trigram_normalise_Factor]
 NUM_DOCUMENT_PROPERTIES = 7

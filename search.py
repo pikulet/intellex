@@ -52,11 +52,13 @@ def main():
         dictionary_file, postings_file, query_file, file_of_output = read_files()
 
     dictionary = get_dictionary(dictionary_file)
-    document_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
+    doc_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
 
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
-        result = get_best_documents(p, dictionary, document_properties, query)
+        result = get_best_documents(p, dictionary, doc_properties, query)
+        query = get_query(query_file, dictionary)
+        result.append(expand_query(p, dictionary, doc_properties, query))
 
     with open(file_of_output, 'w') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
@@ -66,4 +68,3 @@ if __name__ == "__main__":
 
 #
 #python search.py -d ../dictionary.txt -p ../postings.txt -q queries.txt -o output.txt
-
