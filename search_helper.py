@@ -15,8 +15,8 @@ CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
 PORTER_STEMMER = PorterStemmer()
-TITLE_DICT_FILE = "dictionarytitle.txt"
-TITLE_POSTINGS_FILE = "postingstitle.txt"
+TITLE_DICT_FILE = "../dictionarytitle.txt"
+TITLE_POSTINGS_FILE = "../postingstitle.txt"
 
 ######################## FILE READING FUNCTIONS ########################
 
@@ -213,7 +213,6 @@ def get_best_documents(postings_handler, dictionary, document_properties, query)
 
     score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
     ## factor in court and date
-
     doc_score_pairs = list(score_dict.items())
     score_list = list(map(lambda x: (-x[1], x[0]), doc_score_pairs))
     top_results = heapq.nsmallest(MAX_DOCS, score_list, key=lambda x: (x[0], x[1]))  # smallest since min_heap is used
@@ -230,3 +229,5 @@ def identify_courts(query_string):
         if court in query_string:
             courts.append(court)
     return courts
+
+# "Palaniappan Sundararaj" judge
