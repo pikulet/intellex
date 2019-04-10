@@ -1,11 +1,11 @@
-from index import Dictionary, PostingList
+from data_helper import *
+from constants import *
+from index_helper import Dictionary, PostingList
+from properties_helper import COURT_HIERARCHY
 from Eval import Eval
 from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
-from data_helper import *
-from properties_helper import COURT_HIERARCHY
 from query_expander import get_new_query_vector
-from constants import *
 
 import heapq
 
@@ -17,12 +17,6 @@ PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
 
 ######################## FILE READING FUNCTIONS ########################
-
-### Retrieve a dictionary format given the dictionary file
-###
-def get_dictionary(dictionary_file):
-    dictionary = load_data(dictionary_file)
-    return dictionary
 
 ### Retrieve the posting list for a particular term
 ###
@@ -196,7 +190,7 @@ def get_best_documents(postings_handler, dictionary, doc_properties, query):
     :return:
     '''
     content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query)
-    title_dictionary = get_dictionary(TITLE_DICTIONARY_FILE)
+    title_dictionary = load_data(TITLE_DICTIONARY_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
     title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
 

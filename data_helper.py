@@ -11,7 +11,6 @@ Pickle
 Pandas
 '''
 
-from constants import *
 import pickle
 import pandas as pd
 from nltk import PorterStemmer
@@ -22,16 +21,9 @@ PORTER_STEMMER = PorterStemmer()
 def normalise_term(t):
     return PORTER_STEMMER.stem(t.lower())
 
-### Retrieve a dictionary mapping docIDs to normalised document lengths
-###
-def get_document_properties(properties_file):
-    document_properties = load_data(properties_file)
-    return document_properties
-
 def store_data(filepath, data):
     with open(filepath, 'wb') as f:
         pickle.dump(data, f,  protocol=pickle.HIGHEST_PROTOCOL)
-
 
 def load_data(filepath):
     with open(filepath, 'rb') as f:

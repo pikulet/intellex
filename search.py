@@ -50,8 +50,8 @@ def main():
     else:
         dictionary_file, postings_file, query_file, file_of_output = read_files()
 
-    dictionary = get_dictionary(dictionary_file)
-    doc_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
+    dictionary = load_data(dictionary_file)
+    doc_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
