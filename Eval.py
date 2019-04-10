@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import math
-from properties_helper import CONTENT_LENGTH, TITLE_LENGTH, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR
+from properties_helper import CONTENT_LENGTH, BIGRAM_CONTENT_LENGTH, TRIGRAM_CONTENT_LENGTH, \
+    TITLE_LENGTH,  BIGRAM_TITLE_LENGTH, TRIGRAM_TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET
 
 class Eval:
     '''
@@ -8,7 +9,7 @@ class Eval:
     evaluating queries.
     '''
 
-    def __init__(self, query, postings_lists, dictionary, document_properties, term_length=1, query_vector=None):
+    def __init__(self, query, postings_lists, dictionary, document_properties, term_length=1, query_vector=None, is_title=False):
         '''
         Creates an Eval object.
         :param dictionary: the dictionary mapping terms to (document frequency, pointer to postings lists) tuples.
@@ -23,6 +24,7 @@ class Eval:
         self.N = self.dictionary.total_num_documents
         self.term_length = term_length
         self.query_vector = False
+        self.is_title = is_title
         if query_vector is not None:
             self.query_vector = query_vector
 
@@ -138,12 +140,21 @@ class Eval:
         :param docID: the docID of the document.
         :return: the normalised cosine score.
         '''
-        if self.term_length == 1:
-            length = CONTENT_LENGTH
-        elif self.term_length == 2:
-            length = BIGRAM_FACTOR
+        if self.is_title:
+            if self.term_length == 1:
+                length = TITLE_LENGTH
+            elif self.term_length == 2:
+                length = BIGRAM_TITLE_LENGTH
+            else:
+                length = TRIGRAM_TITLE_LENGTH
         else:
-            length = TRIGRAM_FACTOR
+            if self.term_length == 1:
+                length = CONTENT_LENGTH
+            elif self.term_length == 2:
+                length = BIGRAM_CONTENT_LENGTH
+            else:
+                length = TRIGRAM_CONTENT_LENGTH
+
         normalisation_factor = self.document_properties[docID][length]
         normalised_score = score / normalisation_factor
         return normalised_score

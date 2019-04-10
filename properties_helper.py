@@ -5,8 +5,8 @@ import datetime as dt
 DOCUMENT_PROPERTIES_FILE = "../properties.txt"
 
 # docID --> [content_length, title_length, court_priority, date_posted, vector_offset, bigram_normalise_Factor, trigram_normalise_Factor]
-NUM_DOCUMENT_PROPERTIES = 7
-CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR = list(range(NUM_DOCUMENT_PROPERTIES))
+NUM_DOCUMENT_PROPERTIES = 9
+CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_FACTOR, TRIGRAM_FACTOR, BIGRAM_TITLE_LENGTH, TRIGRAM_TITLE_LENGTH = list(range(NUM_DOCUMENT_PROPERTIES))
 
 COURT_HIERARCHY = {
     "SG Court of Appeal"                        : 1,
@@ -39,6 +39,9 @@ def create_empty_property_list(docID):
 
 def assign_property(docID, property_index, value):
     document_properties[docID][property_index] = value
+
+def update_court(docID, new_priority):
+    document_properties[docID][COURT_PRIORITY] = min(document_properties[docID][COURT_PRIORITY], new_priority)
 
 ########################### PROCESSING METHODS ###########################
 

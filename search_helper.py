@@ -174,7 +174,7 @@ def get_top_scores_from_dict(score_dict):
 
 ### deal with one word phrases!!
 
-def process_query(postings_handler, dictionary, doc_properties, query):
+def process_query(postings_handler, dictionary, doc_properties, query, is_title=False):
     '''
     :param postings_handler:
     :param dictionary:
@@ -197,9 +197,9 @@ def process_query(postings_handler, dictionary, doc_properties, query):
         single_term_plists, biword_plists, triword_plists = get_posting_list_intersection(single_term_plists,
                                                                                           biword_plists, triword_plists)
 
-    single_term_scores = Eval(single_terms, single_term_plists, dictionary, doc_properties).eval_query()
-    biword_scores = Eval(biwords, biword_plists, dictionary, doc_properties, term_length=2).eval_query()
-    triword_scores = Eval(triwords, triword_plists, dictionary, doc_properties, term_length=3).eval_query()
+    single_term_scores = Eval(single_terms, single_term_plists, dictionary, doc_properties, is_title=is_title).eval_query()
+    biword_scores = Eval(biwords, biword_plists, dictionary, doc_properties, term_length=2, is_title=is_title).eval_query()
+    triword_scores = Eval(triwords, triword_plists, dictionary, doc_properties, term_length=3, is_title=is_title).eval_query()
 
     score_dict = merge_doc_to_score_dicts([single_term_scores, biword_scores, triword_scores],
                              [SINGLE_TERMS_WEIGHT, BIWORD_PHRASES_WEIGHT, TRIWORD_PHRASES_WEIGHT])
@@ -216,7 +216,7 @@ def get_best_documents(postings_handler, dictionary, doc_properties, query):
     content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query)
     title_dictionary = get_dictionary(TITLE_DICT_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
-    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query)
+    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
 
     score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
     ## factor in court and date

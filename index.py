@@ -99,7 +99,7 @@ def main():
     postings_title = PostingList(TITLE_POSTINGS_FILE)
 
     df = read_csv(dataset_file)
-    df = df.sort_values("document_id", ascending=True)
+
     total_num_documents = df.shape[0]
     
     print("Running indexing...")
@@ -117,25 +117,34 @@ def main():
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
 
+                if docID in document_properties:
+                    # only the highest court priority is saved
+                    update_court(docID, get_court_priority(court))
+                    continue
+                    
                 create_empty_property_list(docID)                
                 content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
-                title_vector = process_doc_vector(docID, title, dictionary_title, postings_title)
+                title_uniword_vector, title_biword_vector, title_triword_vector = process_doc_vector_and_bigram_trigram(docID, title, dictionary_title, postings_title)
                 
                 content_uniword_length = get_length(content_uniword_vector)
                 content_biword_length = get_length(content_biword_vector)
                 content_triword_length = get_length(content_triword_vector)
 
-                title_length = get_length(title_vector)
+                title_uniword_length = get_length(title_uniword_vector)
+                title_biword_length = get_length(title_biword_vector)
+                title_triword_length = get_length(title_triword_vector)
 
                 uniword_vectors[docID] = content_uniword_vector
                 # biword_vectors[docID] = content_biword_vector
                 # triword_vectors[docID] = content_triword_vector
                 
-                assign_property(docID, CONTENT_LENGTH, content_uniword_length)
-                assign_property(docID, TITLE_LENGTH, title_length)
+                assign_property(docID, TITLE_LENGTH, title_uniword_length)
+                assign_property(docID, BIGRAM_TITLE_LENGTH, title_biword_length)
+                assign_property(docID, TRIGRAM_TITLE_LENGTH, title_triword_length)
                 assign_property(docID, COURT_PRIORITY, get_court_priority(court))
-                assign_property(docID, BIGRAM_FACTOR, content_biword_length) # save normalisation with tf only
-                assign_property(docID, TRIGRAM_FACTOR, content_triword_length) # save normalisation with tf only
+                assign_property(docID, CONTENT_LENGTH, content_uniword_length)
+                assign_property(docID, BIGRAM_CONTENT_LENGTH, content_biword_length)
+                assign_property(docID, TRIGRAM_CONTENT_LENGTH, content_triword_length)
 
             print("Saving... There are 3 progress bars.")
 
@@ -149,14 +158,12 @@ def main():
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()
 
-# Save the indexing data to disk
-###
+### Save the indexing data to disk
 def save_data(dictionary, postings, total_num_documents):
     postings.save_to_disk(dictionary)
     dictionary.save_to_disk(total_num_documents)
 
-# Save the vector data to disk
-###
+### Save the vector data to disk
 def save_vector(dictionary, total_num_documents, document_vectors):
 
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
@@ -167,24 +174,11 @@ def save_vector(dictionary, total_num_documents, document_vectors):
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
         for t in vector:
             vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
-        
+       
         assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
-        store_data_with_handler(pfilehandler, vector)      
+        store_data_with_handler(pfilehandler, vector)
 
-# Save the vector normalisation factor with tfxidf
-###
-# def save_vector_factor_only(bitriword_frequency, total_num_documents, DOCUMENT_TYPE, gram_index):
-
-#     idf_transform = lambda x: math.log(total_num_documents/x, 10)
-
-#     docID_gram_normalisator = dict()
-#     for docID, gram_index_t in gram_index.items():
-#         normalisator = 0.
-#         for term, count in gram_index_t.items():
-#             normalisator += (log_tf(count) * idf_transform(bitriword_frequency[term]) ) ** 2
-
-#         normalisator = math.sqrt(normalisator)
-#         assign_property(docID, DOCUMENT_TYPE, normalisator)
+    pfilehandler.close()
 
 if __name__ == "__main__":
     start = time.time()
