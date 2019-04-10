@@ -3,31 +3,42 @@ from constants import *
 from properties_helper import VECTOR_OFFSET
 import math
 
-######################## DRIVER FUNCTION ########################
+########################### DEFINE CONSTANTS ###########################
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
-# this is actually called in search.py already.
 document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
+
+######################## DRIVER FUNCTION ########################
+
 
 def get_new_query_vector(vector, docIDs):
     """
     Ricco Feedback Public Method.
 
     Given original query vector and list of docIDs.
-    
+
     The query vector is modelled as sparse vector where it is a term -> score mapping. 
     Zero score terms will not be stored.
 
     Calculate Centroid from docIDs and add it to original query vector. 
-    
+
     Trim the vector according to be predefined minium score
     """
+
+    # Guard methods
+    if not isinstance(vector, dict):
+        raise Exception("Wrong usage of method: vector should be a dict")
+
+    if not isinstance(docIDs, list):
+        raise Exception("Wrong usage of method: docIDs should be a list")
+
     offset = get_new_query_offset(docIDs)
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
 
     vector = trimVector(vector)
     return vector
+
 
 def trimVector(vector):
     """
@@ -41,13 +52,13 @@ def trimVector(vector):
 
     return new_vector
 
+
 def extractValue(tuple):
     """
     Undated method. Will be removed soon.
     """
-    # return tuple[0] * tuple[1]
-    return tuple[0]
-    
+    return tuple[0] * tuple[1]
+
 
 def get_vector_from_docID_offset(offset):
     """
@@ -80,8 +91,8 @@ def get_new_query_offset(docIDs):
         vector, normalisator = get_vector_from_docID_offset(
             document_properties[docID][VECTOR_OFFSET])
         for key, value in vector.items():
-            off = extractValue(value) / normalisator
-            offset[key] = offset.get(key, 0.) + off
+            normalised = extractValue(value) / normalisator
+            offset[key] = offset.get(key, 0.) + normalised
 
     # Take average
     for k in offset.keys():
@@ -90,8 +101,9 @@ def get_new_query_offset(docIDs):
     return offset
 
 
-if __name__== "__main__":
-    print(len(get_new_query_vector({"le": 01.12}, ["246391"])))
+# TEST METHODS
+if __name__ == "__main__":
+    print(get_new_query_vector({"le": 01.12}, ["246391"]))
     # print(get_vector_from_docID_offset(290883617))
     # for docID, value in document_properties.items():
     #     get_vector_from_docID_offset(value[4])

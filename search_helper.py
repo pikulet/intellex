@@ -1,30 +1,22 @@
-import pickle
 from index import Dictionary, PostingList
 from Eval import Eval
 from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
 from data_helper import *
-from nltk import PorterStemmer
-import heapq
 from properties_helper import COURT_HIERARCHY
 from query_expander import get_new_query_vector
+from constants import *
+
+import heapq
 
 ########################### DEFINE CONSTANTS ###########################
+
 MAX_DOCS = 200
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
-PORTER_STEMMER = PorterStemmer()
-TITLE_DICT_FILE = "../dictionarytitle.txt"
-TITLE_POSTINGS_FILE = "../postingstitle.txt"
 
 ######################## FILE READING FUNCTIONS ########################
-
-### Retrieve a dictionary mapping docIDs to normalised document lengths
-###
-def get_document_properties(properties_file):
-    document_properties = load_data(properties_file)
-    return document_properties
 
 ### Retrieve a dictionary format given the dictionary file
 ###
@@ -60,9 +52,6 @@ def get_query(query_file, dictionary):
         query_text = parse_query(data[0], dictionary)
     positive_list = [int(x) for x in data[1:]]
     return query_text, positive_list, is_boolean
-
-def normalise_term(term):
-    return PORTER_STEMMER.stem(term.lower())
 
 def parse_query(query, dictionary):
     '''
@@ -151,10 +140,6 @@ def get_posting_list_intersection(single, biword, triword):
     reduced_single, reduced_biword, reduced_triword = get_intersected_posting_lists(single, biword, triword)
     return reduced_single, reduced_biword, reduced_triword
 
-SINGLE_TERMS_WEIGHT = 1
-BIWORD_PHRASES_WEIGHT = 1
-TRIWORD_PHRASES_WEIGHT = 1
-
 def merge_doc_to_score_dicts(dicts, weights):
     score_dict = {}
     for dict_no in range(len(dicts)):
@@ -205,16 +190,13 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title=
                              [SINGLE_TERMS_WEIGHT, BIWORD_PHRASES_WEIGHT, TRIWORD_PHRASES_WEIGHT])
     return score_dict
 
-TITLE_WEIGHT = 1
-CONTENT_WEIGHT = 1
-
 def get_best_documents(postings_handler, dictionary, doc_properties, query):
     '''
     Returns the top documents based on content, title, courts and dates field.
     :return:
     '''
     content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query)
-    title_dictionary = get_dictionary(TITLE_DICT_FILE)
+    title_dictionary = get_dictionary(TITLE_DICTIONARY_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
     title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
 

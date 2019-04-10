@@ -1,13 +1,12 @@
-from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, DOCUMENT_PROPERTIES_FILE
+from index import normalise_term
 from search_helper import *
+from constants import *
 import getopt
 import sys
 
 ########################### DEFINE CONSTANTS ###########################
 
 END_LINE_MARKER = '\n'
-QUERY_FILE_TEST = 'queries\\q1.txt'
-OUTPUT_FILE_TEST = 'output.txt'
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
