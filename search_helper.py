@@ -207,8 +207,8 @@ def get_best_documents(postings_handler, dictionary, document_properties, query)
     :return:
     '''
     content_doc_to_scores = process_query(postings_handler, dictionary, document_properties, query)
-    title_dictionary = load_data(TITLE_DICT_FILE)
-    title_postings = load_data(TITLE_POSTINGS_FILE)
+    title_dictionary = get_dictionary(TITLE_DICT_FILE)
+    title_postings = open(TITLE_POSTINGS_FILE, 'rb')
     title_doc_to_scores = process_query(title_postings, title_dictionary, document_properties, query)
 
     score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
