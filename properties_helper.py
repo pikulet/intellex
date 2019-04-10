@@ -40,6 +40,9 @@ def create_empty_property_list(docID):
 def assign_property(docID, property_index, value):
     document_properties[docID][property_index] = value
 
+def update_court(docID, new_priority):
+    document_properties[docID][COURT_PRIORITY] = min(document_properties[docID][COURT_PRIORITY], new_priority)
+
 ########################### PROCESSING METHODS ###########################
 
 def get_court_priority(court):

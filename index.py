@@ -117,6 +117,11 @@ def main():
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
 
+                if docID in document_properties:
+                    # only the highest court priority is saved
+                    update_court(docID, get_court_priority(court))
+                    continue
+                    
                 create_empty_property_list(docID)                
                 content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
                 title_uniword_vector, title_biword_vector, title_triword_vector = process_doc_vector_and_bigram_trigram(docID, title, dictionary_title, postings_title)
@@ -141,7 +146,6 @@ def main():
                 assign_property(docID, BIGRAM_CONTENT_LENGTH, content_biword_length)
                 assign_property(docID, TRIGRAM_CONTENT_LENGTH, content_triword_length)
 
-
             print("Saving... There are 3 progress bars.")
 
             save_vector(dictionary, total_num_documents, uniword_vectors)
@@ -154,14 +158,12 @@ def main():
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()
 
-# Save the indexing data to disk
-###
+### Save the indexing data to disk
 def save_data(dictionary, postings, total_num_documents):
     postings.save_to_disk(dictionary)
     dictionary.save_to_disk(total_num_documents)
 
-# Save the vector data to disk
-###
+### Save the vector data to disk
 def save_vector(dictionary, total_num_documents, document_vectors):
 
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
@@ -172,9 +174,11 @@ def save_vector(dictionary, total_num_documents, document_vectors):
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
         for t in vector:
             vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
-        
+       
         assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
-        store_data_with_handler(pfilehandler, vector)      
+        store_data_with_handler(pfilehandler, vector)
+
+    pfilehandler.close()
 
 if __name__ == "__main__":
     start = time.time()
