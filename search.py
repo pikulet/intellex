@@ -2,6 +2,7 @@ from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, DOCU
 from search_helper import *
 import getopt
 import sys
+from properties_helper import get_document_properties
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -57,10 +58,16 @@ def main():
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
         result = get_best_documents(p, dictionary, doc_properties, query)
-        query = get_query(query_file, dictionary)
-        result.append(expand_query(p, dictionary, doc_properties, query))
 
     with open(file_of_output, 'w') as f:
+        f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
+
+    with open(postings_file, 'rb') as p:
+        query = get_query(query_file, dictionary)
+        relevant_docs = query[1] + result
+        result.append(expand_query(p, dictionary, doc_properties, query, relevant_docs))
+
+    with open(file_of_output, 'w+') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
 if __name__ == "__main__":

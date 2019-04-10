@@ -1,10 +1,6 @@
 from index import VECTOR_POSTINGS_FILE
-from search_helper import *
-from data_helper import *
-from properties_helper import DOCUMENT_PROPERTIES_FILE, VECTOR_OFFSET
-from pprint import pprint
-import multiprocessing
-import heapq
+from properties_helper import *
+from data_helper import load_data_with_handler
 import math
 try:
     from tqdm import tqdm
@@ -68,8 +64,7 @@ def get_new_query_offset(docIDs):
     offset = {}
     for docID in docIDs:
         docID = int(docID)
-        vector, normalisator = get_vector_from_docID_offset(
-            document_properties[docID][VECTOR_OFFSET])
+        vector, normalisator = get_vector_from_docID_offset(document_properties[docID][VECTOR_OFFSET])
         for key, value in vector.items():
             offset[key] = offset.get(key, 0.) + (extractValue(value) / normalisator)
 

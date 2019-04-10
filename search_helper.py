@@ -20,12 +20,6 @@ TITLE_POSTINGS_FILE = "../postingstitle.txt"
 
 ######################## FILE READING FUNCTIONS ########################
 
-### Retrieve a dictionary mapping docIDs to normalised document lengths
-###
-def get_document_properties(properties_file):
-    document_properties = load_data(properties_file)
-    return document_properties
-
 ### Retrieve a dictionary format given the dictionary file
 ###
 def get_dictionary(dictionary_file):
@@ -223,16 +217,20 @@ def get_best_documents(postings_handler, dictionary, doc_properties, query):
     top_docs = get_top_scores_from_dict(score_dict)
     return top_docs
 
-def expand_query(postings_handler, dictionary, doc_properties, query):
+def expand_query(postings_handler, dictionary, doc_properties, query, relevant_docs):
     query_terms = query[0]
-    positive_list = query[1]
     query = list(filter(lambda x: type(x) != list, query_terms))
     eval = Eval(query, [], dictionary, doc_properties)
     terms = eval.get_term_frequencies(query)
     query_vector = eval.get_query_vector(terms)
-    new_query_vector = list(get_new_query_vector(query_vector, positive_list).items())
+    terms = list(map(lambda x: x[0], terms))
+    query_vector_dic = dict(zip(terms, query_vector))
+    relevant_docs = list(map(lambda x: int(x), relevant_docs))
+    new_query_vector = list(get_new_query_vector(query_vector_dic, relevant_docs).items())
     terms = list(map(lambda x: x[0], new_query_vector))
+    print(len(terms))
     tf_idf = list(map(lambda x: x[1], new_query_vector))
+    #print(tf_idf)
     posting_lists = get_posting_lists(postings_handler, terms, dictionary, query_is_boolean=False)
     new_query_scores = Eval(query, posting_lists, dictionary, doc_properties, tf_idf).eval_query()
     top_docs = get_top_scores_from_dict(new_query_scores)

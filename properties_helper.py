@@ -1,4 +1,11 @@
 import datetime as dt
+from data_helper import load_data
+
+### Retrieve a dictionary mapping docIDs to normalised document lengths
+###
+def get_document_properties(properties_file):
+    document_properties = load_data(properties_file)
+    return document_properties
 
 ########################### DEFINE CONSTANTS ###########################
 

@@ -30,10 +30,10 @@ PROCESS_COUNT = 6 if TEMBUSU_MODE else 3
 BATCH_SIZE = 5 if TEMBUSU_MODE else 5
 
 ## Extra files
-TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
-TITLE_POSTINGS_FILE = "postingstitle.txt"
-VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
-VECTOR_POSTINGS_FILE = "postingsvector.txt"
+TITLE_DICTIONARY_FILE = "../dictionarytitle.txt"
+TITLE_POSTINGS_FILE = "../postingstitle.txt"
+VECTOR_DICTIONARY_FILE = "../dictionaryvector.txt"
+VECTOR_POSTINGS_FILE = "../postingsvector.txt"
 
 PORTER_STEMMER = PorterStemmer()
 
