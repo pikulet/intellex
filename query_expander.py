@@ -1,22 +1,13 @@
-from index import VECTOR_POSTINGS_FILE
-from search_helper import *
-from data_helper import *
-from properties_helper import DOCUMENT_PROPERTIES_FILE, VECTOR_OFFSET
-from pprint import pprint
-import multiprocessing
-import heapq
+from data_helper import load_data, load_data_with_handler
+from constants import *
+from properties_helper import VECTOR_OFFSET
 import math
-try:
-    from tqdm import tqdm
-except ImportError:
-    tqdm = lambda *i, **kwargs: i[0]
 
 ######################## DRIVER FUNCTION ########################
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 # this is actually called in search.py already.
-document_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
-
+document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 
 def get_new_query_vector(vector, docIDs):
     """
@@ -27,18 +18,36 @@ def get_new_query_vector(vector, docIDs):
     The query vector is modelled as sparse vector where it is a term -> score mapping. 
     Zero score terms will not be stored.
 
-    Calculate Centroid from docIDs and add it to original query vector
+    Calculate Centroid from docIDs and add it to original query vector. 
+    
+    Trim the vector according to be predefined minium score
     """
     offset = get_new_query_offset(docIDs)
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
+
+    vector = trimVector(vector)
     return vector
+
+def trimVector(vector):
+    """
+    Since Ricco will return a large vector, we will implement a min score for each term.
+    Those terms that do not meet the point will be removed
+    """
+    new_vector = dict()
+    for key, value in vector.items():
+        if value > RICCO_MIN_CUTOFF_POINT:
+            new_vector[key] = value
+
+    return new_vector
 
 def extractValue(tuple):
     """
     Undated method. Will be removed soon.
     """
-    return tuple[0] * tuple[1]
+    # return tuple[0] * tuple[1]
+    return tuple[0]
+    
 
 def get_vector_from_docID_offset(offset):
     """
@@ -71,7 +80,8 @@ def get_new_query_offset(docIDs):
         vector, normalisator = get_vector_from_docID_offset(
             document_properties[docID][VECTOR_OFFSET])
         for key, value in vector.items():
-            offset[key] = offset.get(key, 0.) + (extractValue(value) / normalisator)
+            off = extractValue(value) / normalisator
+            offset[key] = offset.get(key, 0.) + off
 
     # Take average
     for k in offset.keys():
@@ -81,4 +91,9 @@ def get_new_query_offset(docIDs):
 
 
 if __name__== "__main__":
-    print(get_new_query_vector({"le": 01.12}, ["246391"]))
+    print(len(get_new_query_vector({"le": 01.12}, ["246391"])))
+    # print(get_vector_from_docID_offset(290883617))
+    # for docID, value in document_properties.items():
+    #     get_vector_from_docID_offset(value[4])
+    # print(get_vector_from_docID_offset(484612308))
+    # print(document_properties)
