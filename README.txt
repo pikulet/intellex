@@ -10,6 +10,49 @@ I'm using Python Version <3.6> for this assignment.
 
 == General Notes about this assignment ==
 
+A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/homework4/html/index.ipynb
+- 17313 documents
+- 31 types of courts in the court field
+- All field are populated
+
+- Duplicated document id (?)
+67          247336  ...               HK Court of First Instance
+68          247336  ...                            HK High Court
+109        2044863  ...               HK Court of First Instance
+110        2044863  ...                            HK High Court
+248        2145566  ...               Federal Court of Australia
+249        2145566  ...  Industrial Relations Court of Australia
+348        2147493  ...               Federal Court of Australia
+349        2147493  ...  Industrial Relations Court of Australia
+392        2148198  ...               Federal Court of Australia
+393        2148198  ...  Industrial Relations Court of Australia
+1207       2167027  ...               Federal Court of Australia
+1208       2167027  ...  Industrial Relations Court of Australia
+1554       2225321  ...                       UK Court of Appeal
+1555       2225321  ...                           UK Crown Court
+1565       2225341  ...                            UK High Court
+1566       2225341  ...                           UK Crown Court
+1638       2225516  ...                       UK Court of Appeal
+1639       2225516  ...                            UK High Court
+1672       2225597  ...                       UK Court of Appeal
+1673       2225597  ...                            UK High Court
+1674       2225598  ...                       UK Court of Appeal
+1675       2225598  ...                            UK High Court
+14027      3062427  ...               Federal Court of Australia
+14028      3062427  ...  Industrial Relations Court of Australia
+14029      3062433  ...               Federal Court of Australia
+14030      3062433  ...  Industrial Relations Court of Australia
+14036      3063259  ...               Federal Court of Australia
+14037      3063259  ...  Industrial Relations Court of Australia
+14039      3063522  ...               Federal Court of Australia
+14040      3063522  ...  Industrial Relations Court of Australia
+14638      3926753  ...                       UK Court of Appeal
+14639      3926753  ...                           UK Crown Court
+- Chinese documents from HK High Court and HK Court of First Instance (duplicated)
+247336 2044863 
+
+- Possible other unicode characters
+
 
 == Files included with this submission ==
 

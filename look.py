@@ -22,5 +22,5 @@ df = read_csv(filepath)
 
 row = df[df["document_id"] == int(file_no)].iloc[0]
 print(row["document_id"])
-#print(row["content"])
-print('\r\n'.join([x for x in row["content"].splitlines() if x.strip()]))
+line = '\r\n'.join([x for x in row["content"].splitlines() if x.strip()])
+sys.stdout.buffer.write(line.encode('utf-8'))
