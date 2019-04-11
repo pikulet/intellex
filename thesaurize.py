@@ -1,4 +1,5 @@
 from nltk.corpus import wordnet as wn
+from data_helper import *
 
 def thesaurize(q):
     """
@@ -16,8 +17,17 @@ def thesaurize_term(t):
     Given a term t, return an ordered list of unique synonyms.
     """
     terms = []
-    for s in wn.synsets(t):
-        term = s.name().split(".")[0].replace('_',' ')
-        if term not in terms:
-            terms.append(term)
-    return terms
+    for synset in wn.synsets(t):
+        for item in synset.lemma_names():
+            terms.append(item)
+
+    return set(filter_terms(terms))
+
+def filter_terms(terms):
+    """
+    Remove some of the unuseable terms such as _
+    """
+    return [normalise_term(term) for term in terms if "_" not in term]
+
+if __name__ == "__main__":
+    print(thesaurize(["quiet"]))

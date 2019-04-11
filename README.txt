@@ -12,7 +12,7 @@ I'm using Python Version <3.6> for this assignment.
 == General Notes about this assignment ==
 
 A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/homework4/html/index.ipynb
-- 17313 documents
+- 17137 documents
 - 31 types of courts in the court field
 - All field are populated
 
@@ -50,9 +50,9 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 14638      3926753  ...                       UK Court of Appeal
 14639      3926753  ...                           UK Crown Court
 - Chinese documents from HK High Court and HK Court of First Instance (duplicated)
-247336 2044863 
+2044863 
 
-- Possible other unicode characters
+- Possible other unicode characters but can be easily resolved with utf-8 encoding
 
 
 == Files included with this submission ==
