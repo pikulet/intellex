@@ -129,7 +129,10 @@ class Eval:
         Returns the tf_idf given the term frequency (tf) and the document frequency (df).
         '''
         tf = 1 + math.log(tf, 10)
-        idf = math.log(self.N / df, 10)
+        if df > 0:
+            idf = math.log(self.N / df, 10)
+        else:
+            idf = 1
         return tf * idf
 
     def normalise(self, score, docID):
