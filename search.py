@@ -9,6 +9,7 @@ from properties_helper import get_document_properties
 
 END_LINE_MARKER = '\n'
 
+
 ######################## COMMAND LINE ARGUMENTS ########################
 
 ### Read in the input files as command-line arguments

@@ -7,7 +7,7 @@
 DF_DOC_ID_NO, DF_TITLE_NO, DF_CONTENT_NO, DF_DATE_POSTED_NO, DF_COURT_NO = range(5)
 TEMBUSU_MODE = False
 PROCESS_COUNT = 6 if TEMBUSU_MODE else 3
-BATCH_SIZE = 5 if TEMBUSU_MODE else 5
+BATCH_SIZE = 6 if TEMBUSU_MODE else 6
 
 CSV_FILE_TEST = "data\\first100.csv"
 #CSV_FILE_TEST = "data\\dataset.csv"
@@ -17,10 +17,9 @@ QUERY_FILE_TEST = 'queries\\q1.txt'
 OUTPUT_FILE_TEST = 'output.txt'
 
 ## Extra files
-TITLE_DICTIONARY_FILE = "dictionarytitle.txt"
-TITLE_POSTINGS_FILE = "postingstitle.txt"
-VECTOR_DICTIONARY_FILE = "dictionaryvector.txt"
-VECTOR_POSTINGS_FILE = "postingsvector.txt"
+TITLE_DICTIONARY_FILE = "dictionary_title.txt"
+TITLE_POSTINGS_FILE = "postings_title.txt"
+VECTOR_POSTINGS_FILE = "postings_vector.txt"
 DOCUMENT_PROPERTIES_FILE = "properties.txt"
 
 ## Cut off points

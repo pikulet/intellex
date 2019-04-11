@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import math
 from properties_helper import CONTENT_LENGTH, BIGRAM_CONTENT_LENGTH, TRIGRAM_CONTENT_LENGTH, \
-    TITLE_LENGTH, BIGRAM_TITLE_LENGTH, TRIGRAM_TITLE_LENGTH
+    TITLE_LENGTH,  BIGRAM_TITLE_LENGTH, TRIGRAM_TITLE_LENGTH
 
 class Eval:
     '''
@@ -21,7 +21,7 @@ class Eval:
         self.document_properties = document_properties
         self.query = query
         self.postings_lists = postings_lists
-        self.N = self.dictionary.total_num_documents
+        self.N = len(document_properties)
         self.term_length = term_length
         self.query_vector = False
         self.is_title = is_title
@@ -89,7 +89,7 @@ class Eval:
         vector = []
         for term in query_terms:
             tf = term[1]
-            df = self.dictionary.terms[term[0]][0]
+            df = self.dictionary[term[0]][0]
             tf_idf = self.get_tf_idf(tf, df)
             vector.append(tf_idf)
         return vector

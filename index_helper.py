@@ -29,8 +29,10 @@ def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
     for t in content:
         add_data(docID, t, position_counter, dictionary, postings)
         add_vector_count(t, vector)
-        add_vector_count((biword_flag, t), biword_vector)
-        add_vector_count((triword_flag[0], triword_flag[1], t), triword_vector)
+        if biword_flag:
+            add_vector_count((biword_flag, t), biword_vector)
+        if triword_flag[0] and triword_flag[1]:
+            add_vector_count((triword_flag[0], triword_flag[1], t), triword_vector)
 
         # after storing, move the flag
         biword_flag = t
@@ -38,9 +40,9 @@ def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
         triword_flag[1] = t
         position_counter += 1   
 
-    convert_tf(vector)
-    convert_tf(biword_vector)
-    convert_tf(triword_vector)
+    # convert_tf(vector)
+    # convert_tf(biword_vector)
+    # convert_tf(triword_vector)
 
     return vector, biword_vector, triword_vector
 
@@ -71,6 +73,7 @@ def add_vector_count(t, vector):
 def convert_tf(vector):
     for t, tf in vector.items():
         vector[t] = log_tf(tf)
+    return vector
 
 ### Calculate the length of a vector
 ###
@@ -119,7 +122,7 @@ class Dictionary():
     def save_to_disk(self, total_num_documents):
         self.total_num_documents = total_num_documents
 
-        store_data(self.file, self)
+        store_data(self.file, self.terms)
     
 
 ### A Postings class that collects all the posting lists.

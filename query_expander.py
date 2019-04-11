@@ -7,6 +7,9 @@ import math
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
+total_num_documents = len(document_properties)
+log_tf = lambda x: 1 + math.log(x, 10)
+idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
 ######################## DRIVER FUNCTION ########################
 
@@ -56,7 +59,9 @@ def extractValue(tuple):
     """
     Undated method. Will be removed soon.
     """
-    return tuple[0] * tuple[1]
+    return log_tf(tuple[0]) *\
+     idf_transform(tuple[1])
+
 
 def get_vector_from_docID_offset(offset):
     """
@@ -86,7 +91,8 @@ def get_new_query_offset(docIDs):
     offset = {}
     for docID in docIDs:
         docID = int(docID)
-        vector, normalisator = get_vector_from_docID_offset(document_properties[docID][VECTOR_OFFSET])
+        vector, normalisator = get_vector_from_docID_offset(
+            document_properties[docID][VECTOR_OFFSET])
         for key, value in vector.items():
             normalised = extractValue(value) / normalisator
             offset[key] = offset.get(key, 0.) + normalised
