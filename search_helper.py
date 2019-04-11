@@ -6,6 +6,7 @@ from Eval import Eval
 from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
 from query_expander import get_new_query_vector
+import math
 
 import heapq
 
@@ -16,13 +17,14 @@ CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
 
+
 ######################## FILE READING FUNCTIONS ########################
 
 ### Retrieve the posting list for a particular term
 ###
 def get_posting(postings_handler, dictionary, t):
     try:
-        term_data = dictionary.terms[t]
+        term_data = dictionary[t]
         df = term_data[Dictionary.DF]
 
         offset = term_data[Dictionary.TERM_OFFSET]
@@ -123,7 +125,7 @@ def get_phrase_posting_lists(postings_handler, query_terms, dictionary, query_is
     for phrase in query_terms:
         phrase_postings_lists = list(map(lambda word: get_posting(postings_handler, dictionary, word)[1], phrase))
         posting_list = get_postings_from_phrase(phrase, phrase_postings_lists)
-        dictionary.terms[tuple(phrase)] = [len(posting_list), -1]  # put phrase into dictionary
+        dictionary[tuple(phrase)] = [len(posting_list), -1]  # put phrase into dictionary
         posting_lists.append(posting_list)
     return posting_lists
 
@@ -161,7 +163,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title=
     :param query:
     :return:
     '''
-    query_terms = list(filter(lambda x: type(x) == list or x in dictionary.terms, query[0])) # remove terms not in dic
+    query_terms = list(filter(lambda x: type(x) == list or x in dictionary, query[0])) # remove terms not in dic
     query_is_boolean = query[2]
 
     single_terms = list(filter(lambda x: type(x) != list, query_terms))

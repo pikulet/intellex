@@ -57,9 +57,10 @@ def read_files():
 ######################## DRIVER FUNCTION ########################
 
 ### Data parallelization method to speed up nltk word_tokenize
+### Ultimate filter method to boost speed while cleaning up strings
 def ntlk_tokenise_func(row):
-    content = [normalise_term(w) for w in word_tokenize(row[DF_CONTENT_NO])]
-    title = [normalise_term(w) for w in word_tokenize(row[DF_TITLE_NO])]
+    content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_CONTENT_NO])]))
+    title = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO])]))
     date = row[DF_DATE_POSTED_NO]
     court = str(row[DF_COURT_NO])
 
@@ -103,23 +104,25 @@ def main():
                 if docID in document_properties:
                     # only the highest court priority is saved
                     update_court(docID, get_court_priority(court))
+                    total_num_documents -= 1
                     continue
                     
                 create_empty_property_list(docID)                
                 content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
                 title_uniword_vector, title_biword_vector, title_triword_vector = process_doc_vector_and_bigram_trigram(docID, title, dictionary_title, postings_title)
                 
-                content_uniword_length = get_length(content_uniword_vector)
-                content_biword_length = get_length(content_biword_vector)
-                content_triword_length = get_length(content_triword_vector)
-
-                title_uniword_length = get_length(title_uniword_vector)
-                title_biword_length = get_length(title_biword_vector)
-                title_triword_length = get_length(title_triword_vector)
-
                 uniword_vectors[docID] = content_uniword_vector
                 # biword_vectors[docID] = content_biword_vector
                 # triword_vectors[docID] = content_triword_vector
+
+                content_uniword_length = get_length(convert_tf(content_uniword_vector))
+                content_biword_length = get_length(convert_tf(content_biword_vector))
+                content_triword_length = get_length(convert_tf(content_triword_vector))
+
+                title_uniword_length = get_length(convert_tf(title_uniword_vector))
+                title_biword_length = get_length(convert_tf(title_biword_vector))
+                title_triword_length = get_length(convert_tf(title_triword_vector))
+
                 
                 assign_property(docID, TITLE_LENGTH, title_uniword_length)
                 assign_property(docID, BIGRAM_TITLE_LENGTH, title_biword_length)
@@ -151,17 +154,12 @@ def save_data(dictionary, postings, total_num_documents):
 
 ### Save the vector data to disk
 def save_vector(dictionary, total_num_documents, document_vectors):
-
-    idf_transform = lambda x: math.log(total_num_documents/x, 10)
-
     pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
 
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
         for t in vector:
-            # vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
-            vector[t] = vector[t] * idf_transform(dictionary.terms[t][Dictionary.DF])
+            vector[t] = (vector[t], dictionary.terms[t][Dictionary.DF])
 
-       
         assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
         store_data_with_handler(pfilehandler, vector)
 
@@ -171,5 +169,5 @@ if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time()
-    print("Time Taken: " + str(end - start))
+    print("Time Taken: %ds or %.2smins" % (end-start, (end-start)/60) )
 
