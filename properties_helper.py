@@ -9,8 +9,6 @@ def get_document_properties(properties_file):
 
 ########################### DEFINE CONSTANTS ###########################
 
-DOCUMENT_PROPERTIES_FILE = "../properties.txt"
-
 # docID --> [content_length, title_length, court_priority, date_posted, vector_offset, bigram_normalise_Factor, trigram_normalise_Factor]
 NUM_DOCUMENT_PROPERTIES = 9
 CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_CONTENT_LENGTH, TRIGRAM_CONTENT_LENGTH, BIGRAM_TITLE_LENGTH, TRIGRAM_TITLE_LENGTH = list(range(NUM_DOCUMENT_PROPERTIES))

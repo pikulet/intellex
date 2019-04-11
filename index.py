@@ -1,16 +1,15 @@
 #!/usr/bin/python
-import getopt
-import sys
 from index_helper import *
 from data_helper import *
 from properties_helper import *
+from constants import *
 import time
 import multiprocessing
 import signal
 import math
-import nltk
-from nltk.stem.porter import PorterStemmer
-
+from nltk import word_tokenize
+import getopt
+import sys
 
 try:
     from tqdm import tqdm
@@ -19,21 +18,6 @@ except ImportError:
 # tqdm = lambda *i, **kwargs: i[0] # this is to disable tqdm
 
 ########################### DEFINE CONSTANTS ###########################
-
-CSV_FILE_TEST = 'data\\first100.csv'
-DICTIONARY_FILE_TEST = 'dictionary.txt'
-POSTINGS_FILE_TEST = 'postings.txt'
-
-DF_DOC_ID_NO, DF_TITLE_NO, DF_CONTENT_NO, DF_DATE_POSTED_NO, DF_COURT_NO = range(5)
-TEMBUSU_MODE = True if multiprocessing.cpu_count() > 10 else False
-PROCESS_COUNT = 6 if TEMBUSU_MODE else 3
-BATCH_SIZE = 5 if TEMBUSU_MODE else 5
-
-## Extra files
-TITLE_DICTIONARY_FILE = "../dictionarytitle.txt"
-TITLE_POSTINGS_FILE = "../postingstitle.txt"
-VECTOR_DICTIONARY_FILE = "../dictionaryvector.txt"
-VECTOR_POSTINGS_FILE = "../postingsvector.txt"
 
 PORTER_STEMMER = PorterStemmer()
 
@@ -72,18 +56,19 @@ def read_files():
 
 ######################## DRIVER FUNCTION ########################
 
-### Normalisea term by case folding and porter stemming
-def normalise_term(t):
-    return PORTER_STEMMER.stem(t.lower())
-
 ### Data parallelization method to speed up nltk word_tokenize
 def ntlk_tokenise_func(row):
-    content = [normalise_term(w) for w in nltk.word_tokenize(row[DF_CONTENT_NO])]
-    title = [normalise_term(w) for w in nltk.word_tokenize(row[DF_TITLE_NO])]
+    content = [normalise_term(w) for w in word_tokenize(row[DF_CONTENT_NO])]
+    title = [normalise_term(w) for w in word_tokenize(row[DF_TITLE_NO])]
     date = row[DF_DATE_POSTED_NO]
     court = str(row[DF_COURT_NO])
 
     return row[DF_DOC_ID_NO], title, content, date, court
+
+## util function
+def init_worker():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 
 def main():
     # For lazy mode since we are lazy
@@ -104,14 +89,12 @@ def main():
     
     print("Running indexing...")
 
+    # Storage dictionaries
+    uniword_vectors = dict()
+    
     # multiprocessing way
     # The proper way to handle CTRL-C
-    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-    signal.signal(signal.SIGINT, original_sigint_handler)
-
-    uniword_vectors = dict()
-
-    with multiprocessing.Pool(PROCESS_COUNT) as pool:
+    with multiprocessing.Pool(PROCESS_COUNT, init_worker) as pool:
         try:
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
             for row in tqdm(result, total=total_num_documents):
@@ -157,6 +140,9 @@ def main():
         except (KeyboardInterrupt):
             print("Caught KeyboardInterrupt. Terminating workers!")
             pool.terminate()
+        else:
+            print("Normal termination")
+            pool.close()
 
 ### Save the indexing data to disk
 def save_data(dictionary, postings, total_num_documents):
@@ -168,12 +154,13 @@ def save_vector(dictionary, total_num_documents, document_vectors):
 
     idf_transform = lambda x: math.log(total_num_documents/x, 10)
 
-    pfile = VECTOR_POSTINGS_FILE
-    pfilehandler = open(pfile, 'wb')
+    pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
 
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
         for t in vector:
-            vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
+            # vector[t] = (vector[t], idf_transform(dictionary.terms[t][Dictionary.DF]))
+            vector[t] = vector[t] * idf_transform(dictionary.terms[t][Dictionary.DF])
+
        
         assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
         store_data_with_handler(pfilehandler, vector)

@@ -1,5 +1,6 @@
-from index import normalise_term, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, DOCUMENT_PROPERTIES_FILE
+from index import normalise_term
 from search_helper import *
+from constants import *
 import getopt
 import sys
 from properties_helper import get_document_properties
@@ -7,8 +8,6 @@ from properties_helper import get_document_properties
 ########################### DEFINE CONSTANTS ###########################
 
 END_LINE_MARKER = '\n'
-QUERY_FILE_TEST = 'queries\\q1.txt'
-OUTPUT_FILE_TEST = 'output.txt'
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -52,8 +51,8 @@ def main():
     else:
         dictionary_file, postings_file, query_file, file_of_output = read_files()
 
-    dictionary = get_dictionary(dictionary_file)
-    doc_properties = get_document_properties(DOCUMENT_PROPERTIES_FILE)
+    dictionary = load_data(dictionary_file)
+    doc_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
@@ -62,10 +61,12 @@ def main():
     with open(file_of_output, 'w') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
+    print("blabla")
+
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
         relevant_docs = query[1] + result
-        result.append(expand_query(p, dictionary, doc_properties, query, relevant_docs))
+        result += expand_query(p, dictionary, doc_properties, query, relevant_docs)
 
     with open(file_of_output, 'w+') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)

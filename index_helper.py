@@ -1,7 +1,5 @@
 #!/usr/bin/python
 import math
-import nltk
-from nltk.stem.porter import *
 from data_helper import *
 try:
     from tqdm import tqdm
@@ -10,25 +8,12 @@ except ImportError:
 
 ########################### DEFINE CONSTANTS ###########################
 
+
 log_tf = lambda x: 1 + math.log(x, 10)
+
 
 ########################### CONTENT PROCESSING ###########################
 
-### Process a document content body directly (content must be a list of normalized terms)
-###
-def process_doc_vector(docID, content, dictionary, postings):
-    vector = dict()                 # term vector for this document
-    position_counter = 0
-
-    for t in content:
-        add_data(docID, t, position_counter, dictionary, postings)
-        add_vector_count(t, vector)
-        
-        position_counter += 1   
-
-    convert_tf(vector)
-
-    return vector
 
 ### Process a document content body directly (content must be a list of normalized terms)
 ###
@@ -57,13 +42,6 @@ def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
     convert_tf(biword_vector)
     convert_tf(triword_vector)
 
-    # for calculating idf for biword and triword and saving into the dictionary
-    # for term, count in biword_vector.items():
-    #     add_data_no_posting(docID, term, dictionary)
-        
-    # for term, count in triword_vector.items():
-    #     add_data_no_posting(docID, term, dictionary)
-
     return vector, biword_vector, triword_vector
 
 ### Add information about term and position to dictionary and posting list
@@ -79,14 +57,6 @@ def add_data(docID, t, position, dictionary, postings):
     else:
         termID = postings.add_new_term_data(docID, position)
         dictionary.add_term(t, termID)      
-
-### Add information about term to dictionary. Posting List not updated
-###
-def add_data_no_posting(docID, tPair, dictionary):
-    if tPair in dictionary.termPair:
-        dictionary.termPair[tPair] += 1
-    else:
-        dictionary.termPair[tPair] = 1
 
 ### Add the term count to the vector, for calculating document length
 ###
@@ -122,7 +92,6 @@ class Dictionary():
     
     def __init__(self, file):
         self.terms = {} # every term maps to a tuple of document_frequency/idf, termID/ term_offset
-        self.termPair = {} # every term pair maps to a document_frequency/idf only
         self.file = file
         self.total_num_documents = 0
 
@@ -149,12 +118,6 @@ class Dictionary():
 
     def save_to_disk(self, total_num_documents):
         self.total_num_documents = total_num_documents
-        # idf_transform = lambda x: math.log(total_num_documents/x, 10)
-        
-        ## this saves idf instead of df
-        # for t in self.terms:
-        #     df = self.terms[t][Dictionary.DF]
-        #     self.set_idf(t, idf_transform(df))
 
         store_data(self.file, self)
     
