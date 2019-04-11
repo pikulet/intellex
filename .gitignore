@@ -6,11 +6,11 @@ __pycache__/
 *~.*
 
 dictionary.txt
-dictionarytitle.txt
+dictionary_title.txt
 dictionary.txt
-dictionaryvector.txt
+dictionary_vector.txt
 postings.txt
-postingstitle.txt
-postingsvector.txt
+postings_title.txt
+postings_vector.txt
 postings.txt
 properties.txt
