@@ -61,8 +61,6 @@ def main():
     with open(file_of_output, 'w') as f:
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
-    print("blabla")
-
     with open(postings_file, 'rb') as p:
         query = get_query(query_file, dictionary)
         relevant_docs = query[1] + result

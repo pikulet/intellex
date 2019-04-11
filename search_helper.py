@@ -6,7 +6,6 @@ from Eval import Eval
 from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
 from query_expander import get_new_query_vector
-
 import heapq
 
 ########################### DEFINE CONSTANTS ###########################
