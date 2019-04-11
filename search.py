@@ -73,7 +73,11 @@ def main():
         f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
 if __name__ == "__main__":
+    import time
+    start = time.time()
     main()
+    end = time.time()
+    print("Time Taken: %.5fs" % (end-start) )
 
 #
 #python search.py -d ../dictionary.txt -p ../postings.txt -q queries.txt -o output.txt
