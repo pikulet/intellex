@@ -17,10 +17,10 @@ QUERY_FILE_TEST = 'queries\\q1.txt'
 OUTPUT_FILE_TEST = 'output.txt'
 
 ## Extra files
-TITLE_DICTIONARY_FILE = "dictionary_title.txt"
-TITLE_POSTINGS_FILE = "postings_title.txt"
-VECTOR_POSTINGS_FILE = "postings_vector.txt"
-DOCUMENT_PROPERTIES_FILE = "properties.txt"
+TITLE_DICTIONARY_FILE = "../dictionary_title.txt"
+TITLE_POSTINGS_FILE = "../postings_title.txt"
+VECTOR_POSTINGS_FILE = "../postings_vector.txt"
+DOCUMENT_PROPERTIES_FILE = "../properties.txt"
 
 ## Cut off points
 RICCO_MIN_CUTOFF_POINT = 0.01
