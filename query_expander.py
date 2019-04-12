@@ -1,17 +1,81 @@
-from data_helper import load_data, load_data_with_handler
+from data_helper import *
 from constants import *
 from properties_helper import VECTOR_OFFSET
 import math
+import re
+from nltk.corpus import wordnet as wn
 
 ########################### DEFINE CONSTANTS ###########################
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 total_num_documents = len(document_properties)
-log_tf = lambda x: 1 + math.log(x, 10)
-idf_transform = lambda x: math.log(total_num_documents/x, 10)
+
+
+def log_tf(x): return 1 + math.log(x, 10)
+
+
+def idf_transform(x): return math.log(total_num_documents/x, 10)
 
 ######################## DRIVER FUNCTION ########################
+
+
+def get_new_query_strings(line):
+    """
+    Thesaursus Public Method.
+
+    Given the original query string,
+
+    return a list of new query strings generated using predefined rules
+    """
+    tokens = tokenize(line)
+
+    # do something with the tokens
+
+
+def tokenize(line):
+    """
+    The line will be tokenised to a list of words, using the delimiter as space or "
+
+    For example:
+
+    quiet "phone call"
+    ->
+    quiet
+    phone call
+    """
+    regex = re.compile('(\w*)|(\"\w* \w*\")')
+    result = []
+    for group in regex.findall(line):
+        for term in group:
+            if term:
+                term = term.strip('"')
+                result.append(term)
+    return result
+
+def thesaurize_term(t):
+    """
+    Given a term t, return an list of unique synonyms.
+
+    If a term that has two words is given, the space will be replaced by a _
+    This is the WordNet format
+    """
+    t = t.replace(" ", "_")
+    terms = []
+    for synset in wn.synsets(t):
+        for item in synset.lemma_names():
+            terms.append(item)
+
+    return set(filter_and_normalise_terms(terms))
+
+
+def filter_and_normalise_terms(terms):
+    """
+    Remove some of the unuseable terms such as _
+
+    Normalise the terms using the predefined rule
+    """
+    return [normalise_term(term) for term in terms if "_" not in term]
 
 
 def get_new_query_vector(vector, docIDs):
@@ -60,7 +124,7 @@ def extractValue(tuple):
     Undated method. Will be removed soon.
     """
     return log_tf(tuple[0]) *\
-     idf_transform(tuple[1])
+        idf_transform(tuple[1])
 
 
 def get_vector_from_docID_offset(offset):
@@ -106,9 +170,19 @@ def get_new_query_offset(docIDs):
 
 # TEST METHODS
 if __name__ == "__main__":
-    print(get_new_query_vector({"le": 01.12}, ["246391"]))
+
+    # Ricco Test Case
+    # print(get_new_query_vector({"le": 01.12}, ["246391"]))
     # print(get_vector_from_docID_offset(290883617))
     # for docID, value in document_properties.items():
     #     get_vector_from_docID_offset(value[4])
     # print(get_vector_from_docID_offset(484612308))
     # print(document_properties)
+
+    # WordNet Test Case
+    test_str = 'quiet "phone call"'
+    results = []
+    result = tokenize(test_str)
+    for term in result:
+        print(term)
+        print(thesaurize_term(term))
