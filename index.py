@@ -128,6 +128,7 @@ def main():
                 assign_property(docID, BIGRAM_TITLE_LENGTH, title_biword_length)
                 assign_property(docID, TRIGRAM_TITLE_LENGTH, title_triword_length)
                 assign_property(docID, COURT_PRIORITY, get_court_priority(court))
+                assign_property(docID, DATE_POSTED, get_recent_level(date))
                 assign_property(docID, CONTENT_LENGTH, content_uniword_length)
                 assign_property(docID, BIGRAM_CONTENT_LENGTH, content_biword_length)
                 assign_property(docID, TRIGRAM_CONTENT_LENGTH, content_triword_length)
