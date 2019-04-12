@@ -4,6 +4,7 @@ from constants import *
 import getopt
 import sys
 from properties_helper import get_document_properties
+from constants import *
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -55,20 +56,27 @@ def main():
     dictionary = load_data(dictionary_file)
     doc_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 
-    with open(postings_file, 'rb') as p:
-        query = get_query(query_file, dictionary)
-        result = get_best_documents(p, dictionary, doc_properties, query)
+    for i in range(NUM_QUERIES_IN_FILE):
+        with open(postings_file, 'rb') as p:
+            with open(query_file, 'r', encoding="utf-8") as f:
+                query_data = f.read().splitlines()
+            query = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE)
+            result = get_best_documents(p, dictionary, doc_properties, query)
 
-    with open(file_of_output, 'w') as f:
-        f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
+        with open(file_of_output, 'w+') as f:
+            f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
-    with open(postings_file, 'rb') as p:
-        query = get_query(query_file, dictionary)
-        relevant_docs = query[1] + result
-        result += expand_query(p, dictionary, doc_properties, query, relevant_docs)
+        if EXPAND_QUERY:
+            with open(postings_file, 'rb') as p:
+                with open(query_file, 'r', encoding="utf-8") as f:
+                    query_data = f.read().splitlines()
+                query = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE)
+                positive_list = query[1] if not MULTIPLE_QUERIES_IN_FILE else []
+                relevant_docs = positive_list + result
+                result += expand_query(p, dictionary, doc_properties, query, relevant_docs)
 
-    with open(file_of_output, 'w+') as f:
-        f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
+            with open(file_of_output, 'w+') as f:
+                f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
 if __name__ == "__main__":
     import time
@@ -77,5 +85,4 @@ if __name__ == "__main__":
     end = time.time()
     print("Time Taken: %.5fs" % (end-start) )
 
-#
 #python search.py -d ../dictionary.txt -p ../postings.txt -q queries.txt -o output.txt

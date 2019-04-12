@@ -19,7 +19,7 @@ class Eval:
         '''
         self.dictionary = dictionary
         self.document_properties = document_properties
-        self.query = query
+        self.query_terms = query
         self.postings_lists = postings_lists
         self.N = len(document_properties)
         self.term_length = term_length
@@ -45,8 +45,7 @@ class Eval:
         if self.query_vector:
             query_vector = self.query_vector
         else:
-            terms = self.get_term_frequencies(self.query)
-            query_vector = self.get_query_vector(terms)
+            query_vector = self.get_query_vector(self.query_terms)
         document_vectors = self.get_cosine_scores(query_vector)
         score_dict = {}
         for document in document_vectors:
@@ -54,24 +53,6 @@ class Eval:
             normalised_score = self.normalise(score, document)
             score_dict[int(document)] = normalised_score
         return score_dict
-
-    def get_term_frequencies(self, query):
-        '''
-        Creates and returns a list of (term, term frequency) tuples. Terms that are not in the dictionary are ignored.
-        :param query: a list of terms in the query.
-        '''
-        term_frequencies = {}
-        for term in query:
-            if type(term) == list: # phrase queries
-                term = tuple(term)
-            # cannot ignore terms not in dictionary due to phrase queries
-            #if term not in self.dictionary:
-            #    continue
-            if term not in term_frequencies:
-                term_frequencies[term] = 0
-            term_frequencies[term] += 1
-        terms = list(term_frequencies.items())
-        return terms
 
     def get_query_vector(self, query_terms):
         '''
@@ -161,3 +142,21 @@ class Eval:
         normalisation_factor = self.document_properties[docID][length]
         normalised_score = score / normalisation_factor
         return normalised_score
+
+def get_term_frequencies(query, dictionary):
+    '''
+    Creates and returns a list of (term, term frequency) tuples. Terms that are not in the dictionary are ignored.
+    :param query: a list of terms in the query.
+    '''
+    term_frequencies = {}
+    for term in query:
+        if type(term) == list: # phrase queries
+            term = tuple(term)
+        # cannot ignore terms not in dictionary due to phrase queries
+        if term not in dictionary:
+            continue
+        if term not in term_frequencies:
+            term_frequencies[term] = 0
+        term_frequencies[term] += 1
+    terms = list(term_frequencies.items())
+    return terms

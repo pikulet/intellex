@@ -2,17 +2,16 @@ from data_helper import *
 from constants import *
 from index_helper import Dictionary, PostingList
 from properties_helper import COURT_HIERARCHY
-from Eval import Eval
+from Eval import Eval, get_term_frequencies
 from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
 from query_expander import get_new_query_vector
-import math
-
+import re
 import heapq
 
 ########################### DEFINE CONSTANTS ###########################
 
-MAX_DOCS = 200
+MAX_DOCS = 1000
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
@@ -36,25 +35,25 @@ def get_posting(postings_handler, dictionary, t):
 
 ### Retrieve a query format given the query file
 ###
-def get_query(query_file, dictionary):
-    with open(query_file, 'r') as f:
-        data = f.read().splitlines()
 
-    query = data[0]
+def get_query(query_file, query_line=0, multiple_queries=False):
+    query = query_file[query_line]
     is_boolean = "AND" in query
     if is_boolean:
-        query_text = parse_boolean_query(data[0], dictionary)
+        query_text = parse_boolean_query(query)
     else:
-        query_text = parse_query(data[0], dictionary)
-    positive_list = [int(x) for x in data[1:]]
+        query_text = parse_query(query)
+
+    positive_list = [int(x) for x in query_file[1:]] if not multiple_queries else []
     return query_text, positive_list, is_boolean
 
-def parse_query(query, dictionary):
+def parse_query(query):
     '''
     Parse the free-text non-boolean query for phrases, performing normalisation.
     :param query: a query string
     :return: a list of single word terms with normalisation.
     '''
+    has_phrases = re.findall(r' "[^"]*"', query)
     query = query.split()
     start_phrase = lambda s: s.startswith(PHRASE_MARKER)
     end_phrase = lambda s: s[-1] == '"'
@@ -63,7 +62,7 @@ def parse_query(query, dictionary):
     phrase = []
     index = 0
     while index < len(query):
-        if start_phrase(query[index]):
+        if has_phrases and start_phrase(query[index]):
             phrase_bool = True
             phrase.append(normalise_term(query[index][1:]))
             index += 1
@@ -73,14 +72,15 @@ def parse_query(query, dictionary):
                     result.append(phrase)
                     phrase = []
                     phrase_bool = False
-                phrase.append(normalise_term(query[index]))
+                else:
+                    phrase.append(normalise_term(query[index]))
                 index += 1
         else:
             result.append(normalise_term(query[index]))
             index += 1
     return result
 
-def parse_boolean_query(query, dictionary):
+def parse_boolean_query(query):
     '''
     Parse the free-text query for AND operators and phrases (" ")
     For example, "fertility treatment" AND damages --> [ ['fertility', 'treatment'], 'damages']
@@ -101,7 +101,7 @@ def parse_boolean_query(query, dictionary):
 
 ######################## QUERY PROCESSING ########################
 
-def get_posting_lists(postings_handler, query_terms, dictionary, query_is_boolean):
+def get_posting_lists(postings_handler, query_terms, dictionary):
     '''
     Get posting lists for single terms.
     :param postings_handler:
@@ -112,17 +112,19 @@ def get_posting_lists(postings_handler, query_terms, dictionary, query_is_boolea
     '''
     posting_lists = []
     for term in query_terms:
+        term = term[0]
         posting_list = get_posting(postings_handler, dictionary, term)[1]
         posting_lists.append(posting_list)
     return posting_lists
 
-def get_phrase_posting_lists(postings_handler, query_terms, dictionary, query_is_boolean):
+def get_phrase_posting_lists(postings_handler, query_terms, dictionary):
     '''
     Get posting lists for phrase queries
     :return:
     '''
     posting_lists = []
     for phrase in query_terms:
+        phrase = phrase[0]
         phrase_postings_lists = list(map(lambda word: get_posting(postings_handler, dictionary, word)[1], phrase))
         posting_list = get_postings_from_phrase(phrase, phrase_postings_lists)
         dictionary[tuple(phrase)] = [len(posting_list), -1]  # put phrase into dictionary
@@ -155,7 +157,7 @@ def get_top_scores_from_dict(score_dict):
 
 ### deal with one word phrases!!
 
-def process_query(postings_handler, dictionary, doc_properties, query, is_title=False):
+def process_query(postings_handler, dictionary, doc_properties, query, is_title):
     '''
     :param postings_handler:
     :param dictionary:
@@ -164,15 +166,16 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title=
     :return:
     '''
     query_terms = list(filter(lambda x: type(x) == list or x in dictionary, query[0])) # remove terms not in dic
+    query_terms = get_term_frequencies(query_terms, dictionary)
     query_is_boolean = query[2]
 
-    single_terms = list(filter(lambda x: type(x) != list, query_terms))
-    biwords = list(filter(lambda x: type(x) == list and len(x) == 2, query_terms))
-    triwords = list(filter(lambda x: type(x) == list and len(x) == 3, query_terms))
+    single_terms = list(filter(lambda x: type(x[0]) != tuple, query_terms))
+    biwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 2, query_terms))
+    triwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 3, query_terms))
 
-    single_term_plists = get_posting_lists(postings_handler, single_terms, dictionary, query_is_boolean)
-    biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary, query_is_boolean)
-    triword_plists = get_phrase_posting_lists(postings_handler, triwords, dictionary, query_is_boolean)
+    single_term_plists = get_posting_lists(postings_handler, single_terms, dictionary)
+    biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary)
+    triword_plists = get_phrase_posting_lists(postings_handler, triwords, dictionary)
 
     if query_is_boolean:
         single_term_plists, biword_plists, triword_plists = get_posting_list_intersection(single_term_plists,
@@ -191,7 +194,7 @@ def get_best_documents(postings_handler, dictionary, doc_properties, query):
     Returns the top documents based on content, title, courts and dates field.
     :return:
     '''
-    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query)
+    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
     title_dictionary = load_data(TITLE_DICTIONARY_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
     title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
@@ -205,7 +208,7 @@ def expand_query(postings_handler, dictionary, doc_properties, query, relevant_d
     query_terms = query[0]
     query = list(filter(lambda x: type(x) != list, query_terms))
     eval = Eval(query, [], dictionary, doc_properties)
-    terms = eval.get_term_frequencies(query)
+    terms = get_term_frequencies(query, dictionary)
     query_vector = eval.get_query_vector(terms)
     terms = list(map(lambda x: x[0], terms))
     query_vector_dic = dict(zip(terms, query_vector))
@@ -213,8 +216,8 @@ def expand_query(postings_handler, dictionary, doc_properties, query, relevant_d
     new_query_vector = list(get_new_query_vector(query_vector_dic, relevant_docs).items())
     terms = list(map(lambda x: x[0], new_query_vector))
     tf_idf = list(map(lambda x: x[1], new_query_vector))
-    posting_lists = get_posting_lists(postings_handler, terms, dictionary, query_is_boolean=False)
-    new_query_scores = Eval(terms, posting_lists, dictionary, doc_properties, tf_idf).eval_query()
+    posting_lists = get_posting_lists(postings_handler, terms, dictionary)
+    new_query_scores = Eval(terms, posting_lists, dictionary, doc_properties, query_vector=tf_idf).eval_query()
     top_docs = get_top_scores_from_dict(new_query_scores)
     return top_docs
 

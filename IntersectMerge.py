@@ -10,7 +10,7 @@ def get_docID(list, index):
     return list[index][DOC_ID_INDEX]
 
 def has_skip(list, index, skip_dist):
-    return index % skip_dist == 0
+    return index + skip_dist < len(list) and index % skip_dist == 0
 
 def get_skip_docID(list, index, skip_dist):
     return list[index + skip_dist][DOC_ID_INDEX]
