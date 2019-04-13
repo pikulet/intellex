@@ -11,7 +11,7 @@ import heapq
 
 ########################### DEFINE CONSTANTS ###########################
 
-MAX_DOCS = 10000
+MAX_DOCS = 100000
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
@@ -36,12 +36,14 @@ def get_posting(postings_handler, dictionary, t):
 ### Retrieve a query format given the query file
 ###
 
-from query_expander import tokenize
-
-def get_query(query_file, query_line=0, multiple_queries=False):
+def get_query(query_file, query_line=0, multiple_queries=False, no_phrases=False):
     query = query_file[query_line]
     is_boolean = "AND" in query
-    if is_boolean:
+    if no_phrases:
+        query = query.replace("\"", "")
+        query = query.replace(" AND", " ")
+        query_text = parse_query(query)
+    elif is_boolean:
         query_text = parse_boolean_query(query)
     else:
         query_text = parse_query(query)

@@ -59,7 +59,7 @@ def main():
         with open(postings_file, 'rb') as p:
             with open(query_file, 'r', encoding="utf-8") as f:
                 query_data = f.read().splitlines()
-            query = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE)
+            query = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE, no_phrases=NO_PHRASES)
             result = get_best_documents(p, dictionary, doc_properties, query)
 
         with open(file_of_output, 'w+') as f:
@@ -73,6 +73,7 @@ def main():
                 positive_list = query[1] if not MULTIPLE_QUERIES_IN_FILE else []
                 relevant_docs = positive_list + result
                 result += expand_query(p, dictionary, doc_properties, query, relevant_docs)
+                result = list(set(result))
 
             with open(file_of_output, 'w+') as f:
                 f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
