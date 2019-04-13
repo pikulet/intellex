@@ -153,7 +153,7 @@ def get_term_frequencies(query, dictionary):
         if type(term) == list: # phrase queries
             term = tuple(term)
         # cannot ignore terms not in dictionary due to phrase queries
-        if term not in dictionary:
+        elif term not in dictionary:
             continue
         if term not in term_frequencies:
             term_frequencies[term] = 0

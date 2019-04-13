@@ -10,7 +10,6 @@ from constants import *
 
 END_LINE_MARKER = '\n'
 
-
 ######################## COMMAND LINE ARGUMENTS ########################
 
 ### Read in the input files as command-line arguments

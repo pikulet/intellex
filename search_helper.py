@@ -11,7 +11,7 @@ import heapq
 
 ########################### DEFINE CONSTANTS ###########################
 
-MAX_DOCS = 1000
+MAX_DOCS = 10000
 CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
@@ -35,6 +35,8 @@ def get_posting(postings_handler, dictionary, t):
 
 ### Retrieve a query format given the query file
 ###
+
+from query_expander import tokenize
 
 def get_query(query_file, query_line=0, multiple_queries=False):
     query = query_file[query_line]
@@ -169,7 +171,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     query_terms = get_term_frequencies(query_terms, dictionary)
     query_is_boolean = query[2]
 
-    single_terms = list(filter(lambda x: type(x[0]) != tuple, query_terms))
+    single_terms = list(filter(lambda x: (type(x[0]) != tuple) or (type(x[0]) == tuple and len(x[0]) == 1), query_terms))
     biwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 2, query_terms))
     triwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 3, query_terms))
 
@@ -177,7 +179,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary)
     triword_plists = get_phrase_posting_lists(postings_handler, triwords, dictionary)
 
-    if query_is_boolean:
+    if query_is_boolean and BOOLEAN_SEARCH:
         single_term_plists, biword_plists, triword_plists = get_posting_list_intersection(single_term_plists,
                                                                                           biword_plists, triword_plists)
 
