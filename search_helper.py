@@ -64,7 +64,10 @@ def parse_query(query):
     phrase = []
     index = 0
     while index < len(query):
-        if has_phrases and start_phrase(query[index]):
+        if has_phrases and start_phrase(query[index]) and end_phrase(query[index]):
+            result.append(normalise_term(query[index][1:-1]))
+            index += 1
+        elif has_phrases and start_phrase(query[index]):
             phrase_bool = True
             phrase.append(normalise_term(query[index][1:]))
             index += 1
@@ -157,8 +160,6 @@ def get_top_scores_from_dict(score_dict):
     top_documents = list(map(lambda x: str(x[1]), top_results))
     return top_documents
 
-### deal with one word phrases!!
-
 def process_query(postings_handler, dictionary, doc_properties, query, is_title):
     '''
     :param postings_handler:
@@ -171,7 +172,8 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     query_terms = get_term_frequencies(query_terms, dictionary)
     query_is_boolean = query[2]
 
-    single_terms = list(filter(lambda x: (type(x[0]) != tuple) or (type(x[0]) == tuple and len(x[0]) == 1), query_terms))
+    single_terms = list(filter(lambda x: (type(x[0]) != tuple), query_terms))
+    single_terms += list(map(lambda x: (x[0][0], x[1]), list(filter(lambda x:(type(x[0]) == tuple and len(x[0]) == 1), query_terms))))
     biwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 2, query_terms))
     triwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 3, query_terms))
 
