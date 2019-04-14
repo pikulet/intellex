@@ -175,7 +175,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     query_is_boolean = query[2]
 
     single_terms = list(filter(lambda x: (type(x[0]) != tuple), query_terms))
-    single_terms += list(map(lambda x: (x[0][0], x[1]), list(filter(lambda x:(type(x[0]) == tuple and len(x[0]) == 1), query_terms))))
+    single_terms += list(map(lambda x: (x[0][0], x[1]), list(filter(lambda x: (type(x[0]) == tuple and len(x[0]) == 1), query_terms))))
     biwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 2, query_terms))
     triwords = list(filter(lambda x: type(x[0]) == tuple and len(x[0]) == 3, query_terms))
 
@@ -200,6 +200,9 @@ def get_best_documents(postings_handler, dictionary, doc_properties, query):
     Returns the top documents based on content, title, courts and dates field.
     :return:
     '''
+    if CONTENT_ONLY:
+        content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
+        return get_top_scores_from_dict(content_doc_to_scores)
     content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
     title_dictionary = load_data(TITLE_DICTIONARY_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
