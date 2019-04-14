@@ -13,6 +13,7 @@ Pandas
 
 import pickle
 import pandas as pd
+from datetime import datetime
 from nltk import PorterStemmer
 
 PORTER_STEMMER = PorterStemmer()
@@ -40,8 +41,11 @@ def load_data_with_handler(file, offset):
     data = pickle.load(file)
     return data
 
+def dateparse(x):
+    return datetime.strptime(x, "%Y-%m-%d %H:%M:%S")
+
 def read_csv(filepath):
     df = pd.read_csv(filepath, na_filter=False,
-                     parse_dates=['date_posted'], index_col=False, encoding="utf-8")
+                     parse_dates=['date_posted'], index_col=False, date_parser=dateparse, encoding="utf-8")
     df = df.sort_values("document_id", ascending=True)
     return df
