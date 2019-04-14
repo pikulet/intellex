@@ -66,8 +66,8 @@ def main():
             if NO_PHRASES and "\"" in query_data[i]:
                 query2 = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE, no_phrases=NO_PHRASES)
                 result2 = get_best_documents(p, dictionary, doc_properties, query2)
-                result = list(filter(lambda x: x not in result2, result))
-                result = result2 + result
+                result2 = list(filter(lambda x: x not in result, result2))
+                result = result + result2
 
         with open(file_of_output, 'w+') as f:
             f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)

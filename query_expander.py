@@ -114,7 +114,7 @@ def trimVector(vector):
     """
     new_vector = dict()
     for key, value in vector.items():
-        if value > RICCO_MIN_CUTOFF_POINT:
+        if value > ROCCHIO_MIN_CUTOFF_POINT:
             new_vector[key] = value
     return new_vector
 
