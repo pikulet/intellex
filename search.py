@@ -66,8 +66,8 @@ def main():
             if NO_PHRASES and "\"" in query_data[i]:
                 query2 = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE, no_phrases=NO_PHRASES)
                 result2 = get_best_documents(p, dictionary, doc_properties, query2)
-                result2 = list(filter(lambda x: x not in result, result2))
-                result = result + result2
+                result = list(filter(lambda x: x not in result2, result))
+                result = result2 + result
 
         with open(file_of_output, 'w+') as f:
             f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
@@ -77,14 +77,14 @@ def main():
                 with open(query_file, 'r', encoding="utf-8") as f:
                     query_data = f.read().splitlines()
                 query = get_query(query_data, query_line=i, multiple_queries=MULTIPLE_QUERIES_IN_FILE)
-                positive_list = query[1] if not MULTIPLE_QUERIES_IN_FILE else []
+                positive_list = query[1:] if not MULTIPLE_QUERIES_IN_FILE else []
                 relevant_docs = positive_list + result
                 extra_docs = expand_query(p, dictionary, doc_properties, query, relevant_docs)
                 extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
                 relevant_docs += extra_docs
 
             with open(file_of_output, 'w+') as f:
-                f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
+                f.write(' '.join([str(x) for x in relevant_docs]) + END_LINE_MARKER)
 
 if __name__ == "__main__":
     import time
