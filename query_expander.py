@@ -3,6 +3,7 @@ from constants import *
 from properties_helper import VECTOR_OFFSET
 import math
 import re
+import pprint
 from nltk.corpus import wordnet as wn
 
 ########################### DEFINE CONSTANTS ###########################
@@ -54,10 +55,18 @@ def get_new_query_strings(line):
         result.append(convert_list_to_string(newlinelist))  # phrase no bool
 
     newlinelist = []
+    wordnet_used = 0
     for token in tokens:
         if token != "AND":
-            newlinelist += thesaurize_term(token)
-    result.append(convert_list_to_string(set(newlinelist)))  # wordnet no bool
+            thesaurized = thesaurize_term(token)
+            if len(thesaurized) > 0:
+                newlinelist += thesaurize_term(token)
+                wordnet_used += 1
+            else:
+                newlinelist += [token]
+
+    if wordnet_used > 0:
+        result.append(convert_list_to_string(newlinelist, filter=True))  # wordnet no bool
 
     return result
 
@@ -91,22 +100,33 @@ def get_new_query_vector(vector, docIDs):
 
 ######################## UTIL FUNCTION ########################
 
+def filter_duplicates(line_list):
+    return list(dict.fromkeys(line_list)) 
 
-def convert_list_to_string(line_list):
-    """
-    Util function
-    convert a list of tokens into string
-    add 
-    """
-    result = ""
-
-    # normalise all tokens first
-    line_list = list(line_list)
+def normalise_all_tokens_in_list(line_list):
     for i in range(len(line_list)):
         if line_list[i] == "AND":
             continue
         line_list[i] = " ".join([normalise_term(x)
                                  for x in line_list[i].split()])
+    return line_list
+
+def convert_list_to_string(line_list, filter=False):
+    """
+    Util function
+    convert a list of tokens into string
+    add 
+
+    Note filter will remove AND too
+    """
+    result = ""
+
+
+    # normalise all tokens first
+    line_list = normalise_all_tokens_in_list(list(line_list))
+
+    if filter:
+        line_list = filter_duplicates(line_list)
 
     for line in line_list:
         if line == "AND":
@@ -139,7 +159,7 @@ def tokenize(line):
     """
     is_bool = False
     is_phrase = False
-    regex = re.compile('(\w*)|(\"\w* \w*\")')
+    regex = re.compile('("\w* \w*")|(\w*)')
     result = []
     for group in regex.findall(line):
         for term in group:
@@ -166,7 +186,7 @@ def thesaurize_term(t):
         for item in synset.lemma_names():
             terms.append(item)
 
-    return set(convert_wordnet_terms(terms))
+    return list(set(convert_wordnet_terms(terms)))
 
 
 def convert_wordnet_terms(terms):
