@@ -12,11 +12,15 @@ vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 total_num_documents = len(document_properties)
 
+# debugging only
+# def normalise_term(x):
+#     return x
 
 def log_tf(x): return 1 + math.log(x, 10)
 
-
 def idf_transform(x): return math.log(total_num_documents/x, 10)
+
+AND = "AND"
 
 ######################## DRIVER FUNCTION ########################
 
@@ -39,34 +43,39 @@ def get_new_query_strings(line):
     # everything after here does not require order, but must be distinct
     tokens = set(tokens)
 
+    ###### NO PHRASE NO BOOL
     if is_phrase and is_bool:
         newlinelist = []
         for token in tokens:
-            if token != "AND":
+            if token != AND:
                 for subtoken in token.split():
                     newlinelist.append(subtoken)
-        result.append(convert_list_to_string(newlinelist))  # no phrase no bool
+        result.append(convert_list_to_string(newlinelist))
+    ######
 
+    ###### PHRASE NO BOOL
     if is_bool:
         newlinelist = []
         for token in tokens:
-            if token != "AND":
+            if token != AND:
                 newlinelist.append(token)
-        result.append(convert_list_to_string(newlinelist))  # phrase no bool
+        result.append(convert_list_to_string(newlinelist))
+    ######
 
+    ###### WORDNET 
     newlinelist = []
     wordnet_used = 0
     for token in tokens:
-        if token != "AND":
+        if token != AND:
             thesaurized = thesaurize_term(token)
             if len(thesaurized) > 0:
                 newlinelist += thesaurize_term(token)
                 wordnet_used += 1
             else:
                 newlinelist += [token]
-
     if wordnet_used > 0:
         result.append(convert_list_to_string(newlinelist, filter=True))  # wordnet no bool
+    ######
 
     return result
 
@@ -96,7 +105,7 @@ def get_new_query_vector(vector, docIDs):
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
 
-    vector = trimVector(vector)
+    vector = trim_vector(vector)
     return vector
 
 ######################## UTIL FUNCTION ########################
@@ -106,7 +115,7 @@ def filter_duplicates(line_list):
 
 def normalise_all_tokens_in_list(line_list):
     for i in range(len(line_list)):
-        if line_list[i] == "AND":
+        if line_list[i] == AND:
             continue
         line_list[i] = " ".join([normalise_term(x)
                                  for x in line_list[i].split()])
@@ -116,9 +125,9 @@ def convert_list_to_string(line_list, filter=False):
     """
     Util function
     convert a list of tokens into string
-    add 
+    filter duplicates if turned on
 
-    Note filter will remove AND too
+    Note filter will remove AND too, do not use this with bool
     """
     result = ""
 
@@ -130,7 +139,7 @@ def convert_list_to_string(line_list, filter=False):
         line_list = filter_duplicates(line_list)
 
     for line in line_list:
-        if line == "AND":
+        if line == AND:
             result += line + " "
             continue
         subline = line.split()
@@ -201,7 +210,7 @@ def convert_wordnet_terms(terms):
     return newterms
 
 
-def trimVector(vector):
+def trim_vector(vector):
     """
     Since Ricco will return a large vector, we will implement a min score for each term.
     Those terms that do not meet the point will be removed
@@ -213,7 +222,7 @@ def trimVector(vector):
     return new_vector
 
 
-def extractValue(tuple):
+def extract_value(tuple):
     """
     Undated method. Will be removed soon.
     """
@@ -234,7 +243,7 @@ def get_vector_from_docID_offset(offset):
     # we need to normalise
     normalisator = 0.
     for key, value in data.items():
-        normalisator += extractValue(value) ** 2
+        normalisator += extract_value(value) ** 2
     normalisator = math.sqrt(normalisator)
 
     return data, normalisator
@@ -252,7 +261,7 @@ def get_new_query_offset(docIDs):
         vector, normalisator = get_vector_from_docID_offset(
             document_properties[docID][VECTOR_OFFSET])
         for key, value in vector.items():
-            normalised = extractValue(value) / normalisator
+            normalised = extract_value(value) / normalisator
             offset[key] = offset.get(key, 0.) + normalised
 
     # Take average
@@ -266,17 +275,14 @@ def get_new_query_offset(docIDs):
 if __name__ == "__main__":
 
     # Ricco Test Case
-    # print(get_new_query_vector({"le": 01.12}, ["246391"]))
-    # print(get_vector_from_docID_offset(290883617))
-    # for docID, value in document_properties.items():
-    #     get_vector_from_docID_offset(value[4])
-    # print(get_vector_from_docID_offset(484612308))
-    # print(document_properties)
+    print(get_new_query_vector({"le": 01.12}, ["246391"]))
+    for docID, value in document_properties.items():
+        get_vector_from_docID_offset(value[4])
 
     # WordNet Test Case
     test_str = 'quiet "phone call"'
     results = []
-    result = tokenize(test_str)
+    bool1, bool2, result = tokenize(test_str)
     for term in result:
         print(term)
         print(thesaurize_term(term))
