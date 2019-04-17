@@ -17,7 +17,6 @@ def log_tf(x): return 1 + math.log(x, 10)
 
 def idf_transform(x): return math.log(total_num_documents/x, 10)
 
-
 ######################## DRIVER FUNCTION ########################
 
 
@@ -31,35 +30,34 @@ def get_new_query_strings(line):
     """
     result = []
 
-    tokens = tokenize(line)
+    is_bool, is_phrase, tokens = tokenize(line)
 
     newlinelist = tokens
-    result.append(convert_list_to_string(newlinelist)) # original query
+    result.append(convert_list_to_string(newlinelist))  # original query
 
     # everything after here does not require order, but must be distinct
     tokens = set(tokens)
 
-    newlinelist = []
-    for token in tokens:
-        if token != "AND":
-            for subtoken in token.split():
-                newlinelist.append(subtoken)
-    result.append(convert_list_to_string(newlinelist)) # no phrase no bool
+    if is_phrase and is_bool:
+        newlinelist = []
+        for token in tokens:
+            if token != "AND":
+                for subtoken in token.split():
+                    newlinelist.append(subtoken)
+        result.append(convert_list_to_string(newlinelist))  # no phrase no bool
 
-    newlinelist = []
-    for token in tokens:
-        if token != "AND":
-            newlinelist.append(token)
-    result.append(convert_list_to_string(newlinelist)) # phrase no bool
-
+    if is_bool:
+        newlinelist = []
+        for token in tokens:
+            if token != "AND":
+                newlinelist.append(token)
+        result.append(convert_list_to_string(newlinelist))  # phrase no bool
 
     newlinelist = []
     for token in tokens:
         if token != "AND":
             newlinelist += thesaurize_term(token)
-            for subtoken in token.split():
-                newlinelist += thesaurize_term(subtoken)
-    result.append(convert_list_to_string(set(newlinelist))) # wordnet no bool 
+    result.append(convert_list_to_string(set(newlinelist)))  # wordnet no bool
 
     return result
 
@@ -102,17 +100,30 @@ def convert_list_to_string(line_list):
     add 
     """
     result = ""
+
+    # normalise all tokens first
+    line_list = list(line_list)
+    for i in range(len(line_list)):
+        if i == "AND":
+            continue
+        line_list[i] = " ".join([normalise_term(x)
+                                 for x in line_list[i].split()])
+
     for line in line_list:
+        if line == "AND":
+            result += line + " "
+            continue
         subline = line.split()
         if len(subline) > 1:
             result += ' "'
             for s in subline:
-                result += normalise_term(s) + " "
+                result += s + " "
             result = result[:-1]
             result += '" '
         else:
-            result += normalise_term(line) + ' '
+            result += line + ' '
     return result.strip().replace("  ", " ")
+
 
 def tokenize(line):
     """
@@ -124,15 +135,24 @@ def tokenize(line):
     ->
     quiet
     phone call
+
+    Also returns is_bool and is_phrase
     """
+    is_bool = False
+    is_phrase = False
     regex = re.compile('(\w*)|(\"\w* \w*\")')
     result = []
     for group in regex.findall(line):
         for term in group:
             if term:
+                if term == "AND":
+                    is_bool = True
+                if '"' in term:
+                    is_phrase = True
                 term = term.strip('"')
                 result.append(term)
-    return result
+    return is_bool, is_phrase, result
+
 
 def thesaurize_term(t):
     """
@@ -159,6 +179,7 @@ def convert_wordnet_terms(terms):
         term = term.replace("_", " ")
         newterms.append(term)
     return newterms
+
 
 def trimVector(vector):
     """
