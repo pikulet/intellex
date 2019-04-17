@@ -17,21 +17,27 @@ def log_tf(x): return 1 + math.log(x, 10)
 
 def idf_transform(x): return math.log(total_num_documents/x, 10)
 
+
 ######################## DRIVER FUNCTION ########################
 
 
 def get_new_query_strings(line):
     """
-    Thesaursus Public Method.
+    Query Expansion Public Method
 
     Given the original query string,
 
     return a list of new query strings generated using predefined rules
     """
     result = []
-    result.append(line) # phrase and bool
 
     tokens = tokenize(line)
+
+    newlinelist = tokens
+    result.append(convert_list_to_string(newlinelist)) # original query
+
+    # everything after here does not require order, but must be distinct
+    tokens = set(tokens)
 
     newlinelist = []
     for token in tokens:
@@ -53,72 +59,14 @@ def get_new_query_strings(line):
             newlinelist += thesaurize_term(token)
             for subtoken in token.split():
                 newlinelist += thesaurize_term(subtoken)
-    result.append(convert_list_to_string(newlinelist)) # wordnet 
+    result.append(convert_list_to_string(set(newlinelist))) # wordnet no bool 
 
     return result
-
-def convert_list_to_string(line_list):
-    """
-    Util function
-    """
-    result = ""
-    for line in line_list:
-        subline = line.split()
-        if len(subline) > 1:
-            result += '"'
-            for s in subline:
-                result += normalise_term(s)
-            result += '" '
-        else:
-            result += normalise_term(line) + ' '
-    return result.strip()
-
-def tokenize(line):
-    """
-    The line will be tokenised to a list of words, using the delimiter as space or "
-
-    For example:
-
-    quiet "phone call"
-    ->
-    quiet
-    phone call
-    """
-    regex = re.compile('(\w*)|(\"\w* \w*\")')
-    result = []
-    for group in regex.findall(line):
-        for term in group:
-            if term:
-                term = term.strip('"')
-                result.append(term)
-    return set(result)
-
-def thesaurize_term(t):
-    """
-    Given a term t, return an list of unique synonyms.
-
-    If a term that has two words is given, the space will be replaced by a _
-    This is the WordNet format
-    """
-    t = t.replace(" ", "_")
-    terms = []
-    for synset in wn.synsets(t):
-        for item in synset.lemma_names():
-            terms.append(item)
-
-    return set(convert_wordnet_terms(terms))
-
-
-def convert_wordnet_terms(terms):
-    """
-    Remove some of the unuseable terms such as _
-    """
-    return [term.replace("_", " ") for term in terms]
 
 
 def get_new_query_vector(vector, docIDs):
     """
-    Ricco Feedback Public Method.
+    Relevance Feedback Public Method
 
     Given original query vector and list of docIDs.
 
@@ -144,6 +92,73 @@ def get_new_query_vector(vector, docIDs):
     vector = trimVector(vector)
     return vector
 
+######################## UTIL FUNCTION ########################
+
+
+def convert_list_to_string(line_list):
+    """
+    Util function
+    convert a list of tokens into string
+    add 
+    """
+    result = ""
+    for line in line_list:
+        subline = line.split()
+        if len(subline) > 1:
+            result += ' "'
+            for s in subline:
+                result += normalise_term(s) + " "
+            result = result[:-1]
+            result += '" '
+        else:
+            result += normalise_term(line) + ' '
+    return result.strip().replace("  ", " ")
+
+def tokenize(line):
+    """
+    The line will be tokenised to a list of words, using the delimiter as space or "
+
+    For example:
+
+    quiet "phone call"
+    ->
+    quiet
+    phone call
+    """
+    regex = re.compile('(\w*)|(\"\w* \w*\")')
+    result = []
+    for group in regex.findall(line):
+        for term in group:
+            if term:
+                term = term.strip('"')
+                result.append(term)
+    return result
+
+def thesaurize_term(t):
+    """
+    Given a term t, return an list of unique synonyms.
+
+    If a term that has two words is given, the space will be replaced by a _
+    This is the WordNet format
+    """
+    t = t.replace(" ", "_")
+    terms = []
+    for synset in wn.synsets(t):
+        for item in synset.lemma_names():
+            terms.append(item)
+
+    return set(convert_wordnet_terms(terms))
+
+
+def convert_wordnet_terms(terms):
+    """
+    Remove some of the unuseable terms such as _
+    """
+    newterms = []
+    for term in terms:
+        term = term.replace("_", " ")
+        newterms.append(term)
+    return newterms
 
 def trimVector(vector):
     """
