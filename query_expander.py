@@ -29,9 +29,14 @@ def get_new_query_strings(line):
     return a list of new query strings generated using predefined rules
     """
     result = []
-    result.append(line) # phrase and bool
 
     tokens = tokenize(line)
+
+    newlinelist = tokens
+    result.append(convert_list_to_string(newlinelist)) # original query
+
+    # everything after here does not require order, but must be distinct
+    tokens = set(tokens)
 
     newlinelist = []
     for token in tokens:
@@ -94,7 +99,7 @@ def tokenize(line):
             if term:
                 term = term.strip('"')
                 result.append(term)
-    return set(result)
+    return result
 
 def thesaurize_term(t):
     """
