@@ -17,10 +17,10 @@ QUERY_FILE_TEST = 'queries\\q1.txt'
 OUTPUT_FILE_TEST = 'output.txt'
 
 ## Extra files
-TITLE_DICTIONARY_FILE = "../dictionary_title.txt"
-TITLE_POSTINGS_FILE = "../postings_title.txt"
-VECTOR_POSTINGS_FILE = "../postings_vector.txt"
-DOCUMENT_PROPERTIES_FILE = "../properties.txt"
+TITLE_DICTIONARY_FILE = "dictionary_title.txt"
+TITLE_POSTINGS_FILE = "postings_title.txt"
+VECTOR_POSTINGS_FILE = "postings_vector.txt"
+DOCUMENT_PROPERTIES_FILE = "properties.txt"
 
 ## Cut off points
 ROCCHIO_MIN_CUTOFF_POINT = 0.01
@@ -33,9 +33,8 @@ TITLE_WEIGHT = 1
 CONTENT_WEIGHT = 1
 
 ## Search modes
-EXPAND_QUERY = False
+EXPAND_QUERY = True
 NUM_QUERIES_IN_FILE = 1
 MULTIPLE_QUERIES_IN_FILE = False
-BOOLEAN_SEARCH = False
-NO_PHRASES = True
 CONTENT_ONLY = True
+NUM_DOCS_TO_FEEDBACK = 1000

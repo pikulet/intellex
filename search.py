@@ -61,32 +61,29 @@ def main():
                 query_data = f.read().splitlines()
 
             original_query_string = query_data[0]
-            print(query_data[0])
             queries = get_new_query_strings(original_query_string)
             positive_list = query_data[1:]
             result = [] + positive_list
             result_set = set(result)
-            print(queries)
             for query in queries:
                 query = get_query(query)
                 docs = get_best_documents(p, dictionary, doc_properties, query)
                 docs = list(filter(lambda x: x not in result_set, docs))
-                result_set.union(set(docs))
+                result_set = result_set.union(set(docs))
                 result += docs
 
-        with open(file_of_output, 'w+') as f:
-            f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
-
-        if EXPAND_QUERY:
-            query = get_query(query_data[0])
-            positive_list = query_data[1:] if not MULTIPLE_QUERIES_IN_FILE else []
-            relevant_docs = positive_list + result
-            extra_docs = expand_query(p, dictionary, doc_properties, query, relevant_docs)
-            extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
-            relevant_docs += extra_docs
-
             with open(file_of_output, 'w+') as f:
-                f.write(' '.join([str(x) for x in relevant_docs]) + END_LINE_MARKER)
+                f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
+
+            if EXPAND_QUERY:
+                query = get_query(query_data[0])
+                relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
+                extra_docs = expand_query(p, dictionary, doc_properties, query, relevant_docs)
+                extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
+                relevant_docs += extra_docs
+
+                with open(file_of_output, 'w+') as f:
+                    f.write(' '.join([str(x) for x in relevant_docs]) + END_LINE_MARKER)
 
 if __name__ == "__main__":
     import time

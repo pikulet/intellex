@@ -193,7 +193,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary)
     triword_plists = get_phrase_posting_lists(postings_handler, triwords, dictionary)
 
-    if query_is_boolean and BOOLEAN_SEARCH:
+    if query_is_boolean:
         single_term_plists, biword_plists, triword_plists = get_posting_list_intersection(single_term_plists,
                                                                                           biword_plists, triword_plists)
 

@@ -1,1 +1,1 @@
-"fertility treatment" AND damages
+doctor AND "charges" AND malpractice
