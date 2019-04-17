@@ -53,25 +53,28 @@ def get_new_query_strings(line):
             newlinelist += thesaurize_term(token)
             for subtoken in token.split():
                 newlinelist += thesaurize_term(subtoken)
-    result.append(convert_list_to_string(newlinelist)) # wordnet 
+    result.append(convert_list_to_string(set(newlinelist))) # wordnet 
 
     return result
 
 def convert_list_to_string(line_list):
     """
     Util function
+    convert a list of tokens into string
+    add 
     """
     result = ""
     for line in line_list:
         subline = line.split()
         if len(subline) > 1:
-            result += '"'
+            result += ' "'
             for s in subline:
-                result += normalise_term(s)
+                result += normalise_term(s) + " "
+            result = result[:-1]
             result += '" '
         else:
             result += normalise_term(line) + ' '
-    return result.strip()
+    return result.strip().replace("  ", " ")
 
 def tokenize(line):
     """
@@ -113,7 +116,11 @@ def convert_wordnet_terms(terms):
     """
     Remove some of the unuseable terms such as _
     """
-    return [term.replace("_", " ") for term in terms]
+    newterms = []
+    for term in terms:
+        term = term.replace("_", " ")
+        newterms.append(term)
+    return newterms
 
 
 def get_new_query_vector(vector, docIDs):
