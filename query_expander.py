@@ -104,7 +104,7 @@ def convert_list_to_string(line_list):
     # normalise all tokens first
     line_list = list(line_list)
     for i in range(len(line_list)):
-        if i == "AND":
+        if line_list[i] == "AND":
             continue
         line_list[i] = " ".join([normalise_term(x)
                                  for x in line_list[i].split()])
@@ -150,7 +150,7 @@ def tokenize(line):
                 if '"' in term:
                     is_phrase = True
                 term = term.strip('"')
-                result.append(term)
+                result.append(term.strip())
     return is_bool, is_phrase, result
 
 
