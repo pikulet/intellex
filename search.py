@@ -61,6 +61,7 @@ def main():
                 query_data = f.read().splitlines()
 
             original_query_string = query_data[0]
+            print(query_data[0])
             queries = get_new_query_strings(original_query_string)
             positive_list = query_data[1:]
             result = [] + positive_list

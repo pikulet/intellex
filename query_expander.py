@@ -61,7 +61,6 @@ def get_new_query_strings(line):
 
     return result
 
-
 def get_new_query_vector(vector, docIDs):
     """
     Relevance Feedback Public Method
@@ -254,9 +253,10 @@ if __name__ == "__main__":
     # print(document_properties)
 
     # WordNet Test Case
-    test_str = 'quiet "phone call"'
-    results = []
-    result = tokenize(test_str)
-    for term in result:
-        print(term)
-        print(thesaurize_term(term))
+    test_str = '"fertility treatment" AND damage'
+    print(get_new_query_strings(test_str))
+    # results = []
+    # result = tokenize(test_str)
+    # for term in result:
+    #     print(term)
+    #     print(thesaurize_term(term))
