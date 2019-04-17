@@ -53,7 +53,7 @@ def get_new_query_strings(line):
             newlinelist += thesaurize_term(token)
             for subtoken in token.split():
                 newlinelist += thesaurize_term(subtoken)
-    result.append(convert_list_to_string(set(newlinelist))) # wordnet 
+    result.append(convert_list_to_string(set(newlinelist))) # wordnet no bool 
 
     return result
 
