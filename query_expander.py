@@ -28,10 +28,50 @@ def get_new_query_strings(line):
 
     return a list of new query strings generated using predefined rules
     """
+    result = []
+    result.append(line) # phrase and bool
+
     tokens = tokenize(line)
 
-    # do something with the tokens
+    newlinelist = []
+    for token in tokens:
+        if token != "AND":
+            for subtoken in token.split():
+                newlinelist.append(subtoken)
+    result.append(convert_list_to_string(newlinelist)) # no phrase no bool
 
+    newlinelist = []
+    for token in tokens:
+        if token != "AND":
+            newlinelist.append(token)
+    result.append(convert_list_to_string(newlinelist)) # phrase no bool
+
+
+    newlinelist = []
+    for token in tokens:
+        if token != "AND":
+            newlinelist += thesaurize_term(token)
+            for subtoken in token.split():
+                newlinelist += thesaurize_term(subtoken)
+    result.append(convert_list_to_string(newlinelist)) # wordnet 
+
+    return result
+
+def convert_list_to_string(line_list):
+    """
+    Util function
+    """
+    result = ""
+    for line in line_list:
+        subline = line.split()
+        if len(subline) > 1:
+            result += '"'
+            for s in subline:
+                result += normalise_term(s)
+            result += '" '
+        else:
+            result += normalise_term(line) + ' '
+    return result.strip()
 
 def tokenize(line):
     """
@@ -51,7 +91,7 @@ def tokenize(line):
             if term:
                 term = term.strip('"')
                 result.append(term)
-    return result
+    return set(result)
 
 def thesaurize_term(t):
     """
@@ -66,16 +106,14 @@ def thesaurize_term(t):
         for item in synset.lemma_names():
             terms.append(item)
 
-    return set(filter_and_normalise_terms(terms))
+    return set(convert_wordnet_terms(terms))
 
 
-def filter_and_normalise_terms(terms):
+def convert_wordnet_terms(terms):
     """
     Remove some of the unuseable terms such as _
-
-    Normalise the terms using the predefined rule
     """
-    return [normalise_term(term) for term in terms if "_" not in term]
+    return [term.replace("_", " ") for term in terms]
 
 
 def get_new_query_vector(vector, docIDs):
