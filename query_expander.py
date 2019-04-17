@@ -17,12 +17,13 @@ def log_tf(x): return 1 + math.log(x, 10)
 
 def idf_transform(x): return math.log(total_num_documents/x, 10)
 
+
 ######################## DRIVER FUNCTION ########################
 
 
 def get_new_query_strings(line):
     """
-    Thesaursus Public Method.
+    Query Expansion Public Method
 
     Given the original query string,
 
@@ -61,6 +62,38 @@ def get_new_query_strings(line):
     result.append(convert_list_to_string(set(newlinelist))) # wordnet no bool 
 
     return result
+
+
+def get_new_query_vector(vector, docIDs):
+    """
+    Relevance Feedback Public Method
+
+    Given original query vector and list of docIDs.
+
+    The query vector is modelled as sparse vector where it is a term -> score mapping. 
+    Zero score terms will not be stored.
+
+    Calculate Centroid from docIDs and add it to original query vector. 
+
+    Trim the vector according to be predefined minium score
+    """
+
+    # Guard methods
+    if not isinstance(vector, dict):
+        raise Exception("Wrong usage of method: vector should be a dict")
+
+    if not isinstance(docIDs, list):
+        raise Exception("Wrong usage of method: docIDs should be a list")
+
+    offset = get_new_query_offset(docIDs)
+    for key, value in offset.items():
+        vector[key] = vector.get(key, 0.) + value
+
+    vector = trimVector(vector)
+    return vector
+
+######################## UTIL FUNCTION ########################
+
 
 def convert_list_to_string(line_list):
     """
@@ -126,36 +159,6 @@ def convert_wordnet_terms(terms):
         term = term.replace("_", " ")
         newterms.append(term)
     return newterms
-
-
-def get_new_query_vector(vector, docIDs):
-    """
-    Ricco Feedback Public Method.
-
-    Given original query vector and list of docIDs.
-
-    The query vector is modelled as sparse vector where it is a term -> score mapping. 
-    Zero score terms will not be stored.
-
-    Calculate Centroid from docIDs and add it to original query vector. 
-
-    Trim the vector according to be predefined minium score
-    """
-
-    # Guard methods
-    if not isinstance(vector, dict):
-        raise Exception("Wrong usage of method: vector should be a dict")
-
-    if not isinstance(docIDs, list):
-        raise Exception("Wrong usage of method: docIDs should be a list")
-
-    offset = get_new_query_offset(docIDs)
-    for key, value in offset.items():
-        vector[key] = vector.get(key, 0.) + value
-
-    vector = trimVector(vector)
-    return vector
-
 
 def trimVector(vector):
     """
