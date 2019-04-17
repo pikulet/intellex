@@ -268,25 +268,3 @@ def get_new_query_offset(docIDs):
         offset[k] /= num_of_docs
 
     return offset
-
-######################## TEST FUNCTION ########################
-
-if __name__ == "__main__":
-
-    # Ricco Test Case
-    print(get_new_query_vector({"le": 01.12}, ["246391"]))
-    for docID, value in document_properties.items():
-        get_vector_from_docID_offset(value[4])
-
-    # WordNet Test Case
-    test_str = 'quiet "phone call"'
-    results = []
-    bool1, bool2, result = tokenize(test_str)
-    for term in result:
-        print(term)
-        print(thesaurize_term(term))
-
-    # Query Test case
-    for line in open("queries/validation/queries1.txt", encoding='utf-8').readlines():
-        a = get_new_query_strings(line.strip())
-        print(a)
