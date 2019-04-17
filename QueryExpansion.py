@@ -3,7 +3,6 @@ from constants import *
 from properties_helper import VECTOR_OFFSET
 import math
 import re
-import pprint
 from nltk.corpus import wordnet as wn
 
 ########################### DEFINE CONSTANTS ###########################
@@ -27,7 +26,7 @@ AND = "AND"
 
 def get_new_query_strings(line):
     """
-    Query Expansion Public Method
+    First Level Query Expansion Public Method
 
     Given the original query string,
 
@@ -270,8 +269,8 @@ def get_new_query_offset(docIDs):
 
     return offset
 
+######################## TEST FUNCTION ########################
 
-# TEST METHODS
 if __name__ == "__main__":
 
     # Ricco Test Case
@@ -286,3 +285,8 @@ if __name__ == "__main__":
     for term in result:
         print(term)
         print(thesaurize_term(term))
+
+    # Query Test case
+    for line in open("queries/validation/queries1.txt", encoding='utf-8').readlines():
+        a = get_new_query_strings(line.strip())
+        print(a)
