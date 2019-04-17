@@ -36,6 +36,15 @@ def get_posting(postings_handler, dictionary, t):
 ### Retrieve a query format given the query file
 ###
 
+def get_query(query):
+    is_boolean = "AND" in query
+    if is_boolean:
+        query_text = parse_boolean_query(query)
+    else:
+        query_text = parse_query(query)
+    return query_text, is_boolean
+
+'''
 def get_query(query_file, query_line=0, multiple_queries=False, no_phrases=False):
     query = query_file[query_line]
     is_boolean = "AND" in query
@@ -50,6 +59,7 @@ def get_query(query_file, query_line=0, multiple_queries=False, no_phrases=False
 
     positive_list = [int(x) for x in query_file[1:]] if not multiple_queries else []
     return query_text, positive_list, is_boolean
+'''
 
 def parse_query(query):
     '''
@@ -172,7 +182,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     '''
     query_terms = list(filter(lambda x: type(x) == list or x in dictionary, query[0])) # remove terms not in dic
     query_terms = get_term_frequencies(query_terms, dictionary)
-    query_is_boolean = query[2]
+    query_is_boolean = query[1]
 
     single_terms = list(filter(lambda x: (type(x[0]) != tuple), query_terms))
     single_terms += list(map(lambda x: (x[0][0], x[1]), list(filter(lambda x: (type(x[0]) == tuple and len(x[0]) == 1), query_terms))))
