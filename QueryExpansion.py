@@ -63,7 +63,7 @@ def get_new_query_strings(line):
         result.append(convert_list_to_string(newlinelist))
     ######
 
-    ###### WORDNET 
+    ###### WORDNET NO BOOL
     newlinelist = []
     wordnet_used = 0
     for token in tokens:
@@ -75,7 +75,7 @@ def get_new_query_strings(line):
             else:
                 newlinelist += [token]
     if wordnet_used > 0:
-        result.append(convert_list_to_string(newlinelist, filter=True))  # wordnet no bool
+        result.append(convert_list_to_string(newlinelist, filter=True))
     ######
 
     print ("New Query:")
