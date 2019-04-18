@@ -26,7 +26,7 @@ AND = "AND"
 
 def get_new_query_strings(line):
     """
-    First Level Query Expansion Public Method
+    First Level Query Refinement Public Method
 
     Given the original query string,
 
@@ -45,7 +45,7 @@ def get_new_query_strings(line):
     tokens = set(tokens)
 
     ###### NO PHRASE NO BOOL
-    if is_phrase and is_bool:
+    if is_phrase:
         newlinelist = []
         for token in tokens:
             if token != AND:
