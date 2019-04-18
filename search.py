@@ -3,7 +3,7 @@ import getopt
 import sys
 from properties_helper import get_document_properties
 from constants import *
-from query_expander import get_new_query_strings
+from QueryExpansion import get_new_query_strings
 
 ########################### DEFINE CONSTANTS ###########################
 
