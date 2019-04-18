@@ -32,6 +32,8 @@ def get_new_query_strings(line):
 
     return a list of new query strings generated using predefined rules
     """
+    print ("Original Query:")
+    print (line)
     result = []
 
     is_bool, is_phrase, tokens = tokenize(line)
@@ -76,6 +78,8 @@ def get_new_query_strings(line):
         result.append(convert_list_to_string(newlinelist, filter=True))  # wordnet no bool
     ######
 
+    print ("New Query:")
+    print(result)
     return result
 
 def get_new_query_vector(vector, docIDs):
