@@ -4,6 +4,8 @@ from properties_helper import VECTOR_OFFSET
 import math
 import re
 from nltk.corpus import wordnet as wn
+from nltk.corpus import stopwords
+
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -21,6 +23,8 @@ def idf_transform(x): return math.log(total_num_documents/x, 10)
 
 AND = "AND"
 
+stopwords =  set(stopwords.words('english'))
+
 ######################## DRIVER FUNCTION ########################
 
 
@@ -37,36 +41,73 @@ def get_new_query_strings(line):
     result = []
 
     is_bool, is_phrase, tokens = tokenize(line)
+    # does not require order, but must be distinct
+    stokens = list(set(tokens))
 
-    newlinelist = tokens
-    result.append(convert_list_to_string(newlinelist))  # original query
+    ###### PHRASE NO BOOL
+    if is_bool:
+        newlinelist = []
+        for token in stokens:
+            if token != AND:
+                newlinelist.append(token)
+        result.append(convert_list_to_string(newlinelist))
+    ######
 
-    # everything after here does not require order, but must be distinct
-    tokens = set(tokens)
+    ###### Original
+    result.append(convert_list_to_string(tokens))
+    ######
+
+    ###### Original stripped stopwords
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         if token in stopwords:
+    #             # remember to drop the extra AND
+    #             if len(newlinelist) > 0 and newlinelist[-1] == AND:
+    #                 newlinelist = newlinelist[:-1]
+    #             pass
+    #         else:
+    #             newlinelist += [token]
+    #     else:
+    #         # remember to drop the extra AND in front
+    #         if len(newlinelist) == 0:
+    #             continue
+    #         newlinelist += [AND]
+    # result.append(convert_list_to_string(newlinelist))
+    ######
+
+
+    ###### Original with Wordnet
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         thesaurized = thesaurize_term(token)
+    #         if len(thesaurized) > 0:
+    #             newlinelist += thesaurize_term(token)
+    #         else:
+    #             newlinelist += [token]
+    #     else:
+    #         newlinelist += [AND]
+    # result.append(convert_list_to_string(newlinelist))  # original query
+    ######
+
+
 
     ###### NO PHRASE NO BOOL
     if is_phrase:
         newlinelist = []
-        for token in tokens:
+        for token in stokens:
             if token != AND:
                 for subtoken in token.split():
                     newlinelist.append(subtoken)
         result.append(convert_list_to_string(newlinelist))
     ######
 
-    ###### PHRASE NO BOOL
-    if is_bool:
-        newlinelist = []
-        for token in tokens:
-            if token != AND:
-                newlinelist.append(token)
-        result.append(convert_list_to_string(newlinelist))
-    ######
 
     ###### WORDNET NO BOOL
     newlinelist = []
     wordnet_used = 0
-    for token in tokens:
+    for token in stokens:
         if token != AND:
             thesaurized = thesaurize_term(token)
             if len(thesaurized) > 0:
