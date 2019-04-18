@@ -1,11 +1,12 @@
 from data_helper import *
 from constants import *
-from index_helper import Dictionary, PostingList
+from Dictionary import Dictionary
+from PostingList import PostingList
 from properties_helper import COURT_HIERARCHY
 from Eval import Eval, get_term_frequencies
 from PositionalMerge import get_postings_from_phrase
 from IntersectMerge import get_intersected_posting_lists
-from query_expander import get_new_query_vector
+from QueryExpansion import get_new_query_vector
 import re
 import heapq
 

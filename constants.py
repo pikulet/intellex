@@ -19,7 +19,7 @@ OUTPUT_FILE_TEST = 'output.txt'
 ## Extra files
 TITLE_DICTIONARY_FILE = "dictionary_title.txt"
 TITLE_POSTINGS_FILE = "postings_title.txt"
-VECTOR_POSTINGS_FILE = "postings_vector.txt"
+VECTOR_POSTINGS_FILE = "vector.txt"
 DOCUMENT_PROPERTIES_FILE = "properties.txt"
 
 ## Cut off points

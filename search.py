@@ -1,4 +1,3 @@
-from index import normalise_term
 from search_helper import *
 import getopt
 import sys

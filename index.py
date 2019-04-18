@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from index_helper import *
+from Dictionary import Dictionary
+from PostingList import PostingList
 from data_helper import *
 from properties_helper import *
 from constants import *
@@ -10,16 +11,11 @@ import math
 from nltk import word_tokenize
 import getopt
 import sys
-
 try:
     from tqdm import tqdm
 except ImportError:
     tqdm = lambda *i, **kwargs: i[0]
 # tqdm = lambda *i, **kwargs: i[0] # this is to disable tqdm
-
-########################### DEFINE CONSTANTS ###########################
-
-PORTER_STEMMER = PorterStemmer()
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
@@ -58,6 +54,7 @@ def read_files():
 
 ### Data parallelization method to speed up nltk word_tokenize
 ### Ultimate filter method to boost speed while cleaning up strings
+###
 def ntlk_tokenise_func(row):
     content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_CONTENT_NO])]))
     title = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO])]))
@@ -66,11 +63,13 @@ def ntlk_tokenise_func(row):
 
     return row[DF_DOC_ID_NO], title, content, date, court
 
-## util function
+## Util Function for Mulitprocessing Pool
+## 
 def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-
+### Main Function
+###
 def main():
     # For lazy mode since we are lazy
     if len(sys.argv) <= 1:
@@ -149,11 +148,13 @@ def main():
             pool.close()
 
 ### Save the indexing data to disk
+###
 def save_data(dictionary, postings, total_num_documents):
     postings.save_to_disk(dictionary)
-    dictionary.save_to_disk(total_num_documents)
+    dictionary.save_to_disk()
 
 ### Save the vector data to disk
+###
 def save_vector(dictionary, total_num_documents, document_vectors):
     pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
 
@@ -165,6 +166,77 @@ def save_vector(dictionary, total_num_documents, document_vectors):
         store_data_with_handler(pfilehandler, vector)
 
     pfilehandler.close()
+
+### Process a document content body directly (content must be a list of normalized terms)
+###
+def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
+    vector = dict()                 # term vector for this document
+    biword_vector = dict()         # biword vector for this document
+    triword_vector = dict()        # triword vector for this document
+
+    position_counter = 0
+    biword_flag = ""
+    triword_flag = ["", ""]
+
+    for t in content:
+        add_data(docID, t, position_counter, dictionary, postings)
+        add_vector_count(t, vector)
+        if biword_flag:
+            add_vector_count((biword_flag, t), biword_vector)
+        if triword_flag[0] and triword_flag[1]:
+            add_vector_count((triword_flag[0], triword_flag[1], t), triword_vector)
+
+        # after storing, move the flag
+        biword_flag = t
+        triword_flag[0] = triword_flag[1]
+        triword_flag[1] = t
+        position_counter += 1   
+
+    # convert_tf(vector)
+    # convert_tf(biword_vector)
+    # convert_tf(triword_vector)
+
+    return vector, biword_vector, triword_vector
+
+### Add information about term and position to dictionary and posting list
+###
+def add_data(docID, term, position, dictionary, postings):
+    if dictionary.has_term(term):
+        termID = dictionary.get_termID(term)
+        added_new_docID = postings.add_position_data(termID, docID, position)
+        
+        if added_new_docID:
+            dictionary.add_df(term)
+
+    else:
+        termID = postings.add_new_term_data(docID, position)
+        dictionary.add_term(term, termID)      
+
+### Get log tf, given the normal tf
+###
+def log_tf(x): 
+    return 1 + math.log(x, 10)
+
+### Add the term count to the vector, for calculating document length
+###
+def add_vector_count(term, vector):
+    if term in vector:
+        vector[term] += 1
+    else:
+        vector[term] = 1
+
+### Convert a content vector to tf-form for calculating document length
+###
+def convert_tf(vector):
+    for t, tf in vector.items():
+        vector[t] = log_tf(tf)
+    return vector
+
+### Calculate the length of a vector
+###
+def get_length(vector):
+    return math.sqrt(sum(map(lambda x: x**2, vector.values())))
+
 
 if __name__ == "__main__":
     start = time.time()

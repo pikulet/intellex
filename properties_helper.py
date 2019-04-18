@@ -54,6 +54,5 @@ def get_court_priority(court):
     return COURT_HIERARCHY.get(court, 3)
 
 def get_recent_level(timestamp):
-    timestamp = timestamp.to_pydatetime()
     difference = CURRENT_TIME - timestamp
     return difference.total_seconds()
