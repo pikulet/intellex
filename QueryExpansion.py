@@ -70,7 +70,7 @@ def get_new_query_strings(line):
 
     # Create tokens out of the query string
     is_bool, is_phrase, tokens = tokenize(line)
-    stokens = list(set(tokens))     # no order and distinct
+    stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
     ###### 6. NO PHRASE BOOL
     newlinelist = []
