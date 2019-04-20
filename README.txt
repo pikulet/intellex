@@ -59,9 +59,15 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 
 # Indexing Algorithm...
 
+## Parallelising NLTK tokenisation
+
 ## Storing biword and triword information
 
 # Searching Algorithm
+
+## Merging Algorithms
+### PositionalMerge
+### IntersectMerge
 
 ## Query expansion
 ### Relaxing AND and phrasal queries
