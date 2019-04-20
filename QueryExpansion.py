@@ -36,10 +36,10 @@ def get_new_query_strings(line):
     First Level Query Refinement Public Method
     This method takes a str as the input. This str should be the original query string that is fed into the program.
     The possible transformations available are:
-    1. Phrase + Bool
-    2. Phrase - Bool
+    1. + Phrase + Bool
+    2. + Phrase - Bool
     3. - Phrase - Bool
-    4. Wordnet - Bool
+    4. + Wordnet - Bool
     5. Riccho (not used here)
     6. - Phrase + Bool
     A list of new query strings will be returned in the order of 3124. 
@@ -60,16 +60,21 @@ def get_new_query_strings(line):
 
 
     Additional information:
-    Wordnet finds the possible synonyms of each term in the query string and puts all of them back into the query string
+    Wordnet finds the possible synonyms/hyponym of each term in the query string and puts all of them back into the query string
 
     :param line: Query String to be expanded
     """
+    if not isinstance(line, str):
+        raise Exception("Wrong usage of method: query string should be a str")
+
     print ("Original Query:")
     print (line)
+
+    # This is the result to be returned
     result = []
 
     # Create tokens out of the query string
-    is_bool, is_phrase, tokens = tokenize(line)
+    is_bool, is_phrase, tokens = tokenize(line) # no distinct.
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
     ###### 6. NO PHRASE BOOL
@@ -109,7 +114,7 @@ def get_new_query_strings(line):
             newlinelist.append(token)
     result.append(convert_list_to_string(newlinelist))
 
-    ##### 4. NO BOOL with Wordnet hyponym
+    ##### 4. NO BOOL Wordnet Hyponym
     newlinelist = []
     for token in stokens:
         if token != AND:
