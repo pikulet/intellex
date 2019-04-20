@@ -3,7 +3,7 @@ import getopt
 import sys
 from properties_helper import get_document_properties
 from constants import *
-from query_expander import get_new_query_strings
+from QueryExpansion import get_new_query_strings
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -61,10 +61,12 @@ def main():
 
             original_query_string = query_data[0]
             queries = get_new_query_strings(original_query_string)
+            print(queries)
             positive_list = query_data[1:]
             result = [] + positive_list
             result_set = set(result)
             for query in queries:
+                print(len(result))
                 query = get_query(query)
                 docs = get_best_documents(p, dictionary, doc_properties, query)
                 docs = list(filter(lambda x: x not in result_set, docs))
