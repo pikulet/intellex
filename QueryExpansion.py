@@ -36,10 +36,10 @@ def get_new_query_strings(line):
     First Level Query Refinement Public Method
     This method takes a str as the input. This str should be the original query string that is fed into the program.
     The possible transformations available are:
-    1. Phrase + Bool
-    2. Phrase - Bool
+    1. + Phrase + Bool
+    2. + Phrase - Bool
     3. - Phrase - Bool
-    4. Wordnet - Bool
+    4. + Wordnet - Bool
     5. Riccho (not used here)
     6. - Phrase + Bool
     A list of new query strings will be returned in the order of 3124. 
@@ -60,16 +60,21 @@ def get_new_query_strings(line):
 
 
     Additional information:
-    Wordnet finds the possible synonyms of each term in the query string and puts all of them back into the query string
+    Wordnet finds the possible synonyms/hyponym of each term in the query string and puts all of them back into the query string
 
     :param line: Query String to be expanded
     """
+    if not isinstance(line, str):
+        raise Exception("Wrong usage of method: query string should be a str")
+
     print ("Original Query:")
     print (line)
+
+    # This is the result to be returned
     result = []
 
     # Create tokens out of the query string
-    is_bool, is_phrase, tokens = tokenize(line)
+    is_bool, is_phrase, tokens = tokenize(line) # no distinct.
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
     ###### 6. NO PHRASE BOOL
@@ -109,7 +114,7 @@ def get_new_query_strings(line):
             newlinelist.append(token)
     result.append(convert_list_to_string(newlinelist))
 
-    ##### 4. NO BOOL with Wordnet hyponym
+    ##### 4. NO BOOL Wordnet Hyponym
     newlinelist = []
     for token in stokens:
         if token != AND:
@@ -196,14 +201,6 @@ def get_new_query_offset(docIDs):
 
     return trim_vector(offset)
 
-# def thesaurize_term_with_pos(word, pos):
-#     if (len(word.split()) >1 ):
-#         word = word.replace(' ', '_')
-#     for synset in wordnet.synsets(word, pos=pos):
-#         for lemma in synset.lemmas():
-#             non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
-#             yield non_lemmatized
-        
 def filter_duplicates(line_list):
     """
     This method takes in a list of terms and removes the duplicated terms.
@@ -226,6 +223,8 @@ def normalise_all_tokens_in_list(line_list):
     """
     This method takes in a list of terms and normalises each of them to the prefined normalised form.
     A list of normalised terms are returned.
+
+    :param: line_list: list of tokens
     """
     for i in range(len(line_list)):
         if line_list[i] == AND:
@@ -240,9 +239,11 @@ def convert_list_to_string(line_list, filter=False):
     convert a list of tokens into string
     filter duplicates if turned on
     Note that filter will remove AND too, do not use this with bool query
+
+    :param: line_list: list of tokens
+    :param: filter: enable removal of duplicates
     """
     result = ""
-
 
     # normalise all tokens first
     line_list = normalise_all_tokens_in_list(list(line_list))
@@ -277,6 +278,8 @@ def tokenize(line):
     phone call
 
     Also returns is_bool and is_phrase to indicate if the line has boolean query or phrases respectively
+
+    :param: line: Query string
     """
     is_bool = False
     is_phrase = False
@@ -294,29 +297,49 @@ def tokenize(line):
     return is_bool, is_phrase, result
 
 
-def thesaurize_term(t):
+def thesaurize_term(word):
     """
     Given a term t, return an list of unique synonyms.
     If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
     The resulting list will also have _ replaced back to space.
+
+    :param: word: Word to be used against word
     """
-    t = t.replace(" ", "_")
+    word = word.replace(" ", "_")
     terms = []
-    for synset in wordnet.synsets(t):
+    for synset in wordnet.synsets(word):
         for item in synset.lemma_names():
             terms.append(item)
 
     return list(set(convert_wordnet_terms(terms)))
 
-def hyponymise_term(t):
+
+def thesaurize_term_with_pos(word, pos):
+    """
+    Similar to theasurize term, this method takes in the pos tag of the word, which helps wordnet to further reduce the number of terms returned
+
+    :param: word: Word to be used against word
+    :param: pos: Pos Tag of the word
+    """
+    if (len(word.split()) >1 ):
+        word = word.replace(' ', '_')
+    for synset in wordnet.synsets(word, pos=pos):
+        for lemma in synset.lemmas():
+            non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
+            yield non_lemmatized
+        
+
+def hyponymise_term(word):
     """
     Given a term t, return an list of unique hyponyms.
     If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
     The resulting list will also have _ replaced back to space.
+
+    :param: word: Word to be used against word
     """
-    t = t.replace(" ", "_")
+    word = word.replace(" ", "_")
     terms = []
-    for synset in wordnet.synsets(t):
+    for synset in wordnet.synsets(word):
         for item in synset.closure(lambda s: s.hyponyms()):
             terms += item.lemma_names()
 
@@ -326,6 +349,8 @@ def hyponymise_term(t):
 def convert_wordnet_terms(terms):
     """
     Convert wordnet format back to normal terms such as replacing _ with spaces
+
+    :param: terms: List of terms in wordnet format
     """
     newterms = []
     for term in terms:
@@ -333,11 +358,12 @@ def convert_wordnet_terms(terms):
         newterms.append(term)
     return newterms
 
-
 def trim_vector(vector):
     """
     Since Riccho will return a large vector, we will only return the top k terms
     the top k terms must not be a stopword or punctuation
+
+    :param: vector: Sparse vector
     """
     new_vector = dict()
     number_of_terms_insert = 0
@@ -357,6 +383,8 @@ def extract_value(tuple):
     """
     This method is to abstract away the format of vector.txt. Vector.txt keeps all vectors in a tf, df format. 
     Currently, this method produces tfidf.
+
+    :param: tuple: Tuple data that is saved inside vector.txt
     """
     return log_tf(tuple[0]) *\
         idf_transform(tuple[1])
@@ -364,7 +392,9 @@ def extract_value(tuple):
 
 def get_vector_from_docID_offset(offset):
     """
-    Given the docID offset, get the vector dict from vector.txt
+    Given the docID offset, get the sparse vector from vector.txt
+
+    :param: offset: integer offset of the sparse vector inside vector.txt
     """
 
     # vector are stored as sparse indexes
