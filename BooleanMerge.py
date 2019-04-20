@@ -1,3 +1,7 @@
+'''
+The BooleanMerge module does a hard conjunction (AND) for posting lists
+'''
+
 import math
 
 DOC_ID_INDEX = 0

@@ -1,11 +1,10 @@
 from data_helper import store_data
 
-# A dictionary class that keeps track of terms --> document_frequency/ idf, termID/ term_offset
-# termID is a sequential value to access the posting list of the term at indexing time
-# term_offset is the exact position (in bytes) of the term posting list in postings.txt
-###
-
-
+'''
+A dictionary class that keeps track of terms --> document_frequency/ idf, termID/ term_offset.
+termID is a sequential value to access the posting list of the term at indexing time
+term_offset is the exact position (in bytes) of the term posting list in postings.txt
+'''
 class Dictionary():
 
     DF = 0

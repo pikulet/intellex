@@ -10,6 +10,7 @@ def get_document_properties(properties_file):
 ########################### DEFINE CONSTANTS ###########################
 
 # docID --> [content_length, title_length, court_priority, date_posted, vector_offset, bigram_normalise_Factor, trigram_normalise_Factor]
+# Every property is assigned an index in the list of document properties
 NUM_DOCUMENT_PROPERTIES = 9
 CONTENT_LENGTH, TITLE_LENGTH, COURT_PRIORITY, DATE_POSTED, VECTOR_OFFSET, BIGRAM_CONTENT_LENGTH, TRIGRAM_CONTENT_LENGTH, BIGRAM_TITLE_LENGTH, TRIGRAM_TITLE_LENGTH = list(range(NUM_DOCUMENT_PROPERTIES))
 
@@ -46,6 +47,7 @@ def assign_property(docID, property_index, value):
     document_properties[docID][property_index] = value
 
 def update_court(docID, new_priority):
+    # only the highest court priority (smallest priority number) is saved
     document_properties[docID][COURT_PRIORITY] = min(document_properties[docID][COURT_PRIORITY], new_priority)
 
 ########################### PROCESSING METHODS ###########################

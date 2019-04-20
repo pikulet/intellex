@@ -2,13 +2,14 @@ from data_helper import store_data_with_handler
 try:
     from tqdm import tqdm
 except ImportError:
-    tqdm = lambda *i, **kwargs: i[0]
-# tqdm = lambda *i, **kwargs: i[0] # this is to disable tqdm
+    tqdm = lambda *i, **kwargs: i[0] # disables tqdm
 
-
-### A Postings class that collects all the posting lists.
-### Each posting list is a dictionary mapping docIDs to term frequencies
-###
+'''
+A Postings class that collects all the posting lists.
+Each posting list is a dictionary mapping docIDs to a list [term frequency, list_of_positions]
+For example, doc1 has "egg" in position 1 and 15, doc2 has "egg" in position 3.
+"egg" -> { doc1 : [2, [1, 15]], doc2 : [1, [3]] }
+'''
 class PostingList():
 
     DOC_ID = None
@@ -52,11 +53,6 @@ class PostingList():
             new_entry = [docID] + posting[docID]
             sorted_list.append(new_entry)
 
-        # This is the new indexes
-        # PostingList.DOC_ID = 0
-        # PostingList.TF = 1
-        # PostingList.POSITION_LIST = 2
-        
         return sorted_list
 
     # Saves the posting lists to file, and update offset value in the dictionary
