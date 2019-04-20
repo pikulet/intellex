@@ -19,7 +19,16 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 - 31 types of courts in the court field
 - All field are populated
 
-- Duplicated document id (?)
+- We identified some cases of duplicate document IDs, which does not make sense in the context of document
+retrieval. We analysed these duplicate entries and found that these entries would have the title and content
+being repeated, and the only field changed would be the metadata on the court. Such occurrences make sense
+in real life, since legal cases can be transferred between courts depending on their severity. To treat the
+case of a duplicate document, we simply update the court and keep the case with the highest priority. While
+this may compromise on accuracy, it is almost impossible to determine if the case went from a high-priority
+court to a low-priority court or vice versa. We believe that using the highest priority reflects the
+importance of a case better. We also update the total number of documents (subtract 1), which is used in the
+calculation on idf on query terms.
+
 67          247336  ...               HK Court of First Instance
 68          247336  ...                            HK High Court
 109        2044863  ...               HK Court of First Instance
@@ -52,13 +61,25 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 14040      3063522  ...  Industrial Relations Court of Australia
 14638      3926753  ...                       UK Court of Appeal
 14639      3926753  ...                           UK Crown Court
-- Chinese documents from HK High Court and HK Court of First Instance (duplicated)
-2044863
-- Possible other unicode characters but can be easily resolved with utf-8 encoding
+
+- We also found some chinese documents from HK High Court and HK Court of First Instance (duplicated data). More
+specifically, this was in document 2044863. We did not add any special processing methods because the case is
+isolated. It is unlikely that the user wants to look something up from the document.
+
+- There are also other unicode characters that are not recognised, which some classmates have aptly identified on
+the forum. These can be easily resolved with utf-8 encoding.
 
 # Indexing Algorithm
 
 ## Parallelising NLTK tokenisation
+When running our initial indexing on the Tembusu cluster, we found that the indexing time was infeasible to work
+with. Given a lot of changes we wanted to make in terms of storing biwords, which document properties, we wanted
+to speed up the indexing time. We timed the different parts of the indexing and found the NLTK tokenisation to
+take a significant portion of the time. Instead of doing the tokenisation sequentially, we realised we could read
+in all the data, pass all the documents to be tokenised in parallel, then process the tokenised data sequentially.
+
+(done in parallel): doc1, doc2, doc3... --> nltk(doc1), nltk(doc2), nltk(doc3)... 
+(sequential): process(tokenised_doc1), process(tokenised_doc2), process(tokenised_doc3)...
 
 ## Storing biword and triword information
 
@@ -162,6 +183,9 @@ the phrase "A B" is first found, followed by "B C", and the two postings lists a
 
 ### WordNet/Thesaurus Query Expansion
 
+WordNet offers interesting combinations of thesaurisation. For instance, we could generate all the synonyms of a term.
+After more experimentation with WordNet, we found that we could also find hyperonyms for phrases. Using hypernyms would
+be very useful for phrasal searches since the user already grouped the terms together (e.g. "fertility treatment").
 
 
 ## Experimental Results
