@@ -48,7 +48,7 @@ def main():
     '''
     Main function for search loads in the dictionary and document properties file into memory and reads in
     the query file with the query string and the list of relevant documents known as the positive list.
-    ####
+    ###
     '''
     if len(sys.argv) <= 1:
         dictionary_file, postings_file, query_file, file_of_output = DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, QUERY_FILE_TEST, OUTPUT_FILE_TEST
@@ -86,7 +86,6 @@ def get_results(query_data, postings_handler, dictionary, doc_properties):
     '''
     original_query_string = query_data[0]
     queries = get_new_query_strings(original_query_string)
-    queries = ['"fertility treatment"']
     positive_list = query_data[1:]
     result = [] + positive_list
     result_set = set(result)

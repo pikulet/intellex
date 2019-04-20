@@ -8,7 +8,6 @@ from nltk.corpus import stopwords
 from nltk import pos_tag
 import string
 
-
 ########################### DEFINE CONSTANTS ###########################
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')

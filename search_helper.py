@@ -1,12 +1,10 @@
 from data_helper import *
 from constants import *
 from Dictionary import Dictionary
-from properties_helper import COURT_HIERARCHY
 from Eval import Eval, get_term_frequencies
 from PositionalMerge import get_postings_from_phrase
 from BooleanMerge import get_intersected_posting_lists
-from QueryExpansion import get_new_query_vector
-import re
+from QueryExpansion import get_new_query_vector, tokenize, normalise_all_tokens_in_list
 import heapq
 
 ########################### DEFINE CONSTANTS ###########################
@@ -62,7 +60,6 @@ def parse_query(query):
     "fertility treatment" damages is parsed into [['fertil', 'treatment'], 'damag'].
     :param query: a query string.
     '''
-    from QueryExpansion import tokenize, normalise_all_tokens_in_list
     is_boolean, has_phrase, tokenised_query = tokenize(query)
     query = normalise_all_tokens_in_list(tokenised_query)
     if has_phrase:
@@ -75,39 +72,6 @@ def parse_query(query):
         else:
             query_terms[index] = normalise_term(query_terms[index])
     return query_terms
-
-'''
-def parse_query(query):
-    has_phrases = re.findall(r' "[^"]*"', query)
-    query = query.split()
-    start_phrase = lambda s: s.startswith(PHRASE_MARKER)
-    end_phrase = lambda s: s[-1] == '"'
-
-    result = list()
-    phrase = []
-    index = 0
-    while index < len(query):
-        if has_phrases and start_phrase(query[index]) and end_phrase(query[index]):
-            result.append(normalise_term(query[index][1:-1]))
-            index += 1
-        elif has_phrases and start_phrase(query[index]):
-            phrase_bool = True
-            phrase.append(normalise_term(query[index][1:]))
-            index += 1
-            while phrase_bool:
-                if end_phrase(query[index]):
-                    phrase.append(normalise_term(query[index][:-1]))
-                    result.append(phrase)
-                    phrase = []
-                    phrase_bool = False
-                else:
-                    phrase.append(normalise_term(query[index]))
-                index += 1
-        else:
-            result.append(normalise_term(query[index]))
-            index += 1
-    return result
-'''
 
 def parse_boolean_query(query):
     '''
