@@ -86,6 +86,7 @@ def get_results(query_data, postings_handler, dictionary, doc_properties):
     '''
     original_query_string = query_data[0]
     queries = get_new_query_strings(original_query_string)
+    queries = ['"fertility treatment"']
     positive_list = query_data[1:]
     result = [] + positive_list
     result_set = set(result)

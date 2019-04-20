@@ -62,6 +62,22 @@ def parse_query(query):
     "fertility treatment" damages is parsed into [['fertil', 'treatment'], 'damag'].
     :param query: a query string.
     '''
+    from QueryExpansion import tokenize, normalise_all_tokens_in_list
+    is_boolean, has_phrase, tokenised_query = tokenize(query)
+    query = normalise_all_tokens_in_list(tokenised_query)
+    if has_phrase:
+        query_terms = list(map(lambda x: x.split() if " " in x else x, query))
+    else:
+        query_terms = query
+    for index in range(len(query_terms)):
+        if type(query_terms[index]) == list:
+            query_terms[index] = list(map(lambda x: normalise_term(x), query_terms[index]))
+        else:
+            query_terms[index] = normalise_term(query_terms[index])
+    return query_terms
+
+'''
+def parse_query(query):
     has_phrases = re.findall(r' "[^"]*"', query)
     query = query.split()
     start_phrase = lambda s: s.startswith(PHRASE_MARKER)
@@ -91,6 +107,7 @@ def parse_query(query):
             result.append(normalise_term(query[index]))
             index += 1
     return result
+'''
 
 def parse_boolean_query(query):
     '''
