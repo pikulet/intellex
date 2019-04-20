@@ -1,7 +1,6 @@
-from search_helper import *
+from search_helper import get_best_documents, load_data, get_query, relevance_feedback
 import getopt
 import sys
-from properties_helper import get_document_properties
 from constants import *
 from QueryExpansion import get_new_query_strings
 
@@ -46,6 +45,11 @@ def read_files():
 ######################## DRIVER STATEMENTS ########################
 
 def main():
+    '''
+    Main function for search loads in the dictionary and document properties file into memory and reads in
+    the query file with the query string and the list of relevant documents known as the positive list.
+    ####
+    '''
     if len(sys.argv) <= 1:
         dictionary_file, postings_file, query_file, file_of_output = DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, QUERY_FILE_TEST, OUTPUT_FILE_TEST
     else:
@@ -57,18 +61,7 @@ def main():
     with open(postings_file, 'rb') as p:
         with open(query_file, 'r', encoding="utf-8") as f:
             query_data = f.read().splitlines()
-
-        original_query_string = query_data[0]
-        queries = get_new_query_strings(original_query_string)
-        positive_list = query_data[1:]
-        result = [] + positive_list
-        result_set = set(result)
-        for query in queries:
-            query = get_query(query)
-            docs = get_best_documents(p, dictionary, doc_properties, query)
-            docs = list(filter(lambda x: x not in result_set, docs))
-            result_set = result_set.union(set(docs))
-            result += docs
+        result = get_results(query_data, p, dictionary, doc_properties)
 
         with open(file_of_output, 'w+') as f:
             f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
@@ -82,6 +75,27 @@ def main():
 
             with open(file_of_output, 'w+') as f:
                 f.write(' '.join([str(x) for x in relevant_docs]) + END_LINE_MARKER)
+
+def get_results(query_data, postings_handler, dictionary, doc_properties):
+    '''
+
+    :param query_data:
+    :param postings_handler:
+    :param dictionary:
+    :param doc_properties:
+    '''
+    original_query_string = query_data[0]
+    queries = get_new_query_strings(original_query_string)
+    positive_list = query_data[1:]
+    result = [] + positive_list
+    result_set = set(result)
+    for query in queries:
+        query = get_query(query)
+        docs = get_best_documents(postings_handler, dictionary, doc_properties, query)
+        docs = list(filter(lambda x: x not in result_set, docs))
+        result_set = result_set.union(set(docs))
+        result += docs
+    return result
 
 if __name__ == "__main__":
     import time

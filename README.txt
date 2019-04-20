@@ -53,8 +53,7 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 14638      3926753  ...                       UK Court of Appeal
 14639      3926753  ...                           UK Crown Court
 - Chinese documents from HK High Court and HK Court of First Instance (duplicated)
-2044863 
-
+2044863
 - Possible other unicode characters but can be easily resolved with utf-8 encoding
 
 # Indexing Algorithm
@@ -64,6 +63,8 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 ## Storing biword and triword information
 
 # Searching Algorithm
+
+### need to finalise and explain overall approach.
 
 Query expansion is done to the original query string to produce multiple versions of the same query (see section on
 query expansion). Every query can one of the following four types:
@@ -121,7 +122,7 @@ Terms which are not found in the dictionary are ignored. This list of tuples is 
 query vector. Each component of the vector is multiplied by the idf of the term.
 
 As in HW3, terms which do not appear in the query vector can be ignored since their tf-idf is 0 and have no effect
-on the final cosine scone, and only the documents that appear in at least one of the postings lists of the
+on the final cosine score, and only the documents that appear in at least one of the postings lists of the
 query terms have to be considered. Thus, we iterate through each postings list of the query terms to obtain the
 relevant components of each document vector. The term frequency in each posting is used to compute (1+log(tf)) directly,
 which is multiplied with the already computed tf-idf score in the query vector and added directly to the cosine score
@@ -165,6 +166,32 @@ the phrase "A B" is first found, followed by "B C", and the two postings lists a
 
 ## Experimental Results
 
+F2 results for documents appended in the following order:
+1. positive list 2. -boolean, -phrase 3. +boolean +phrase 4. +phrase -boolean
+
+Q1 Average F2: 0.0108201093105916
+Q2 Average F2: 0.362745098039216
+Q3 Average F2: 0.0112925624835047
+Q4 Average F2: 0.496296296296296
+Q5 Average F2: 0.103200491131526
+Q6 Average F2: 0.30050505050505
+Mean Average F2: 0.214143268
+
+This is close to the baseline tf-idf.
+
+F2 results for documents appended in the following order:
+1. positive list 2. +boolean, +phrase 3. -boolean, -phrase 4. +phrase -boolean
+5. Wordnet expansion 6. Rocchio expansion
+
+Q1 Average F2: 0.0318471337579618
+Q2 Average F2: 0.276839007986549
+Q3 Average F2: 0.00854730742939909
+Q4 Average F2: 0.516624579124579
+Q5 Average F2: 0.103200491131526
+Q6 Average F2: 0.172659817351598
+Mean Average F2: 0.184953056130269
+
+This performed worse than the baseline tf-idf.
 
 
 == Files included with this submission ==
