@@ -18,15 +18,12 @@ OUTPUT_FILE_TEST = 'output.txt'
 ## Intermediate files used to store more information
 TITLE_DICTIONARY_FILE = "dictionary_title.txt"  # dictionary for document titles
 TITLE_POSTINGS_FILE = "postings_title.txt"      # posting lists for document titles
-VECTOR_POSTINGS_FILE = "postings_vector.txt"    # document vectors
+VECTOR_POSTINGS_FILE = "vector.txt"    # document vectors
 DOCUMENT_PROPERTIES_FILE = "properties.txt"     # document properties
 
 #################################
 # TUNING SETTINGS FOR SEARCHING #
 #################################
-
-## Cut off points
-ROCCHIO_MIN_CUTOFF_POINT = 0.01
 
 ## Weights
 SINGLE_TERMS_WEIGHT = 1
@@ -36,8 +33,9 @@ TITLE_WEIGHT = 1
 CONTENT_WEIGHT = 1
 
 ## Search modes
-EXPAND_QUERY = False
+EXPAND_QUERY = True
 NUM_QUERIES_IN_FILE = 1
 MULTIPLE_QUERIES_IN_FILE = False
 CONTENT_ONLY = True
-NUM_DOCS_TO_FEEDBACK = 1000
+NUM_DOCS_TO_FEEDBACK = 50
+ROCCHIO_TERMS = 30
