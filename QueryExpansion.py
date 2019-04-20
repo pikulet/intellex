@@ -279,7 +279,7 @@ def tokenize(line):
 
     Also returns is_bool and is_phrase to indicate if the line has boolean query or phrases respectively
 
-    param: line: Query string
+    :param: line: Query string
     """
     is_bool = False
     is_phrase = False
@@ -303,7 +303,7 @@ def thesaurize_term(word):
     If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
     The resulting list will also have _ replaced back to space.
 
-    param: word: Word to be used against word
+    :param: word: Word to be used against word
     """
     word = word.replace(" ", "_")
     terms = []
@@ -318,8 +318,8 @@ def thesaurize_term_with_pos(word, pos):
     """
     Similar to theasurize term, this method takes in the pos tag of the word, which helps wordnet to further reduce the number of terms returned
 
-    param: word: Word to be used against word
-    param: pos: Pos Tag of the word
+    :param: word: Word to be used against word
+    :param: pos: Pos Tag of the word
     """
     if (len(word.split()) >1 ):
         word = word.replace(' ', '_')
@@ -335,7 +335,7 @@ def hyponymise_term(word):
     If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
     The resulting list will also have _ replaced back to space.
 
-    param: word: Word to be used against word
+    :param: word: Word to be used against word
     """
     word = word.replace(" ", "_")
     terms = []
@@ -350,7 +350,7 @@ def convert_wordnet_terms(terms):
     """
     Convert wordnet format back to normal terms such as replacing _ with spaces
 
-    param: terms: List of terms in wordnet format
+    :param: terms: List of terms in wordnet format
     """
     newterms = []
     for term in terms:
@@ -363,7 +363,7 @@ def trim_vector(vector):
     Since Riccho will return a large vector, we will only return the top k terms
     the top k terms must not be a stopword or punctuation
 
-    param: vector: Sparse vector
+    :param: vector: Sparse vector
     """
     new_vector = dict()
     number_of_terms_insert = 0
@@ -384,7 +384,7 @@ def extract_value(tuple):
     This method is to abstract away the format of vector.txt. Vector.txt keeps all vectors in a tf, df format. 
     Currently, this method produces tfidf.
 
-    param: tuple: Tuple data that is saved inside vector.txt
+    :param: tuple: Tuple data that is saved inside vector.txt
     """
     return log_tf(tuple[0]) *\
         idf_transform(tuple[1])
@@ -394,7 +394,7 @@ def get_vector_from_docID_offset(offset):
     """
     Given the docID offset, get the sparse vector from vector.txt
 
-    param: offset: integer offset of the sparse vector inside vector.txt
+    :param: offset: integer offset of the sparse vector inside vector.txt
     """
 
     # vector are stored as sparse indexes
