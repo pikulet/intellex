@@ -6,6 +6,8 @@ import re
 from nltk.corpus import wordnet
 from nltk.corpus import stopwords
 from nltk import pos_tag
+import string
+
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -30,6 +32,8 @@ stopwords =  set(stopwords.words('english'))
 
 def get_new_query_strings(line):
     """
+    :param line: Query String
+
     First Level Query Refinement Public Method
     This method takes a str as the input. This str should be the original query string that is fed into the program.
     The possible transformations available are:
@@ -37,7 +41,7 @@ def get_new_query_strings(line):
     2. Phrase - Bool
     3. - Phrase - Bool
     4. Wordnet - Bool
-    A list of new query strings will be returned in the order of 1234. 
+    A list of new query strings will be returned in the order of 3124. 
     If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted into the result.
 
     Bool Query Example:
@@ -54,29 +58,21 @@ def get_new_query_strings(line):
     4 'subdu mute tranquil tranquil tranquil hush smooth hush "quiet down" restrain calm still placid placid quietli quiesc silenc lull "pipe down" tranquillis seren repos unruffl "calm down" tranquil tranquil quiet quieten call "telephon call" "phone call"'
 
 
+    Additional information:
+    Wordnet finds the possible synonyms of each term in the query string and puts all of them back into the query string
     """
     print ("Original Query:")
     print (line)
     result = []
+
 
     is_bool, is_phrase, tokens = tokenize(line)
     stokens = list(set(tokens))     # no order and distinct
 
     if is_bool: # bool query
 
-        ##### Original PHRASE BOOL
-        result.append(convert_list_to_string(tokens))
-        #####
-
-        ###### PHRASE NO BOOL
-        newlinelist = []
-        for token in stokens:
-            if token != AND:
-                newlinelist.append(token)
-        result.append(convert_list_to_string(newlinelist))
-
-
-        ###### NO PHRASE NO BOOL
+        
+        ###### 3. NO PHRASE NO BOOL
         if is_phrase:
             newlinelist = []
             for token in stokens:
@@ -86,14 +82,30 @@ def get_new_query_strings(line):
             result.append(convert_list_to_string(newlinelist))
         ######
 
-
-    else: # free text
-
-        ##### Original PHRASE NO BOOL
+        ##### 1. Original PHRASE BOOL
         result.append(convert_list_to_string(tokens))
         #####
 
-        ###### PHRASE BOOL
+        ###### 2. PHRASE NO BOOL
+        newlinelist = []
+        for token in stokens:
+            if token != AND:
+                newlinelist.append(token)
+        result.append(convert_list_to_string(newlinelist))
+
+    else: # free text
+
+        ###### 3. NO PHRASE NO BOOL
+        if is_phrase:
+            newlinelist = []
+            for token in stokens:
+                if token != AND:
+                    for subtoken in token.split():
+                        newlinelist.append(subtoken)
+            result.append(convert_list_to_string(newlinelist))
+        ######
+
+        ###### 1. PHRASE BOOL
         newlinelist = []
         for token in stokens:
             newlinelist.append(token)
@@ -101,19 +113,12 @@ def get_new_query_strings(line):
         newlinelist = newlinelist[:-1] # drop the last AND
         result.append(convert_list_to_string(newlinelist))
 
+        ##### 2. Original PHRASE NO BOOL
+        result.append(convert_list_to_string(tokens))
+        #####
 
-        ###### NO PHRASE NO BOOL
-        if is_phrase:
-            newlinelist = []
-            for token in stokens:
-                if token != AND:
-                    for subtoken in token.split():
-                        newlinelist.append(subtoken)
-            result.append(convert_list_to_string(newlinelist))
-        ######
-
-        ######
-        # ###### Original pos tag wordnet
+        #####
+        # ###### 4.1 Original pos tag wordnet
         # newlinelist = []
         # tagged = pos_tag(tokens)
         # for word, pos in tagged:
@@ -132,36 +137,18 @@ def get_new_query_strings(line):
 
         # result.append(convert_list_to_string(newlinelist, filter=True))
 
-    ##### Original no bool with Wordnet Sym
+    ##### 4. Original no bool with Wordnet Sym
     newlinelist = []
     for token in tokens:
         if token != AND:
-            thesaurized = hyponymise_term(token)
+            thesaurized = hyponymise_term(token) + thesaurize_term(token)
             if len(thesaurized) > 0:
                 newlinelist += thesaurized
             else:
                 newlinelist += [token]
-        # else:
-        #     newlinelist += [AND]
     result.append(convert_list_to_string(newlinelist))  # original query
     #####
 
-    ######  Original no bool with Wordnet Hym
-    # newlinelist = []
-    # wordnet_used = 0
-    # for token in stokens:
-    #     if token != AND:
-    #         thesaurized = hyponymise_term(token)
-    #         if len(thesaurized) > 0:
-    #             newlinelist += thesaurized
-    #             wordnet_used += 1
-    #         else:
-    #             newlinelist += [token]
-    # if wordnet_used > 0:
-    #     result.append(convert_list_to_string(newlinelist, filter=True))
-    ######
-
-    
     ###### Original stripped stopwords
     # newlinelist = []
     # for token in tokens:
@@ -181,19 +168,19 @@ def get_new_query_strings(line):
     # result.append(convert_list_to_string(newlinelist))
     ######
 
-
     print("New Query:")
     print(result)
     return result
 
 def get_new_query_vector(vector, docIDs):
     """
-    Relevance Feedback Public Method.
+    Pseudo Relevance Feedback Public Method.
+    Note that this uses Ricco, which is a blind feedback method.
 
     This method takes in the original query vector and list of docIDs. 
     Note that The query vector is modelled as sparse vector where it is a term -> score mapping. Zero scores are not stored too.
     The centroid from the list of docIDs will be calculated and added to original query vector. 
-    Finally, the resulting vector is trimmed so that terms that do not meet the mininum score is removed.
+    Finally, the resulting vector is trimmed so that only the top k terms are returned
     """
 
     # Guard methods
@@ -207,8 +194,29 @@ def get_new_query_vector(vector, docIDs):
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
 
-    vector = trim_vector(vector)
     return vector
+
+def get_new_query_offset(docIDs):
+    """
+    Util Method
+    Given a set of docIDs, get the new offset to be used in the formula aka Centroid
+    """
+    num_of_docs = len(docIDs)
+    offset = {}
+    for docID in docIDs:
+        docID = int(docID)
+        vector, normalisator = get_vector_from_docID_offset(
+            document_properties[docID][VECTOR_OFFSET])
+        for key, value in vector.items():
+            normalised = extract_value(value) / normalisator
+            offset[key] = offset.get(key, 0.) + normalised
+
+    # Take average
+    for k in offset.keys():
+        offset[k] /= num_of_docs
+
+
+    return trim_vector(offset)
 
 ######################## UTIL FUNCTION ########################
 
@@ -329,7 +337,7 @@ def hyponymise_term(t):
 
 def convert_wordnet_terms(terms):
     """
-    Remove some of the unuseable terms such as _
+    Convert wordnet format back to normal terms such as replacing _ with spaces
     """
     newterms = []
     for term in terms:
@@ -340,19 +348,27 @@ def convert_wordnet_terms(terms):
 
 def trim_vector(vector):
     """
-    Since Ricco will return a large vector, we will implement a min score for each term.
-    Those terms that do not meet the point will be removed
+    Since Riccho will return a large vector, we will only return the top k terms
+    the top k terms must not be a stopword or punctuation
     """
     new_vector = dict()
-    for key, value in vector.items():
-        if value > ROCCHIO_MIN_CUTOFF_POINT:
+    number_of_terms_insert = 0
+    from operator import itemgetter
+    sort = sorted(vector.items(), key=itemgetter(1))
+    for key, value in sort:
+        if (not (key in stopwords)) and (not (key in string.punctuation)):
             new_vector[key] = value
+            number_of_terms_insert += 1
+            if number_of_terms_insert > ROCCHIO_TERMS:
+                break
+
     return new_vector
 
 
 def extract_value(tuple):
     """
-    Undated method. Will be removed soon.
+    This method is to abstract away the format of vector.txt. Vector.txt keeps all vectors in a tf, df format. 
+    Currently, this method produces tfidf.
     """
     return log_tf(tuple[0]) *\
         idf_transform(tuple[1])
@@ -360,8 +376,7 @@ def extract_value(tuple):
 
 def get_vector_from_docID_offset(offset):
     """
-    Util Method
-    Given the docID offset, get the vector dict
+    Given the docID offset, get the vector dict from vector.txt
     """
 
     # vector are stored as sparse indexes
@@ -377,23 +392,3 @@ def get_vector_from_docID_offset(offset):
     return data, normalisator
 
 
-def get_new_query_offset(docIDs):
-    """
-    Util Method
-    Given a set of docIDs, get the new offset to be used in the formula aka Centroid
-    """
-    num_of_docs = len(docIDs)
-    offset = {}
-    for docID in docIDs:
-        docID = int(docID)
-        vector, normalisator = get_vector_from_docID_offset(
-            document_properties[docID][VECTOR_OFFSET])
-        for key, value in vector.items():
-            normalised = extract_value(value) / normalisator
-            offset[key] = offset.get(key, 0.) + normalised
-
-    # Take average
-    for k in offset.keys():
-        offset[k] /= num_of_docs
-
-    return offset
