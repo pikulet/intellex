@@ -34,8 +34,6 @@ def get_posting(postings_handler, dictionary, term):
 
         offset = term_data[Dictionary.TERM_OFFSET]
         data = load_data_with_handler(postings_handler, offset)
-        #if term == "publish":
-        #    print(list(map(lambda x: [x[0],x[1]], data)))
         return df, data
     except KeyError:
         # Term does not exist in dictionary
