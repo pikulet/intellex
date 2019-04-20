@@ -6,16 +6,19 @@ from properties_helper import CONTENT_LENGTH, BIGRAM_CONTENT_LENGTH, TRIGRAM_CON
 class Eval:
     '''
     A class which stores the dictionary, dictionary of document vector lengths and the total number of documents for
-    evaluating queries.
+    evaluating queries. The main public function to be used is eval_query.
     '''
 
     def __init__(self, query, postings_lists, dictionary, document_properties, term_length=1, query_vector=None, is_title=False):
         '''
         Creates an Eval object.
+        :param query: a list of terms, which may either be phrases (lists) or single terms.
+        :param postings_lists: a list of postings lists, arranged in the same order as that in the query.
         :param dictionary: the dictionary mapping terms to (document frequency, pointer to postings lists) tuples.
         :param document_properties: the dictionary mapping docID to the document properties.
-        :param query:
-        :param N: the total number of documents.
+        :param term_length: the length of each term i.e. 1 if single term, 2 if biword, 3 if triword.
+        :param query_vector: a precomputed query vector from relevance feedback.
+        :param is_title: true if the query is to be searched within the title field.
         '''
         self.dictionary = dictionary
         self.document_properties = document_properties
@@ -32,13 +35,12 @@ class Eval:
         '''
         Evaluates a query and returns the top ten or fewer documents that match the query.
         This is done by:
-        1. Creating a list of (term, term frequency) tuples using get_term_frequencies.
-        2. Creating a (truncated) query vector from the term list using get_query_vector.
-        3. Computing the cosine of the angle between the query vector and the vector of every document that
+        1. Creating a (truncated) query vector from the term list using get_query_vector. This is step is omitted if
+        the vector has already been evaluated during relevance feedback expansion.
+        2. Computing the cosine of the angle between the query vector and the vector of every document that
         appears in at least one postings list of the query terms using get_cosine_scores.
         4. Normalising the cosine scores with the document vector lengths (precomputed and stored).
-        5. Selecting the top ten documents with the highest cosine values using a min heap and negated scores, ensuring
-        that documents with the same score are ordered by document ID.
+        5. Storing each document to cosine score mapping in a dictionary to be returned.
         :param query: a list of terms in the query.
         :return: the top ten or fewer documents with the highest cosine scores.
         '''
@@ -119,7 +121,10 @@ class Eval:
     def normalise(self, score, docID):
         '''
         Normalises a score by dividing by the normalisation factor i.e.
-        the document vector length stored in the document_properties.
+        the document vector length stored in the document_properties. As the document vector
+        length differs according to the field (title and content) and length of the term
+        (single word, biword or triword), the self.is_title and self.term_length attributes are
+        used to retrieve the correct vector length from the document properties dictionary.
         :param score: the score before normalisation.
         :param docID: the docID of the document.
         :return: the normalised cosine score.
@@ -152,7 +157,6 @@ def get_term_frequencies(query, dictionary):
     for term in query:
         if type(term) == list: # phrase queries
             term = tuple(term)
-        # cannot ignore terms not in dictionary due to phrase queries
         elif term not in dictionary:
             continue
         if term not in term_frequencies:

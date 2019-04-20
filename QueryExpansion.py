@@ -8,13 +8,12 @@ from nltk.corpus import stopwords
 from nltk import pos_tag
 from nltk.stem import WordNetLemmatizer
 
-
 ########################### DEFINE CONSTANTS ###########################
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 total_num_documents = len(document_properties)
-dictionary = load_data(DICTIONARY_FILE_TEST)
+#dictionary = load_data(DICTIONARY_FILE_TEST)
 
 wnl = WordNetLemmatizer()
 # debugging only

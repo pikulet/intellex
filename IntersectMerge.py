@@ -1,5 +1,3 @@
-# [(docID, tf, []), ...]
-# [(docID, tf, []), ...]
 import math
 
 DOC_ID_INDEX = 0
@@ -19,14 +17,19 @@ def get_skip_position(list, index, skip_dist):
     return list[index + skip_dist]
 
 def get_intersected_posting_lists(single, biword, triword):
+    '''
+    To intersect the postings lists of single words, biwords and triwords, the postings lists are
+    combined. The merge_n_lists function then retrieves the docIDs which are common
+    to all the postings lists. The postings lists are then filtered to remove docIDs which are not
+    contained in the list of common doc IDs. Each posting list is a list of postings, where each posting
+    is in either the form [docID, tf, position list] or [docID, tf].
+    :param single: postings lists of single words.
+    :param biword: postings lists of biwords.
+    :param triword: postings lists of triwords.
+    :return:
+    '''
     lists = single + biword + triword
-    lists = sorted(lists, key = lambda x: x[0], reverse = True)
     common_doc_IDs = merge_n_lists(lists)
-
-    single = list(map(lambda x: x[1], single))
-    biword = list(map(lambda x: x[1], biword))
-    triword = list(map(lambda x: x[1], triword))
-
     reduced_single = list(map(lambda plist: list(filter(lambda list: list[0] in common_doc_IDs, plist)), single))
     reduced_biword = list(map(lambda plist: list(filter(lambda list: list[0] in common_doc_IDs, plist)), biword))
     reduced_triword = list(map(lambda plist: list(filter(lambda list: list[0] in common_doc_IDs, plist)), triword))
@@ -34,9 +37,13 @@ def get_intersected_posting_lists(single, biword, triword):
 
 def merge_n_lists(lists):
     '''
-    Returns the docIDs that occur in all lists.
+    Returns a list of docIDs that occur in all lists. This is done by sorted the lists by length and
+    then intersecting the lists pairwise.
+    :param lists: a list of posting lists.
     '''
-    if len(lists) < 2:
+    lists = list(map(lambda x: [len(x), x], lists))
+    lists = sorted(lists, key=lambda x: x[0], reverse=True)
+    if len(lists) <= 1:
         return lists
     merged_list = intersect(lists[0][1], lists[1][1], lists[0][0], lists[1][0])
     for i in range(2, len(lists)):
@@ -46,7 +53,7 @@ def merge_n_lists(lists):
 
 def intersect(listA, listB, A_length, B_length):
     '''
-    Returns a list of (docID, position list) tuples.
+    Intersects two lists making use of dynamically generated skip pointers.
     '''
     result = []
     i, j = 0, 0
@@ -72,6 +79,3 @@ def intersect(listA, listB, A_length, B_length):
             else:
                 j += 1
     return result
-
-#lists = [[4, [(1,2), (2,3), (4,5), (5,6)]], [4, [(1,2), (2,3), (4,5), (5,6)]], [4, [(1,2), (2,3), (4,5), (5,6)]]]
-#print(get_intersected_posting_lists(lists))
