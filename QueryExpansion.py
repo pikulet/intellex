@@ -47,40 +47,75 @@ def get_new_query_strings(line):
     is_bool, is_phrase, tokens = tokenize(line)
     stokens = list(set(tokens))     # no order and distinct
 
-    if is_bool: # not free text
-        ###### Original special
+    if is_bool: # bool query
+
+        ##### Original PHRASE BOOL
+        result.append(convert_list_to_string(tokens))
+        #####
+
+        ###### PHRASE NO BOOL
         newlinelist = []
-        for token in tokens:
+        for token in stokens:
             if token != AND:
-                if token == "phone call":
-                    newlinelist += ["telephone call"]
-                elif token == "quiet":
-                    newlinelist += ["silent"]
-                else:
-                    newlinelist += [token]
-            else:
-                newlinelist += [AND]
+                newlinelist.append(token)
         result.append(convert_list_to_string(newlinelist))
+
+
+        ###### NO PHRASE NO BOOL
+        if is_phrase:
+            newlinelist = []
+            for token in stokens:
+                if token != AND:
+                    for subtoken in token.split():
+                        newlinelist.append(subtoken)
+            result.append(convert_list_to_string(newlinelist))
         ######
-    
+
+
     else: # free text
+
+        ###### PHRASE BOOL
         newlinelist = []
-        tagged = pos_tag(tokens)
-        for word, pos in tagged:
-            pos_in_wordnet = pos[0].lower()
-            # ignore stopwords
-            if word in stopwords:
-                newlinelist += [word]
-                continue
+        for token in stokens:
+            newlinelist.append(token)
+            newlinelist.append(AND)
+        newlinelist = newlinelist[:-1] # drop the last AND
+        print(newlinelist)
+        result.append(convert_list_to_string(newlinelist))
 
-            symlist = []
-            symlist.append(word) # add itself
-            symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
+        ##### Original PHRASE NO BOOL
+        result.append(convert_list_to_string(tokens))
+        #####
+
+        ###### NO PHRASE NO BOOL
+        if is_phrase:
+            newlinelist = []
+            for token in stokens:
+                if token != AND:
+                    for subtoken in token.split():
+                        newlinelist.append(subtoken)
+            result.append(convert_list_to_string(newlinelist))
+        ######
+
+        ######
+        # ###### Original pos tag wordnet
+        # newlinelist = []
+        # tagged = pos_tag(tokens)
+        # for word, pos in tagged:
+        #     pos_in_wordnet = pos[0].lower()
+        #     # ignore stopwords
+        #     if word in stopwords:
+        #         newlinelist += [word]
+        #         continue
+
+        #     symlist = []
+        #     symlist.append(word) # add itself
+        #     symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
             
-            newlinelist += symlist 
-            ###
+        #     newlinelist += symlist 
+        #     ###
 
-        result.append(convert_list_to_string(newlinelist, filter=True))
+        # result.append(convert_list_to_string(newlinelist, filter=True))
 
     ###### Original
     # result.append(convert_list_to_string(tokens))
@@ -106,19 +141,19 @@ def get_new_query_strings(line):
     ######
 
 
-    ###### Original with Wordnet
-    # newlinelist = []
-    # for token in tokens:
-    #     if token != AND:
-    #         thesaurized = thesaurize_term(token)
-    #         if len(thesaurized) > 0:
-    #             newlinelist += thesaurize_term(token)
-    #         else:
-    #             newlinelist += [token]
-    #     else:
-    #         newlinelist += [AND]
-    # result.append(convert_list_to_string(newlinelist))  # original query
-    ######
+    ##### Original no bool with Wordnet
+    newlinelist = []
+    for token in tokens:
+        if token != AND:
+            thesaurized = thesaurize_term(token)
+            if len(thesaurized) > 0:
+                newlinelist += thesaurize_term(token)
+            else:
+                newlinelist += [token]
+        # else:
+        #     newlinelist += [AND]
+    result.append(convert_list_to_string(newlinelist))  # original query
+    #####
 
 
     ###### PHRASE NO BOOL
@@ -185,7 +220,7 @@ def get_new_query_strings(line):
     #     result.append(convert_list_to_string(newlinelist, filter=True))
     ######
 
-    print ("New Query:")
+    print("New Query:")
     print(result)
     return result
 
