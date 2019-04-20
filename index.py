@@ -7,7 +7,6 @@ from constants import *
 import time
 import multiprocessing
 import signal
-import math
 from nltk import word_tokenize
 import getopt
 import sys
@@ -63,8 +62,8 @@ def ntlk_tokenise_func(row):
 
     return row[DF_DOC_ID_NO], title, content, date, court
 
-## Util Function for Mulitprocessing Pool
-## 
+### Util Function for Mulitprocessing Pool
+###
 def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
@@ -73,56 +72,64 @@ def init_worker():
 def main():
     # For lazy mode since we are lazy
     if len(sys.argv) <= 1:
+        # calls test files
         dataset_file, output_file_dictionary, output_file_postings = CSV_FILE_TEST, DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST
     else:
         dataset_file, output_file_dictionary, output_file_postings = read_files()
 
+    # Initialise required data structures for content
     dictionary = Dictionary(output_file_dictionary)
     postings = PostingList(output_file_postings)
-
+    # Initialise required data structures for title
     dictionary_title = Dictionary(TITLE_DICTIONARY_FILE)
     postings_title = PostingList(TITLE_POSTINGS_FILE)
 
     df = read_csv(dataset_file)
-
     total_num_documents = df.shape[0]
-    
+
     print("Running indexing...")
 
-    # Storage dictionaries
+    # stores document vectors
     uniword_vectors = dict()
-    
-    # multiprocessing way
-    # The proper way to handle CTRL-C
+
+    # multiprocessing way: the proper way to handle CTRL-C
     with multiprocessing.Pool(PROCESS_COUNT, init_worker) as pool:
         try:
+            # parallelise the tokenisation of documents
             result = pool.imap(ntlk_tokenise_func, df.itertuples(index=False, name=False), chunksize=BATCH_SIZE)
+
+            # process parallelised results
             for row in tqdm(result, total=total_num_documents):
                 docID, title, content, date, court = row
 
+                # document was previously encountered, there is a repeated entry
                 if docID in document_properties:
-                    # only the highest court priority is saved
+                    # repeated documents only differ in their court data. we save the highest court priority
                     update_court(docID, get_court_priority(court))
                     total_num_documents -= 1
                     continue
-                    
-                create_empty_property_list(docID)                
+
+                create_empty_property_list(docID)
+                # process content
                 content_uniword_vector, content_biword_vector, content_triword_vector = process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings)
+                # process title
                 title_uniword_vector, title_biword_vector, title_triword_vector = process_doc_vector_and_bigram_trigram(docID, title, dictionary_title, postings_title)
-                
+
                 uniword_vectors[docID] = content_uniword_vector
                 # biword_vectors[docID] = content_biword_vector
                 # triword_vectors[docID] = content_triword_vector
 
+                # retrieve vector lengths for content
                 content_uniword_length = get_length(convert_tf(content_uniword_vector))
                 content_biword_length = get_length(convert_tf(content_biword_vector))
                 content_triword_length = get_length(convert_tf(content_triword_vector))
-
+                # retrieve vector lengths for title
                 title_uniword_length = get_length(convert_tf(title_uniword_vector))
                 title_biword_length = get_length(convert_tf(title_biword_vector))
                 title_triword_length = get_length(convert_tf(title_triword_vector))
 
-                
+                # assign document properties using properties_helper module
+                # document_properties is a global variable defined in properties_helper
                 assign_property(docID, TITLE_LENGTH, title_uniword_length)
                 assign_property(docID, BIGRAM_TITLE_LENGTH, title_biword_length)
                 assign_property(docID, TRIGRAM_TITLE_LENGTH, title_triword_length)
@@ -133,7 +140,7 @@ def main():
                 assign_property(docID, TRIGRAM_CONTENT_LENGTH, content_triword_length)
 
             print("Saving... There are 3 progress bars.")
-
+            # save data to disk
             save_vector(dictionary, total_num_documents, uniword_vectors)
             save_data(dictionary, postings, total_num_documents)
             save_data(dictionary_title, postings_title, total_num_documents)
@@ -147,27 +154,12 @@ def main():
             print("Normal termination")
             pool.close()
 
-### Save the indexing data to disk
-###
-def save_data(dictionary, postings, total_num_documents):
-    postings.save_to_disk(dictionary)
-    dictionary.save_to_disk()
+############################################################################
+### PROCESSING A BODY OF TEXT
+############################################################################
 
-### Save the vector data to disk
-###
-def save_vector(dictionary, total_num_documents, document_vectors):
-    pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
-
-    for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
-        for t in vector:
-            vector[t] = (vector[t], dictionary.terms[t][Dictionary.DF])
-
-        assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
-        store_data_with_handler(pfilehandler, vector)
-
-    pfilehandler.close()
-
-### Process a document content body directly (content must be a list of normalized terms)
+### Process a body of text (content must be a list of normalized terms)
+### We call this on the document title and content separately.
 ###
 def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
     vector = dict()                 # term vector for this document
@@ -179,8 +171,11 @@ def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
     triword_flag = ["", ""]
 
     for t in content:
+        # uniword processing
         add_data(docID, t, position_counter, dictionary, postings)
         add_vector_count(t, vector)
+
+        # biword and triword processing
         if biword_flag:
             add_vector_count((biword_flag, t), biword_vector)
         if triword_flag[0] and triword_flag[1]:
@@ -190,11 +185,7 @@ def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
         biword_flag = t
         triword_flag[0] = triword_flag[1]
         triword_flag[1] = t
-        position_counter += 1   
-
-    # convert_tf(vector)
-    # convert_tf(biword_vector)
-    # convert_tf(triword_vector)
+        position_counter += 1
 
     return vector, biword_vector, triword_vector
 
@@ -204,18 +195,14 @@ def add_data(docID, term, position, dictionary, postings):
     if dictionary.has_term(term):
         termID = dictionary.get_termID(term)
         added_new_docID = postings.add_position_data(termID, docID, position)
-        
+
         if added_new_docID:
             dictionary.add_df(term)
 
     else:
         termID = postings.add_new_term_data(docID, position)
-        dictionary.add_term(term, termID)      
+        dictionary.add_term(term, termID)
 
-### Get log tf, given the normal tf
-###
-def log_tf(x): 
-    return 1 + math.log(x, 10)
 
 ### Add the term count to the vector, for calculating document length
 ###
@@ -224,6 +211,11 @@ def add_vector_count(term, vector):
         vector[term] += 1
     else:
         vector[term] = 1
+
+############################################################################
+### POST-PROCESSING A BODY OF TEXT: RETRIEVING VECTOR LENGTHS IN TF SETTING
+### IDF DATA IS IGNORED FOR DOCUMENTS BECAUSE WE FOLLOW THE LNC.LTC FORMAT
+############################################################################
 
 ### Convert a content vector to tf-form for calculating document length
 ###
@@ -237,10 +229,37 @@ def convert_tf(vector):
 def get_length(vector):
     return math.sqrt(sum(map(lambda x: x**2, vector.values())))
 
+############################################################################
+### HELPER METHODS FOR SAVING TO DISK
+############################################################################
+
+### Save the posting lists and dictionary data to disk
+###
+def save_data(dictionary, postings, total_num_documents):
+    postings.save_to_disk(dictionary) # save posting lists, update offset in dictionary
+    dictionary.save_to_disk()
+
+### Save the vector data to disk
+###
+def save_vector(dictionary, total_num_documents, document_vectors):
+    pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
+
+    for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
+        for t in vector:
+            # add df data to vectors. idf data is actually required (tf-idf)
+            # but we store df data because integers take less storage space
+            # and we can quickly calculate the idf at search time when needed
+            vector[t] = (vector[t], dictionary.terms[t][Dictionary.DF])
+
+        assign_property(docID, VECTOR_OFFSET, pfilehandler.tell())
+        store_data_with_handler(pfilehandler, vector)
+
+    pfilehandler.close()
+
+############################################################################
 
 if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time()
     print("Time Taken: %ds or %.2smins" % (end-start, (end-start)/60) )
-

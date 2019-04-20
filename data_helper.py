@@ -1,9 +1,10 @@
 '''
-All of the data access calls are stored here.
+All of the data access calls involving writing and
+reading from the file system are stored here.
 
-Universal methods should be stored here too. 
+Universal methods should be stored here too.
 
-Requisite: 
+Requisite:
 python 3.4 or above
 
 Backing Protocol:
@@ -13,14 +14,30 @@ Pandas
 
 import pickle
 import pandas as pd
+import math
 from datetime import datetime
 from nltk import PorterStemmer
 
-PORTER_STEMMER = PorterStemmer()
+##################################################################
+### UNIVERSAL METHODS
+##################################################################
 
+PORTER_STEMMER = PorterStemmer()
 ### Normalise a term by case folding and porter stemming
 def normalise_term(t):
     return PORTER_STEMMER.stem(t.lower())
+
+### Parse the date format from csv file
+def dateparse(x):
+    return datetime.strptime(x, "%Y-%m-%d %H:%M:%S")
+
+### Get log tf, given the normal tf
+def log_tf(x):
+    return 1 + math.log(x, 10)
+
+##################################################################
+### DATA ACCESS METHODS
+##################################################################
 
 def store_data(filepath, data):
     with open(filepath, 'wb') as f:
@@ -41,8 +58,6 @@ def load_data_with_handler(file, offset):
     data = pickle.load(file)
     return data
 
-def dateparse(x):
-    return datetime.strptime(x, "%Y-%m-%d %H:%M:%S")
 
 def read_csv(filepath):
     df = pd.read_csv(filepath, na_filter=False,
