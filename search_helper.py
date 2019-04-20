@@ -4,7 +4,7 @@ from Dictionary import Dictionary
 from properties_helper import COURT_HIERARCHY
 from Eval import Eval, get_term_frequencies
 from PositionalMerge import get_postings_from_phrase
-from IntersectMerge import get_intersected_posting_lists
+from BooleanMerge import get_intersected_posting_lists
 from QueryExpansion import get_new_query_vector
 import re
 import heapq
@@ -130,7 +130,7 @@ def get_phrase_posting_lists(postings_handler, query_terms, dictionary):
     '''
     Retrieves posting lists for phrase queries. For each phrase, the postings list for each word in the phrase
     is retrieved. The postings lists are intersected using the get_postings_from_phrase function. The phrase
-    is then appended to the dictionary.
+    is then appended to the dictionary with the length of the posting list as its document frequency.
     :param postings_handler: a handler to access the postings list file.
     :param query_terms: a list of single word terms.
     :param dictionary: the dictionary mapping terms to pointers to each posting list in the postings handler.
@@ -184,7 +184,8 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     4. If the query is boolean, the postings lists are intersected i.e. any document that does not contain all the terms
     is removed.
     5. The scores for the single words, biwords and triwords are separately computed using the Eval class, which returns
-    a score dictionary mapping documents to their cosine scores
+    a score dictionary mapping documents to their cosine scores. This is done since single words and phrasal terms
+    are evaluated as separate query vectors which are linearly weighted.
     6. Finally, the dictionaries are merged into a combined dictionary.
     :param postings_handler: a handler to access the postings list file.
     :param dictionary: the dictionary mapping terms to pointers to each posting list in the postings handler.
