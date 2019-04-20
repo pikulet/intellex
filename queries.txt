@@ -1,1 +1,1 @@
-doctor AND "charges" AND malpractice
+"general governor"

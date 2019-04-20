@@ -193,6 +193,15 @@ Mean Average F2: 0.184953056130269
 
 This performed worse than the baseline tf-idf.
 
+F2 results when ranked retrieval was done only with a Wordnet query expanded string.
+
+Q1 Average F2: 0.00198346589850713
+Q2 Average F2: 0.00152853996309595
+Q3 Average F2: 0.0011065993316723
+Q4 Average F2: 0.00148902389641845
+Q5 Average F2: 0.00166292668856411
+Q6 Average F2: 0.000682437441147597
+Mean Average F2: 0.00140883220323426
 
 == Files included with this submission ==
 
