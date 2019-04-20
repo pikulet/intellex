@@ -12,6 +12,8 @@ I'm using Python Version <3.6> for this assignment.
 
 == General Notes about this assignment ==
 
+# Analysis of the Corpus
+
 A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/homework4/html/index.ipynb
 - 17137 documents
 - 31 types of courts in the court field
@@ -55,6 +57,22 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 
 - Possible other unicode characters but can be easily resolved with utf-8 encoding
 
+# Indexing Algorithm...
+
+## Parallelising NLTK tokenisation
+
+## Storing biword and triword information
+
+# Searching Algorithm
+
+## Merging Algorithms
+### PositionalMerge
+### IntersectMerge
+
+## Query expansion
+### Relaxing AND and phrasal queries
+### Rocchio Expansion
+### Theusauriser
 
 == Files included with this submission ==
 
@@ -70,13 +88,13 @@ A short corpus analysis is done. https://notebooks.azure.com/jason-soh/projects/
 
 == Statement of individual work ==
 
-[X] I, A01......, certify that I have followed the CS 3245 Information
+[X] I, A0172868M, certify that I have followed the CS 3245 Information
 Retrieval class guidelines for homework assignments.  In particular, I
 expressly vow that I have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or
 printed) from the discussions. 
 
-[X] I, A01......, certify that I have followed the CS 3245 Information
+[X] I, A0164816Y, certify that I have followed the CS 3245 Information
 Retrieval class guidelines for homework assignments.  In particular, I
 expressly vow that I have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or

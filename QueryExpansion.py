@@ -6,16 +6,13 @@ import re
 from nltk.corpus import wordnet
 from nltk.corpus import stopwords
 from nltk import pos_tag
-from nltk.stem import WordNetLemmatizer
 
 ########################### DEFINE CONSTANTS ###########################
 
 vector_post_file_handler = open(VECTOR_POSTINGS_FILE, 'rb')
 document_properties = load_data(DOCUMENT_PROPERTIES_FILE)
 total_num_documents = len(document_properties)
-#dictionary = load_data(DICTIONARY_FILE_TEST)
 
-wnl = WordNetLemmatizer()
 # debugging only
 # def normalise_term(x):
 #     return x
@@ -34,10 +31,29 @@ stopwords =  set(stopwords.words('english'))
 def get_new_query_strings(line):
     """
     First Level Query Refinement Public Method
+    This method takes a str as the input. This str should be the original query string that is fed into the program.
+    The possible transformations available are:
+    1. Phrase + Bool
+    2. Phrase - Bool
+    3. - Phrase - Bool
+    4. Wordnet - Bool
+    A list of new query strings will be returned in the order of 1234. 
+    If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted into the result.
 
-    Given the original query string,
+    Bool Query Example:
+    quiet AND "phone call" ->
+    1 'quiet AND "phone call"',
+    2 '"phone call" quiet', 
+    3 'phone call quiet', 
+    4 'smooth mute "quiet down" tranquil tranquillis still tranquil quiet subdu restrain hush placid tranquil quietli quieten placid tranquil "pipe down" repos tranquil silenc quiesc unruffl hush lull calm seren "calm down" "phone call" "telephon call" call'
+    Free Text Query Example:
+    quiet "phone call" ->
+    1 'quiet AND "phone call"',
+    2 'quiet "phone call"',
+    3 'quiet phone call',
+    4 'subdu mute tranquil tranquil tranquil hush smooth hush "quiet down" restrain calm still placid placid quietli quiesc silenc lull "pipe down" tranquillis seren repos unruffl "calm down" tranquil tranquil quiet quieten call "telephon call" "phone call"'
 
-    return a list of new query strings generated using predefined rules
+
     """
     print ("Original Query:")
     print (line)
@@ -46,45 +62,106 @@ def get_new_query_strings(line):
     is_bool, is_phrase, tokens = tokenize(line)
     stokens = list(set(tokens))     # no order and distinct
 
-    if is_bool: # not free text
-        ###### Original special
+    if is_bool: # bool query
+
+        ##### Original PHRASE BOOL
+        result.append(convert_list_to_string(tokens))
+        #####
+
+        ###### PHRASE NO BOOL
         newlinelist = []
-        for token in tokens:
+        for token in stokens:
             if token != AND:
-                if token == "phone call":
-                    newlinelist += ["telephone call"]
-                elif token == "quiet":
-                    newlinelist += ["silent"]
-                else:
-                    newlinelist += [token]
-            else:
-                newlinelist += [AND]
+                newlinelist.append(token)
         result.append(convert_list_to_string(newlinelist))
+
+
+        ###### NO PHRASE NO BOOL
+        if is_phrase:
+            newlinelist = []
+            for token in stokens:
+                if token != AND:
+                    for subtoken in token.split():
+                        newlinelist.append(subtoken)
+            result.append(convert_list_to_string(newlinelist))
         ######
-    
+
+
     else: # free text
+
+        ##### Original PHRASE NO BOOL
+        result.append(convert_list_to_string(tokens))
+        #####
+
+        ###### PHRASE BOOL
         newlinelist = []
-        tagged = pos_tag(tokens)
-        for word, pos in tagged:
-            pos_in_wordnet = pos[0].lower()
-            # ignore stopwords
-            if word in stopwords:
-                newlinelist += [word]
-                continue
+        for token in stokens:
+            newlinelist.append(token)
+            newlinelist.append(AND)
+        newlinelist = newlinelist[:-1] # drop the last AND
+        result.append(convert_list_to_string(newlinelist))
 
-            symlist = []
-            symlist.append(word) # add itself
-            symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
+
+        ###### NO PHRASE NO BOOL
+        if is_phrase:
+            newlinelist = []
+            for token in stokens:
+                if token != AND:
+                    for subtoken in token.split():
+                        newlinelist.append(subtoken)
+            result.append(convert_list_to_string(newlinelist))
+        ######
+
+        ######
+        # ###### Original pos tag wordnet
+        # newlinelist = []
+        # tagged = pos_tag(tokens)
+        # for word, pos in tagged:
+        #     pos_in_wordnet = pos[0].lower()
+        #     # ignore stopwords
+        #     if word in stopwords:
+        #         newlinelist += [word]
+        #         continue
+
+        #     symlist = []
+        #     symlist.append(word) # add itself
+        #     symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
             
-            newlinelist += symlist 
-            ###
+        #     newlinelist += symlist 
+        #     ###
 
-        result.append(convert_list_to_string(newlinelist, filter=True))
+        # result.append(convert_list_to_string(newlinelist, filter=True))
 
-    ###### Original
-    # result.append(convert_list_to_string(tokens))
+    ##### Original no bool with Wordnet Sym
+    newlinelist = []
+    for token in tokens:
+        if token != AND:
+            thesaurized = hyponymise_term(token)
+            if len(thesaurized) > 0:
+                newlinelist += thesaurized
+            else:
+                newlinelist += [token]
+        # else:
+        #     newlinelist += [AND]
+    result.append(convert_list_to_string(newlinelist))  # original query
+    #####
+
+    ######  Original no bool with Wordnet Hym
+    # newlinelist = []
+    # wordnet_used = 0
+    # for token in stokens:
+    #     if token != AND:
+    #         thesaurized = hyponymise_term(token)
+    #         if len(thesaurized) > 0:
+    #             newlinelist += thesaurized
+    #             wordnet_used += 1
+    #         else:
+    #             newlinelist += [token]
+    # if wordnet_used > 0:
+    #     result.append(convert_list_to_string(newlinelist, filter=True))
     ######
 
+    
     ###### Original stripped stopwords
     # newlinelist = []
     # for token in tokens:
@@ -105,101 +182,18 @@ def get_new_query_strings(line):
     ######
 
 
-    ###### Original with Wordnet
-    # newlinelist = []
-    # for token in tokens:
-    #     if token != AND:
-    #         thesaurized = thesaurize_term(token)
-    #         if len(thesaurized) > 0:
-    #             newlinelist += thesaurize_term(token)
-    #         else:
-    #             newlinelist += [token]
-    #     else:
-    #         newlinelist += [AND]
-    # result.append(convert_list_to_string(newlinelist))  # original query
-    ######
-
-
-    ###### PHRASE NO BOOL
-    # if is_bool:
-    #     newlinelist = []
-    #     for token in stokens:
-    #         if token != AND:
-    #             newlinelist.append(token)
-    #     result.append(convert_list_to_string(newlinelist))
-    ######
-
-
-    # ###### NO PHRASE BOOL
-    # if is_phrase and is_bool:
-    #     newlinelist = []
-    #     for token in stokens:
-    #         if token != AND:
-    #             for subtoken in token.split():
-    #                 newlinelist.append(subtoken)
-    #         else:
-    #             newlinelist.append([AND])
-    #     result.append(convert_list_to_string(newlinelist))
-    # ######
-
-
-    ###### NO PHRASE NO BOOL
-    # if is_phrase or is_bool:
-    #     newlinelist = []
-    #     for token in stokens:
-    #         if token != AND:
-    #             for subtoken in token.split():
-    #                 newlinelist.append(subtoken)
-    #     result.append(convert_list_to_string(newlinelist))
-    ######
-
-
-    ###### WORDNET SYN NO BOOL
-    # newlinelist = []
-    # wordnet_used = 0
-    # for token in stokens:
-    #     if token != AND:
-    #         thesaurized = thesaurize_term(token)
-    #         if len(thesaurized) > 0:
-    #             newlinelist += thesaurized
-    #             wordnet_used += 1
-    #         else:
-    #             newlinelist += [token]
-    # if wordnet_used > 0:
-    #     result.append(convert_list_to_string(newlinelist, filter=True))
-    ######
-
-    ###### WORDNET HYP NO BOOL
-    # newlinelist = []
-    # wordnet_used = 0
-    # for token in stokens:
-    #     if token != AND:
-    #         thesaurized = hyponymise_term(token)
-    #         if len(thesaurized) > 0:
-    #             newlinelist += thesaurized
-    #             wordnet_used += 1
-    #         else:
-    #             newlinelist += [token]
-    # if wordnet_used > 0:
-    #     result.append(convert_list_to_string(newlinelist, filter=True))
-    ######
-
-    print ("New Query:")
+    print("New Query:")
     print(result)
     return result
 
 def get_new_query_vector(vector, docIDs):
     """
-    Relevance Feedback Public Method
+    Relevance Feedback Public Method.
 
-    Given original query vector and list of docIDs.
-
-    The query vector is modelled as sparse vector where it is a term -> score mapping. 
-    Zero score terms will not be stored.
-
-    Calculate Centroid from docIDs and add it to original query vector. 
-
-    Trim the vector according to be predefined minium score
+    This method takes in the original query vector and list of docIDs. 
+    Note that The query vector is modelled as sparse vector where it is a term -> score mapping. Zero scores are not stored too.
+    The centroid from the list of docIDs will be calculated and added to original query vector. 
+    Finally, the resulting vector is trimmed so that terms that do not meet the mininum score is removed.
     """
 
     # Guard methods
@@ -218,18 +212,25 @@ def get_new_query_vector(vector, docIDs):
 
 ######################## UTIL FUNCTION ########################
 
-def thesaurize_term_with_pos(word, pos):
-    if (len(word.split()) >1 ):
-        word = word.replace(' ', '_')
-    for synset in wordnet.synsets(word, pos=pos):
-        for lemma in synset.lemmas():
-            non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
-            yield non_lemmatized
+# def thesaurize_term_with_pos(word, pos):
+#     if (len(word.split()) >1 ):
+#         word = word.replace(' ', '_')
+#     for synset in wordnet.synsets(word, pos=pos):
+#         for lemma in synset.lemmas():
+#             non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
+#             yield non_lemmatized
         
 def filter_duplicates(line_list):
+    """
+    This method takes in a list of terms and removes the duplicated terms. This is used for theasurize as multiple duplicates can be returned.
+    """
     return list(dict.fromkeys(line_list)) 
 
 def normalise_all_tokens_in_list(line_list):
+    """
+    This method takes in a list of terms and normalises each of them to the prefined normalised form.
+    A list of normalised terms are returned.
+    """
     for i in range(len(line_list)):
         if line_list[i] == AND:
             continue
@@ -242,8 +243,7 @@ def convert_list_to_string(line_list, filter=False):
     Util function
     convert a list of tokens into string
     filter duplicates if turned on
-
-    Note filter will remove AND too, do not use this with bool
+    Note that filter will remove AND too, do not use this with bool query
     """
     result = ""
 
@@ -275,13 +275,12 @@ def tokenize(line):
     The line will be tokenised to a list of words, using the delimiter as space or "
 
     For example:
-
     quiet "phone call"
     ->
     quiet
     phone call
 
-    Also returns is_bool and is_phrase
+    Also returns is_bool and is_phrase to indicate if the line has boolean query or phrases respectively
     """
     is_bool = False
     is_phrase = False
@@ -302,9 +301,8 @@ def tokenize(line):
 def thesaurize_term(t):
     """
     Given a term t, return an list of unique synonyms.
-
-    If a term that has two words is given, the space will be replaced by a _
-    This is the WordNet format
+    If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
+    The resulting list will also have _ replaced back to space.
     """
     t = t.replace(" ", "_")
     terms = []
@@ -317,9 +315,8 @@ def thesaurize_term(t):
 def hyponymise_term(t):
     """
     Given a term t, return an list of unique hyponyms.
-
-    If a term that has two words is given, the space will be replaced by a _
-    This is the WordNet format
+    If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
+    The resulting list will also have _ replaced back to space.
     """
     t = t.replace(" ", "_")
     terms = []
