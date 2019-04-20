@@ -18,9 +18,11 @@ except ImportError:
 
 ######################## COMMAND LINE ARGUMENTS ########################
 
-# Read in the input files as command-line arguments
-###
 def read_files():
+    '''
+    Reads in the input files as command-line arguments
+    :return:
+    '''
     def usage():
         print(
             "usage: " + sys.argv[0] + " -i dataset-file -d dictionary-file -p postings-file")
@@ -51,10 +53,11 @@ def read_files():
 
 ######################## DRIVER FUNCTION ########################
 
-### Data parallelization method to speed up nltk word_tokenize
-### Ultimate filter method to boost speed while cleaning up strings
-###
 def ntlk_tokenise_func(row):
+    '''
+    Data parallelization method to speed up nltk word_tokenize.
+    Ultimate filter method to boost speed while cleaning up strings.
+    '''
     content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_CONTENT_NO])]))
     title = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO])]))
     date = row[DF_DATE_POSTED_NO]
@@ -62,13 +65,12 @@ def ntlk_tokenise_func(row):
 
     return row[DF_DOC_ID_NO], title, content, date, court
 
-### Util Function for Mulitprocessing Pool
-###
 def init_worker():
+    '''
+    Util Function for Mulitprocessing Pool
+    '''
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-### Main Function
-###
 def main():
     # For lazy mode since we are lazy
     if len(sys.argv) <= 1:
@@ -158,10 +160,11 @@ def main():
 ### PROCESSING A BODY OF TEXT
 ############################################################################
 
-### Process a body of text (content must be a list of normalized terms)
-### We call this on the document title and content separately.
-###
 def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
+    '''
+    Processes a body of text (content must be a list of normalized terms).
+    We call this on the document title and content separately.
+    '''
     vector = dict()                 # term vector for this document
     biword_vector = dict()         # biword vector for this document
     triword_vector = dict()        # triword vector for this document
@@ -189,9 +192,10 @@ def process_doc_vector_and_bigram_trigram(docID, content, dictionary, postings):
 
     return vector, biword_vector, triword_vector
 
-### Add information about term and position to dictionary and posting list
-###
 def add_data(docID, term, position, dictionary, postings):
+    '''
+    Adds information about term and position to dictionary and posting list.
+    '''
     if dictionary.has_term(term):
         termID = dictionary.get_termID(term)
         added_new_docID = postings.add_position_data(termID, docID, position)
@@ -204,9 +208,10 @@ def add_data(docID, term, position, dictionary, postings):
         dictionary.add_term(term, termID)
 
 
-### Add the term count to the vector, for calculating document length
-###
 def add_vector_count(term, vector):
+    '''
+    Adds the term count to the vector, for calculating document length
+    '''
     if term in vector:
         vector[term] += 1
     else:
@@ -217,31 +222,35 @@ def add_vector_count(term, vector):
 ### IDF DATA IS IGNORED FOR DOCUMENTS BECAUSE WE FOLLOW THE LNC.LTC FORMAT
 ############################################################################
 
-### Convert a content vector to tf-form for calculating document length
-###
 def convert_tf(vector):
+    '''
+    Converts a content vector to tf-form for calculating document length
+    '''
     for t, tf in vector.items():
         vector[t] = log_tf(tf)
     return vector
 
-### Calculate the length of a vector
-###
 def get_length(vector):
+    '''
+    Calculates the length of a vector.
+    '''
     return math.sqrt(sum(map(lambda x: x**2, vector.values())))
 
 ############################################################################
 ### HELPER METHODS FOR SAVING TO DISK
 ############################################################################
 
-### Save the posting lists and dictionary data to disk
-###
 def save_data(dictionary, postings, total_num_documents):
+    '''
+    Saves the posting lists and dictionary data to disk.
+    '''
     postings.save_to_disk(dictionary) # save posting lists, update offset in dictionary
     dictionary.save_to_disk()
 
-### Save the vector data to disk
-###
 def save_vector(dictionary, total_num_documents, document_vectors):
+    '''
+    Saves the vector data to disk.
+    '''
     pfilehandler = open(VECTOR_POSTINGS_FILE, 'wb')
 
     for docID, vector in tqdm(document_vectors.items(), total=total_num_documents):
