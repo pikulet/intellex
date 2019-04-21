@@ -286,6 +286,13 @@ appending additional documents from WordNet expansion.
 The remaining of this document describes the implementation of the complete system, which nevertheless makes available
 the functionality for dealing with Boolean operators and phrasal queries.
 
+The final order of documents we return is:
+1. POSITIVE LIST
+2. DOCUMENTS MATCHING BOTH BOOLEAN AND PHRASAL SEARCH
+3. BASELINE TF-IDF SEARCH
+4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
+5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
+
 ## Search system
 
 Before any query is processed by the Vector Space Model (VSM) evaluation class Eval, it is parsed into a
