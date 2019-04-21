@@ -325,6 +325,9 @@ first found, followed by "B C", and the two postings lists are then merged toget
 
 ## Query expansion
 
+We experimented with 3 types of query expansion techniques, as well as in what order to apply them. More information
+is in BONUS.docx.
+
 ### Relaxing boolean and phrasal queries
 
 The first stage of query expansion, as explained above, involves relaxing the restrictions placed on the query from
@@ -363,37 +366,6 @@ The new centroid vector can then be added to the original query vector to derive
 retrieval. For simplicity, the original query vector is made to be a free text query such that boolean operators
 are removed and phrases are converted to single word terms. The additional documents found from relevance feedback
 are appended after the already returned documents.
-
-## Experimental Results
-
-F2 results for documents appended in the following order:
-1. positive list 2. -boolean, -phrase 3. +boolean +phrase 4. +phrase -boolean
-
-Q1 Average F2: 0.0108201093105916
-Q2 Average F2: 0.362745098039216
-Q3 Average F2: 0.0112925624835047
-Q4 Average F2: 0.496296296296296
-Q5 Average F2: 0.103200491131526
-Q6 Average F2: 0.30050505050505
-Mean Average F2: 0.214143268
-
-This is close to the baseline tf-idf.
-
-F2 results for documents appended in the following order:
-1. positive list 2. +boolean, +phrase 3. -boolean, -phrase 4. +phrase -boolean
-5. Wordnet expansion 6. Rocchio expansion
-
-Q1 Average F2: 0.0318471337579618
-Q2 Average F2: 0.276839007986549
-Q3 Average F2: 0.00854730742939909
-Q4 Average F2: 0.516624579124579
-Q5 Average F2: 0.103200491131526
-Q6 Average F2: 0.172659817351598
-Mean Average F2: 0.184953056130269
-
-This performed worse than the baseline tf-idf.
-
-....
 
 == Files included with this submission ==
 
