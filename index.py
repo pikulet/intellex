@@ -57,7 +57,7 @@ def ntlk_tokenise_func(row):
     Data parallelization method to speed up nltk word_tokenize.
     Ultimate filter method to boost speed while cleaning up strings.
     '''
-    content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO] + row[DF_CONTENT_NO])]))
+    content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO] + " " + row[DF_CONTENT_NO])]))
     title = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO])]))
     date = row[DF_DATE_POSTED_NO]
     court = str(row[DF_COURT_NO])
@@ -71,6 +71,25 @@ def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 def main():
+    """
+    This is the indexing main method. There are 4 parts to this method -> Initialisation, Multiprocessing setup, Population and Saving.
+    
+    Initialisation: We will prepare all of the files and variables needed for the execution. For the ease of running, we have included a lazy mode to auto populate the required file names.
+    Data structures are also created. We will be using Dictionary and PostingList classes to abstract away the complicated functions needed to store the term dictionary and the posting list respectively.
+    The csv file will also be read by pandas, which will also convert the data string column to an actual datetime column. Total number of rows is also calculated by pandas at this point.
+
+    Multiprocessing Setup:  Our profiling states that nltk tokenization via wordtreebank is rather slow, while our Dictionary and Population exceeds it by twice the speed. Thus, we are using a different thread
+    process the nltk word tokenization. This part will prepare the multiprocessing pool, to allow easy termination and synchronization. 
+
+    Population: As the bag of words and other row fields are returned from the threads, we will populate them into our data structures. The bag of words will be passed in our utility functions to
+    obtain the term tf and df for each document. These will be populated into the data structures. The tf and df will also be added to separate storage, so that we can use them for quick vector retrieval in the search.
+    tf and df will be further converted into logtf and idf to obtain its normalization factor. 
+    Court rankings are converted into ranking numbers as per the court ranking reference we were given. Dates are converted to seconds from current indexing time for easy storage.
+
+    Saving: All of the data structures and dict storage will be saved using pickle. 
+
+    Note: tqdm is used to provide a pretty interface to monitor the progress of the indexing. (This will take about 30 mins and about 10GB of ram)
+    """
     # For lazy mode since we are lazy
     if len(sys.argv) <= 1:
         # calls test files
