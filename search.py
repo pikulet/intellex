@@ -77,7 +77,7 @@ def main():
             f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
         if EXPAND_QUERY:
-            query = strip_query_to_free_text(get_query(query_data[0]))
+            query = get_query(strip_query_to_free_text(query_data[0]))
             relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
             extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs)
             extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
