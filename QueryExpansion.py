@@ -28,7 +28,6 @@ stopwords =  set(stopwords.words('english'))
 
 ######################## DRIVER FUNCTION ########################
 
-
 def get_new_query_strings(line):
     """
 
@@ -133,21 +132,18 @@ def get_new_query_strings(line):
 
     return result
 
+######################## RELEVANCE FEEDBACK METHODS ########################
+
 def get_new_query_vector(vector, docIDs):
     """
-    Pseudo Relevance Feedback Public Method.
-    Note that this uses Ricco, which is a blind feedback method.
-
+    Pseudo Relevance Feedback Public Method. This uses the Rocchio algorithm.
     This method takes in the original query vector and list of docIDs. 
-    Note that The query vector is modelled as sparse vector where it is a term -> score mapping. Zero scores are not stored too.
+    The query vector is modelled as sparse vector where it is a term -> score mapping. Zero scores are not stored too.
     The centroid from the list of docIDs will be calculated and added to original query vector. 
     Finally, the resulting vector is trimmed so that only the top k terms are returned
-
     :param vector: Original query vector
     :param docIDs: List of docIDs to get the centroid
-
     """
-
     # Guard methods
     if not isinstance(vector, dict):
         raise Exception("Wrong usage of method: vector should be a dict")
@@ -155,32 +151,17 @@ def get_new_query_vector(vector, docIDs):
     if not isinstance(docIDs, list):
         raise Exception("Wrong usage of method: docIDs should be a list")
 
-    offset = get_new_query_offset(docIDs)
+    offset = get_centroid_vector(docIDs)
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
 
     return vector
 
-######################## UTIL FUNCTION ########################
-
-def intersperse(lst, item):
+def get_centroid_vector(docIDs):
     """
-    Util Method
-
-    Adds the item in-between every element in the list
-
-    :param lst: list to be modified
-    :param item: item to be inserted
-    """
-    result = [item] * (len(lst) * 2 - 1)
-    result[0::2] = lst
-    return result
-
-def get_new_query_offset(docIDs):
-    """
-    Util Method
-    Given a set of docIDs, get the new offset to be used in the formula aka Centroid
-
+    Util Method which given a set of docIDs, returns the centroid of the document vectors.
+    The document vectors are precomputed and stored in the document properties dictionary.
+    A sparse dictionary of term to score mapping is returned.
     :param docIDs: List of docIDs to get the centroid
     """
     num_of_docs = len(docIDs)
@@ -197,16 +178,155 @@ def get_new_query_offset(docIDs):
     for k in offset.keys():
         offset[k] /= num_of_docs
 
-
     return trim_vector(offset)
+
+def trim_vector(vector):
+    """
+    Since Rocchio will return a large vector, we will only return the top k terms.
+    Stopwords and and punctuation are filtered from the top k terms.
+
+    :param: vector: Sparse vector
+    """
+    new_vector = dict()
+    number_of_terms_insert = 0
+    from operator import itemgetter
+    sort = sorted(vector.items(), key=itemgetter(1))
+    for key, value in sort:
+        if (not (key in stopwords)) and (not (key in string.punctuation)):
+            new_vector[key] = value
+            number_of_terms_insert += 1
+            if number_of_terms_insert > ROCCHIO_TERMS:
+                break
+
+    return new_vector
+
+def extract_value(tuple):
+    """
+    This method is to abstract away the format of vector.txt. Vector.txt keeps all vectors in a tf, df format.
+    Currently, this method produces tfidf.
+
+    :param: tuple: Tuple data that is saved inside vector.txt
+    """
+    return log_tf(tuple[0]) * idf_transform(tuple[1])
+
+def get_vector_from_docID_offset(offset):
+    """
+    Given the docID offset, get the sparse vector from vector.txt
+    :param: offset: integer offset of the sparse vector inside vector.txt
+    """
+
+    # vector are stored as sparse indexes
+    # each valid index will map to (tf, idf)
+    data = load_data_with_handler(vector_post_file_handler, offset)
+
+    # we need to normalise
+    normalisator = 0.
+    for key, value in data.items():
+        normalisator += extract_value(value) ** 2
+    normalisator = math.sqrt(normalisator)
+
+    return data, normalisator
+
+######################## WORDNET EXPANSION METHODS ########################
+
+
+def thesaurize_term(word):
+    """
+    Given a term t, returns an list of unique synonyms.
+    If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
+    The resulting list will also have _ replaced back to space.
+    :param: word: Word to be used against word
+    """
+    word = word.replace(" ", "_")
+    terms = []
+    for synset in wordnet.synsets(word):
+        for item in synset.lemma_names():
+            terms.append(item)
+
+    return list(set(convert_wordnet_terms(terms)))
+
+
+def thesaurize_term_with_pos(word, pos):
+    """
+    Similar to theasurize term, this method takes in the pos tag of the word,
+    which helps wordnet to further reduce the number of terms returned
+    :param: word: Word to be used against word
+    :param: pos: Pos Tag of the word
+    """
+    if (len(word.split()) > 1):
+        word = word.replace(' ', '_')
+    for synset in wordnet.synsets(word, pos=pos):
+        for lemma in synset.lemmas():
+            non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
+            yield non_lemmatized
+
+
+def hyponymise_term(word):
+    """
+    Given a term t, return an list of unique hyponyms.
+    If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
+    The resulting list will also have _ replaced back to space.
+    :param: word: Word to be used against word
+    """
+    word = word.replace(" ", "_")
+    terms = []
+    for synset in wordnet.synsets(word):
+        for item in synset.closure(lambda s: s.hyponyms()):
+            terms += item.lemma_names()
+
+    return list(set(convert_wordnet_terms(terms)))
+
+
+def convert_wordnet_terms(terms):
+    """
+    Convert wordnet format back to normal terms such as replacing _ with spaces.
+    :param: terms: List of terms in wordnet format
+    """
+    newterms = []
+    for term in terms:
+        term = term.replace("_", " ")
+        newterms.append(term)
+    return newterms
+
+######################## UTIL FUNCTIONS ########################
+
+def tokenize(line):
+    """
+    Tokenises a line to a list of words, using the delimiter as space or ".
+    For example, the string 'quiet "phone call"' is converted to a list ['quiet', 'phone call'].
+    Also returns is_bool and is_phrase to indicate if the line has boolean query or phrases respectively.
+    :param: line: Query string
+    """
+    is_bool = False
+    is_phrase = False
+    regex = re.compile('("\w* \w*")|(\w*)')
+    result = []
+    for group in regex.findall(line):
+        for term in group:
+            if term:
+                if term == "AND":
+                    is_bool = True
+                if '"' in term:
+                    is_phrase = True
+                term = term.strip('"')
+                result.append(term.strip())
+    return is_bool, is_phrase, result
+
+def intersperse(lst, item):
+    """
+    Util method which adds an item in-between every element in the list.
+    :param lst: list to be modified
+    :param item: item to be inserted
+    """
+    result = [item] * (len(lst) * 2 - 1)
+    result[0::2] = lst
+    return result
 
 def filter_duplicates(line_list):
     """
     This method takes in a list of terms and removes the duplicated terms.
-
     :param line_list: List of tokens
     """
-
     tempresult = []
     tempresult_set = set()
     for i in line_list:
@@ -220,9 +340,8 @@ def filter_duplicates(line_list):
 
 def normalise_all_tokens_in_list(line_list):
     """
-    This method takes in a list of terms and normalises each of them to the prefined normalised form.
+    This method takes in a list of terms and normalises each of them using case folding and stemming.
     A list of normalised terms are returned.
-
     :param: line_list: list of tokens
     """
     for i in range(len(line_list)):
@@ -234,11 +353,9 @@ def normalise_all_tokens_in_list(line_list):
 
 def convert_list_to_string(line_list, filter=False):
     """
-    Util function
-    convert a list of tokens into string
-    filter duplicates if turned on
-    Note that filter will remove AND too, do not use this with bool query
-
+    Util function which converts a list of tokens into string.
+    If filter is true, duplicates are removed.
+    Filter will remove also remove AND and cannot be used with boolean queries.
     :param: line_list: list of tokens
     :param: filter: enable removal of duplicates
     """
@@ -264,148 +381,5 @@ def convert_list_to_string(line_list, filter=False):
         else:
             result += line + ' '
     return result.strip().replace("  ", " ")
-
-
-def tokenize(line):
-    """
-    The line will be tokenised to a list of words, using the delimiter as space or "
-
-    For example:
-    quiet "phone call"
-    ->
-    quiet
-    phone call
-
-    Also returns is_bool and is_phrase to indicate if the line has boolean query or phrases respectively
-
-    :param: line: Query string
-    """
-    is_bool = False
-    is_phrase = False
-    regex = re.compile('("\w* \w*")|(\w*)')
-    result = []
-    for group in regex.findall(line):
-        for term in group:
-            if term:
-                if term == "AND":
-                    is_bool = True
-                if '"' in term:
-                    is_phrase = True
-                term = term.strip('"')
-                result.append(term.strip())
-    return is_bool, is_phrase, result
-
-
-def thesaurize_term(word):
-    """
-    Given a term t, return an list of unique synonyms.
-    If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
-    The resulting list will also have _ replaced back to space.
-
-    :param: word: Word to be used against word
-    """
-    word = word.replace(" ", "_")
-    terms = []
-    for synset in wordnet.synsets(word):
-        for item in synset.lemma_names():
-            terms.append(item)
-
-    return list(set(convert_wordnet_terms(terms)))
-
-
-def thesaurize_term_with_pos(word, pos):
-    """
-    Similar to theasurize term, this method takes in the pos tag of the word, which helps wordnet to further reduce the number of terms returned
-
-    :param: word: Word to be used against word
-    :param: pos: Pos Tag of the word
-    """
-    if (len(word.split()) >1 ):
-        word = word.replace(' ', '_')
-    for synset in wordnet.synsets(word, pos=pos):
-        for lemma in synset.lemmas():
-            non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
-            yield non_lemmatized
-        
-
-def hyponymise_term(word):
-    """
-    Given a term t, return an list of unique hyponyms.
-    If a term that has two words is given, the space will be replaced by a _ (This is the WordNet format)
-    The resulting list will also have _ replaced back to space.
-
-    :param: word: Word to be used against word
-    """
-    word = word.replace(" ", "_")
-    terms = []
-    for synset in wordnet.synsets(word):
-        for item in synset.closure(lambda s: s.hyponyms()):
-            terms += item.lemma_names()
-
-    return list(set(convert_wordnet_terms(terms)))
-
-
-def convert_wordnet_terms(terms):
-    """
-    Convert wordnet format back to normal terms such as replacing _ with spaces
-
-    :param: terms: List of terms in wordnet format
-    """
-    newterms = []
-    for term in terms:
-        term = term.replace("_", " ")
-        newterms.append(term)
-    return newterms
-
-def trim_vector(vector):
-    """
-    Since Riccho will return a large vector, we will only return the top k terms
-    the top k terms must not be a stopword or punctuation
-
-    :param: vector: Sparse vector
-    """
-    new_vector = dict()
-    number_of_terms_insert = 0
-    from operator import itemgetter
-    sort = sorted(vector.items(), key=itemgetter(1))
-    for key, value in sort:
-        if (not (key in stopwords)) and (not (key in string.punctuation)):
-            new_vector[key] = value
-            number_of_terms_insert += 1
-            if number_of_terms_insert > ROCCHIO_TERMS:
-                break
-
-    return new_vector
-
-
-def extract_value(tuple):
-    """
-    This method is to abstract away the format of vector.txt. Vector.txt keeps all vectors in a tf, df format. 
-    Currently, this method produces tfidf.
-
-    :param: tuple: Tuple data that is saved inside vector.txt
-    """
-    return log_tf(tuple[0]) *\
-        idf_transform(tuple[1])
-
-
-def get_vector_from_docID_offset(offset):
-    """
-    Given the docID offset, get the sparse vector from vector.txt
-
-    :param: offset: integer offset of the sparse vector inside vector.txt
-    """
-
-    # vector are stored as sparse indexes
-    # each valid index will map to (tf, idf)
-    data = load_data_with_handler(vector_post_file_handler, offset)
-
-    # we need to normalise
-    normalisator = 0.
-    for key, value in data.items():
-        normalisator += extract_value(value) ** 2
-    normalisator = math.sqrt(normalisator)
-
-    return data, normalisator
 
 

@@ -18,7 +18,7 @@ OUTPUT_FILE_TEST = 'output.txt'
 ## Intermediate files used to store more information
 TITLE_DICTIONARY_FILE = "dictionary_title.txt"  # dictionary for document titles
 TITLE_POSTINGS_FILE = "postings_title.txt"      # posting lists for document titles
-VECTOR_POSTINGS_FILE = "vector.txt"    # document vectors
+VECTOR_POSTINGS_FILE = "postings_vector.txt"    # document vectors
 DOCUMENT_PROPERTIES_FILE = "properties.txt"     # document properties
 
 #################################
@@ -33,7 +33,7 @@ TITLE_WEIGHT = 1
 CONTENT_WEIGHT = 1
 
 ## Search modes
-EXPAND_QUERY = True
+EXPAND_QUERY = False
 NUM_QUERIES_IN_FILE = 1
 MULTIPLE_QUERIES_IN_FILE = False
 CONTENT_ONLY = True

@@ -21,7 +21,6 @@ except ImportError:
 def read_files():
     '''
     Reads in the input files as command-line arguments
-    :return:
     '''
     def usage():
         print(

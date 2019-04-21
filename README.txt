@@ -101,7 +101,8 @@ time. Considering that this process has to be repeated for all the documents inv
 feedback, it would take up a lot of time in searching, compromising on the search efficiency. As such, we 
 made the tradeoff and directly stored the vectors.
 
-Of course, the next alternative is to forego Rocchio expansion altogether, but we still kept it since we were experimenting with Rocchio formula.
+Of course, the next alternative is to forego Rocchio expansion altogether, but we still kept it since we were
+experimenting with Rocchio formula.
 
 ## Processing document metadata
 
@@ -112,7 +113,8 @@ title was meant to separate parts of the content that were deemed more important
 this VSM score higher later on.
 
 DOCUMENT METADATA - COURT
-Without good prior knowledge on court orders and their nuances, we assigned courts a priority between 1 to 3, with 1 being the high priority courts. We used the court ordering provided.
+Without good prior knowledge on court orders and their nuances, we assigned courts a priority between 1 to 3,
+with 1 being the high priority courts. We used the court ordering provided.
 
 DOCUMENT METADATA - DATE POSTED
 When processing the date posted, we interpreted that data as being a metadata of the document. That is, 

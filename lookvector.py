@@ -11,7 +11,7 @@ else:
     print("What document id do you want to see")
     file_no = input().strip()
 
-d = get_new_query_offset([int(file_no)])
+d = get_centroid_vector([int(file_no)])
 from operator import itemgetter
 for k, v in sorted(d.items(), key=itemgetter(1)):
     print (k, v)
