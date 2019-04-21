@@ -48,17 +48,19 @@ def main():
     '''
     Main function for search loads in the dictionary and document properties file into memory and reads in
     the query file with the query string and the list of relevant documents known as the positive list.
-    The first stage involves expanding the query string into multiple modified query strings and running search on
-    each.
-
+    The first stage can involve expanding the query string into multiple types of modified query strings and
+    running search on each.
     1. -phrase, -boolean: e.g. fertility treatment damages
     2. -phrase, +boolean: e.g. fertility AND treatment AND damages
-    1. +phrase, + boolean: e.g. "fertility treatment" AND damages
-    2. +phrase, -boolean: e.g. "fertility treatment" damages
+    3. +phrase, + boolean: e.g. "fertility treatment" AND damages
+    4. +phrase, -boolean: e.g. "fertility treatment" damages
     5. WordNet expanded free text query
-
     The second stage involves relevance feedback using the Rocchio algorithm. The topmost relevant documents are
     used to generate new queries which are appended after the documents already returned.
+    In the final submission, we have decided to omit boolean and phrase search, because limited experimentation
+    did not show any significant benefit from prioritising documents which meet the boolean and phrase restrictions.
+    Relevance feedback using the Rocchio algorithm was also omitted due to poor results when used individually.
+    Hence, a free text query string is searched, followed by appending additional documents from WordNet expansion.
     '''
     if len(sys.argv) <= 1:
         dictionary_file, postings_file, query_file, file_of_output = DICTIONARY_FILE_TEST, POSTINGS_FILE_TEST, QUERY_FILE_TEST, OUTPUT_FILE_TEST

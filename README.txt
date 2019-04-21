@@ -240,6 +240,8 @@ for example we can set weights and ranking orders.
 
 # Searching
 
+## Overall approach
+
 At the top level of searching, query expansion is first done to the original query string to produce
 multiple versions of the same query (see section on query expansion). Every query can one of the following four types:
 
@@ -255,7 +257,34 @@ For a maximally complex query of type 1 (including boolean operator and phrases)
 these four types of queries can be permuted and experimented with to determine the importance of preserving
 the additional information of phrases and boolean operators.
 
-### Final decision here !!!!!!!!!!!
+In the final submission, we have decided to omit boolean and phrase search, because limited experimentation
+did not show any significant benefit from prioritising documents which meet the boolean and phrase restrictions.
+The following shows the results from preserving the original structure of the query with both boolean operators and
+phrasal markers.
+
+Q1 Average F2: 0.0318471337579618
+Q2 Average F2: 0.276839007986549
+Q3 Average F2: 0.00854730742939909
+Q4 Average F2: 0.516624579124579
+Q5 Average F2: 0.103200491131526
+Q6 Average F2: 0.172659817351598
+Mean Average F2: 0.184953056130269
+
+While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
+system which does not take into account the additional restrictions of phrasal and boolean search does not perform
+much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
+one of the sample queries for which information is available: "fertility treatment" AND damages.
+
+The final submission also includes results from WordNet expansion but excludes feedback from the Rocchio algorithm.
+This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
+query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relevance feedback from the Rocchio
+algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
+appending additional documents from WordNet expansion.
+
+The remaining of this document describes the implementation of the complete system, which nevertheless makes available
+the functionality for dealing with Boolean operators and phrasal queries.
+
+## Search system
 
 Before any query is processed by the Vector Space Model (VSM) evaluation class Eval, it is parsed into a
 list where each item is either a single term or a list of terms, which represents a phrase. The terms are
