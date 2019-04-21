@@ -274,7 +274,9 @@ Mean Average F2: 0.184953056130269
 While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
 system which does not take into account the additional restrictions of phrasal and boolean search does not perform
 much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
-one of the sample queries for which information is available: "fertility treatment" AND damages.
+one of the sample queries for which information is available: "fertility treatment" AND damages. Hence, we decided
+to go ahead with preserving the original query string, followed by removing all the boolean operators and phrasal markers
+to do a baseline search.
 
 The final submission also includes results from WordNet expansion.
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
