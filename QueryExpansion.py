@@ -82,6 +82,16 @@ def get_new_query_strings(line):
     is_bool, is_phrase, tokens = tokenize(line) # no distinct.
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
+    ##### 1. PHRASE BOOL
+    newlinelist = []
+    for token in tokens:
+        if token != AND:
+            newlinelist.append(token)
+
+    newlinelist = intersperse(newlinelist, AND)
+    result.append(convert_list_to_string(newlinelist))
+    #####
+
     ###### 6. NO PHRASE BOOL
     newlinelist = []
     for token in tokens:
@@ -102,15 +112,6 @@ def get_new_query_strings(line):
     result.append(convert_list_to_string(newlinelist))
     ######
 
-    ##### 1. PHRASE BOOL
-    newlinelist = []
-    for token in tokens:
-        if token != AND:
-            newlinelist.append(token)
-
-    newlinelist = intersperse(newlinelist, AND)
-    result.append(convert_list_to_string(newlinelist))
-    #####
 
     ###### 2. PHRASE NO BOOL
     newlinelist = []
