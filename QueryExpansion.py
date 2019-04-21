@@ -109,7 +109,7 @@ def get_new_query_strings(line):
                 if len(thesaurized) > 1:
                     count += len(thesaurized) - 1
     
-    # Special trigger to switch Ricchio on if Wordnet is not useful
+    # Special trigger to switch Rocchio on if Wordnet is not useful
     if count < TRIGGER_ROCCHIO_LEVEL:
         import constants
         constants.EXPAND_QUERY = True
