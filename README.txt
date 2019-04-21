@@ -144,7 +144,10 @@ and document frequencies) are done at searching time.
 ## Summary of index content
 
 As mentioned above, we have two set of index contents, one for the TITLE ONLY and one for TITLE + CONTENT.
-We re-specify this in the "files included" section.
+We re-specify this in the "files included" section. In the dictionary, each entry contains a term, the document
+frequency and a pointer to the postings list in the postings file. In the postings file, each entry contains
+a postings list, where each posting is in the form [docID, term frequency, position list], where each position list
+stores the index of where the term occurs in the document.
 
 dictionary_title.txt - dictionary of terms that appear in all the titles
 postings_title.txt - posting lists for terms that appear in all the titles
@@ -152,11 +155,12 @@ postings_title.txt - posting lists for terms that appear in all the titles
 dictionary.txt - dictionary of terms that appear in all the title + content combined
 postings.txt - posting lists for terms that appear in all the title + content combined
 
+postings_vector.txt - storing all the actual document vectors.
+
 We also keep track of document properties and metadata, such as the document length and court.
 
-document_properties.txt - dictionary mapping docID to document properties
+properties.txt - dictionary mapping docID to document properties
 
-postings_vector.txt - storing all the actual document vectors.
 The byte offset needed for unpickling is stored as a document property.
 
 A summary of the document properties we kept track of:
@@ -300,7 +304,7 @@ expanded to '(quiet OR silent) AND (phone call OR telephone call)'.
 For relevance feedback based on the Rocchio Algorithm, our system makes use of the top 1000 returned documents
 from the basic search which are assumed to be relevant, on top of the list of documents identified as relevant
 in the original query file. The document IDs are then used to retrieve precomputed and stored document vectors in
-the document properties file, which are then combined to give the centroid vector of the relevant documents. This is
+the postings vectors file, which are then combined to give the centroid vector of the relevant documents. This is
 done such that there is no need to traverse the postings file to build the document vector for each relevant document,
 which would be extremely expensive.
 
