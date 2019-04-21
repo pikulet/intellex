@@ -364,7 +364,7 @@ def tokenize(line):
     """
     is_bool = False
     is_phrase = False
-    regex = re.compile('("\w* \w*")|(\w*)')
+    regex = re.compile('("[^"]* [^"]*")|([^"]*)')
     result = []
     for group in regex.findall(line):
         for term in group:
