@@ -74,7 +74,7 @@ def main():
         result = get_results(query_data, p, dictionary, doc_properties)
 
         with open(file_of_output, 'w') as f:
-            f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
+            f.write(' '.join([str(x) for x in result]))
 
             if EXPAND_QUERY: 
                 query, is_boolean = get_query(strip_query_to_free_text(query_data[0])) 
@@ -82,7 +82,9 @@ def main():
                 extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs) 
                 extra_docs = list(filter(lambda x: x not in result, extra_docs)) 
                 
-                f.write(' '.join([str(x) for x in extra_docs]) + END_LINE_MARKER)
+                f.write(' ' + ' '.join([str(x) for x in extra_docs]))
+            
+            f.write(END_LINE_MARKER)
 
 def get_results(query_data, postings_handler, dictionary, doc_properties):
     '''
