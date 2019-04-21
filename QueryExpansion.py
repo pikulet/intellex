@@ -23,6 +23,8 @@ def idf_transform(x): return math.log(total_num_documents/x, 10)
 AND = "AND"
 
 stemmed_stopwords =  set([normalise_term(t) for t in stopwords.words('english')])
+unstemmed_stopwords = stopwords.words('english')
+
 punctuation = string.punctuation
 
 ######################## DRIVER FUNCTION ########################
@@ -121,33 +123,26 @@ def get_new_query_strings(line):
     newlinelist = []
     for token in stokens:
         if token != AND:
-            thesaurized = thesaurize_term(token)
-            if len(thesaurized) > 0:
-                newlinelist += thesaurized
+            if token in unstemmed_stopwords:
+                newlinelist.append(token)
             else:
-                newlinelist += [token]
+                thesaurized = thesaurize_term(token) + [token]
+                newlinelist += thesaurized
     result.append(convert_list_to_string(newlinelist, filter=True))  # original query
     #####
 
-    #####
-    # ###### 4.1 NO BOOL POS TAG Wordnet Synonyms
+    ###### 4.1 NO BOOL POS TAG Wordnet Synonyms (Not useful since the user's free text query can be quite bad)
     # newlinelist = []
     # tagged = pos_tag(tokens)
     # for word, pos in tagged:
-    #     pos_in_wordnet = pos[0].lower()
-    #     # ignore stopwords
-    #     if word in stopwords:
-    #         newlinelist += [word]
-    #         continue
-
-    #     symlist = []
-    #     symlist.append(word) # add itself
-    #     symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
-        
-    #     newlinelist += symlist 
-    #     ###
-
+    #     if word != AND:
+    #         if word in unstemmed_stopwords:
+    #             newlinelist.append(word)
+    #         else:
+    #             thesaurized = thesaurize_term_with_pos(word, pos) + [word]
+    #             newlinelist += thesaurized
     # result.append(convert_list_to_string(newlinelist, filter=True))
+    ######
 
     # Remove duplicates
     result = filter_duplicates(result)
@@ -278,12 +273,29 @@ def thesaurize_term_with_pos(word, pos):
     :param: word: Word to be used against word
     :param: pos: POS Tag of the word
     """
-    if (len(word.split()) > 1):
-        word = word.replace(' ', '_')
-    for synset in wordnet.synsets(word, pos=pos):
+    word = word.replace(' ', '_')
+    terms = []
+    for synset in wordnet.synsets(word, pos=get_wordnet_pos(pos)):
         for lemma in synset.lemmas():
             non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
-            yield non_lemmatized
+            terms.append(non_lemmatized)
+    
+    return (list(set(terms)))
+
+def get_wordnet_pos(treebank_tag):
+    """
+    Util function to convert word tokenise's pos tags to wordnet pos tag
+    """
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return ''
 
 
 def hyponymise_term(word):
