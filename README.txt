@@ -20,7 +20,7 @@ There are a total of 17137 documents in the corpus, and 31 types of courts in th
 We found that all the fields were populated.
 
 We identified some cases of duplicate document IDs, which does not make sense in the context of document
-retrieval (see duplicate_docs fuke). We analysed these duplicate entries and found that these entries would have the
+retrieval (see duplicate_docs file). We analysed these duplicate entries and found that these entries would have the
 title and content being repeated, and the only field changed would be the metadata on the court.
 
 Such occurrences make sense in real life, since legal cases can be transferred between courts depending on their
