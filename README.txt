@@ -281,10 +281,8 @@ The final submission also includes results from WordNet expansion but excludes f
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
 query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relevance feedback from the Rocchio
 algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
-appending additional documents from WordNet expansion.
-
-The remaining of this document describes the implementation of the complete system, which nevertheless makes available
-the functionality for dealing with Boolean operators and phrasal queries.
+appending additional documents from WordNet expansion. When the WordNet does not thesaurise the term enough, we perform
+Rocchio expansion. A full explanation can befound in BONUS.docx.
 
 The final order of documents we return is:
 1. POSITIVE LIST
@@ -292,6 +290,9 @@ The final order of documents we return is:
 3. BASELINE TF-IDF SEARCH
 4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
 5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
+
+The remaining of this document describes the implementation of the complete system, which nevertheless makes available
+the functionality for dealing with Boolean operators and phrasal queries.
 
 ## Search system
 
