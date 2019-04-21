@@ -18,13 +18,12 @@ total_num_documents = len(document_properties)
 # def normalise_term(x):
 #     return x
 
-def log_tf(x): return 1 + math.log(x, 10)
-
 def idf_transform(x): return math.log(total_num_documents/x, 10)
 
 AND = "AND"
 
 stopwords =  set(stopwords.words('english'))
+punctuation = string.punctuation
 
 ######################## DRIVER FUNCTION ########################
 
@@ -192,7 +191,7 @@ def trim_vector(vector):
     from operator import itemgetter
     sort = sorted(vector.items(), key=itemgetter(1))
     for key, value in sort:
-        if (not (key in stopwords)) and (not (key in string.punctuation)):
+        if (not (key in stopwords)) and (not (key in punctuation)):
             new_vector[key] = value
             number_of_terms_insert += 1
             if number_of_terms_insert > ROCCHIO_TERMS:
