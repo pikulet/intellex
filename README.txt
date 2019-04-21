@@ -20,9 +20,10 @@ There are a total of 17137 documents in the corpus, and 31 types of courts in th
 We found that all the fields were populated.
 
 We identified some cases of duplicate document IDs, which does not make sense in the context of document
-retrieval (see duplicate_docs). We analysed these duplicate entries and found that these entries would have the
-title and content being repeated, and the only field changed would be the metadata on the court. Such occurrences
-make sense in real life, since legal cases can be transferred between courts depending on their 
+retrieval (see duplicate_docs fuke). We analysed these duplicate entries and found that these entries would have the
+title and content being repeated, and the only field changed would be the metadata on the court.
+
+Such occurrences make sense in real life, since legal cases can be transferred between courts depending on their 
 severity. To treat the case of a duplicate document, we simply update the court and keep the case with
 the highest priority. While this may compromise on accuracy, it is almost impossible to determine if the 
 case went from a high-priority court to a low-priority court or vice versa. We believe that using the 
@@ -44,29 +45,41 @@ from the searching stage, where we perform query expansion.
 When running our initial indexing on the Tembusu cluster, we found that the indexing time was infeasible 
 to work with. Given a lot of changes we wanted to make in terms of storing biwords, which document 
 properties, we wanted to speed up the indexing time. We timed the different parts of the indexing and 
-found the NLTK tokenisation to take a significant portion of the time. Instead of doing the tokenisation 
-sequentially, we realised we could read in all the data, pass all the documents to be tokenised in 
-parallel, then process the tokenised data sequentially.
+found the NLTK tokenisation to take a significant portion of the time. 
+
+In HW3, the program would perform nltk(doc1), then nltk(doc2), then nltk(doc3). Given that the documents
+are fairly independent, we do not actually have to wait for nltk(doc1) to complete before starting on
+nltk(doc2). Instead of doing the tokenisation sequentially, we realised we could read in all the data,
+pass all the documents to be tokenised in parallel, then process the tokenised data sequentially.
 
 (done in parallel): doc1, doc2, doc3... --> nltk(doc1), nltk(doc2), nltk(doc3)... 
 (sequential): process(tokenised_doc1), process(tokenised_doc2), process(tokenised_doc3)...
 
+We still have to process the documents sequentially because we wanted the posting lists to be sorted by
+docID for quicker merging for AND queries. If we processed the docIDs non-sequentially, we would have to
+do a sort operation on all the final posting lists, which is time-consuming.
+
 ## Storing entire document vectors
 
 We processed the document content body and title body separately, so we have two sets of a dictionary and
-posting list, one for the content body and one for the title body.
+posting list, one for the content+title body and one for the title body. We explain our choice of including
+the title metadata in ### METADATA - TITLE below.
 
-In the processing, we store the posting list data as in HW3. However, we also store the actual document 
-uniword vector. This vector maps the count of every term in the document. We subsequently apply log-tf on 
-the counts. Previously in HW3, we would just store the length of this vector as the document length. Now, 
-we also store the entire vector because we need the vector for relevance feedback (see section on Rocchio Algorithm).
+In the processing, we store the dictionary and posting list data as in HW3. However, we also store the actual document 
+uniword vector. This vector maps the count of every term in the document. 
+
+For example, doc1 { "egg" : 1, "cat" : 3, "the" : 4 }
+
+We subsequently apply log-tf on the counts. Previously in HW3, we would just store the length of this vector as the
+document length. Now,  we also store the entire vector because we need the vector for relevance feedback
+(see section on Rocchio Algorithm). 
 
 While storing the entire vector takes up a lot of space (370MB), we chose to make this tradeoff. The 
 alternative was to run through the entire posting list to reconstruct the document vector during searching 
-time. Considering that this process has to be repeated for all the documents involved in the relevance 
-feedback, it would take up a lot of time in searching, compromising on the search efficiency.
-Of course, the next alternative is to forego Rocchio expansion altogether, but we still kept it for experimentation
-purposes.
+time. To reconstruct doc1 above, we run through the posting lists of ALL terms, and record which terms contain 
+doc1. Considering that this process has to be repeated for all the documents involved in the relevance 
+feedback, it would take up a lot of time in searching, compromising on the search efficiency.Of course, the next
+alternative is to forego Rocchio expansion altogether, but we still kept it for experimentation purposes.
 
 ## Processing document metadata
 
@@ -76,6 +89,14 @@ the first line of the content. That is, there is no additional data in the title
 title was meant to separate parts of the content that were deemed more important. We thus experimented with
 giving a higher weight to the title field later on.
 
+However, it is likely that the title is too short and contains too many numbers and case references. When
+we experimented with weighing the title and content as two separate zones of the document, we did not get
+good results, often performing below the baseline.
+
+As such, we decided to approach the baseline as closely as possible. We hypothesised that the baseline model
+merged both the title and content together, so we did just that. We had one set of processed data for TITLE
+only, one set of processed data for TITLE + CONTENT.
+
 DOCUMENT METADATA - COURT
 Without good prior knowledge on court orders and their nuances, we assigned courts a priority between 1 to 3,
 with 1 being the high priority courts. We used the court ordering provided.
@@ -83,9 +104,10 @@ with 1 being the high priority courts. We used the court ordering provided.
 DOCUMENT METADATA - DATE POSTED
 When processing the date posted, we interpreted that data as being a metadata of the document. That is, 
 the date posted has no actual content that the user will look up. Users are only likely to search for the 
-hearing or incident dates. We used the date posted, then, as an indicator of how recent the case was. 
-Nevertheless, the date posted is unlikely to be an important distinguishing factor. After some 
-experiments, we omitted this result from the document ranking, though we still kept the data.
+hearing or incident dates. We used the date posted then, as an indicator of how recent the case was. More
+specifically, we recorded the seconds from indexing time as a proxy. Nevertheless, the date posted is
+unlikely to be an important distinguishing factor. After some experiments, we omitted this result from the
+document ranking, though we still kept the data.
 
 ## Storing biword and triword information
 
@@ -117,9 +139,34 @@ and take up little space (document length for biword and triword vectors) are do
 stored. The operations which can be done quickly, and take up too much space when stored (term frequencies 
 and document frequencies) are done at searching time.
 
-# Summary of index content
+## Summary of index content
 
+As mentioned above, we have two set of index contents, one for the TITLE ONLY and one for TITLE + CONTENT.
+We re-specify this in the "files included" section.
 
+dictionary_title.txt - dictionary of terms that appear in all the titles
+postings_title.txt - posting lists for terms that appear in all the titles
+
+dictionary.txt - dictionary of terms that appear in all the title + content combined
+postings.txt - posting lists for terms that appear in all the title + content combined
+
+We also keep track of document properties and metadata, such as the document length and court.
+
+document_properties.txt - dictionary mapping docID to document properties
+
+postings_vector.txt - storing all the actual document vectors.
+The byte offset needed for unpickling is stored as a document property.
+
+A summary of the document properties we kept track of:
+- CONTENT_LENGTH: vector length for document vector from TITLE + CONTENT
+- TITLE_LENGTH: vector length for document vector from TITLE only
+- COURT_PRIORITY: priority of document court from 1 (highest priority) to 3 (lowest)
+- DATE_POSTED: an indicator of how recent the document was posted (in seconds from indexing time)
+- VECTOR_OFFSET: the byte offset for pickle to load the document content + title vector from postings_vector.txt
+- BIGRAM_CONTENT_LENGTH: length of document TITLE + CONTENT biword index, for normalisation of triword terms
+- TRIGRAM_CONTENT_LENGTH: length of document TITLE + CONTENT triword index, for normalisation of triword terms
+- BIGRAM_TITLE_LENGTH: length of document TITLE only biword index, for normalisation of triword terms
+- TRIGRAM_TITLE_LENGTH: length of document TITLE only triword index, for normalisation of triword terms
 
 # Searching Algorithm
 
