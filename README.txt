@@ -279,7 +279,7 @@ We decide to keep the boolean and phrasal requirements because we assume that us
 want them to be in place. In particular, we keep searches of the form +PHRASE -BOOLEAN because of the occurrence of
 stopwords within phrases. For example, the user searches "statement of intent", stripping phrases will result in the
 stopword "of" appearing as a dimension in the VSM query evaluation. While idf will significantly reduce the weight on
-this dimension, there will be a very very high number of documents with a non-zero score that will be returned. As such,
+this dimension, there will be a very high number of documents with a non-zero score that will be returned. As such,
 we keep this requirement.
 
 The final submission also includes results from WordNet expansion.
