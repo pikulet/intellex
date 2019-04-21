@@ -148,7 +148,7 @@ searching. Given a corpus size of 700MB, the uniword posting list and dictionary
 641MB of space. Storing the biword and triword information as separate indices would not be good in terms
 of space usage. As such, we took to using positional indexing to store data on biwords and triwords. That
 is, to find the term frequency of "fertility treatment" in document 1, we run a positional merge on the
-posting list of "fertiltiy" and "treatment" for document 1.
+posting list of "fertility" and "treatment" for document 1.
 
 However, we need information on vector length for the VSM scores. It is not efficient to calculate the
 document length at search time for the same reason why we store the entire document vector for the Rocchio
@@ -281,7 +281,15 @@ The final submission also includes results from WordNet expansion but excludes f
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
 query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relevance feedback from the Rocchio
 algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
-appending additional documents from WordNet expansion.
+appending additional documents from WordNet expansion. When the WordNet does not thesaurise the term enough, we perform
+Rocchio expansion. A full explanation can befound in BONUS.docx.
+
+The final order of documents we return is:
+1. POSITIVE LIST
+2. DOCUMENTS MATCHING BOTH BOOLEAN AND PHRASAL SEARCH
+3. BASELINE TF-IDF SEARCH
+4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
+5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
 
 The remaining of this document describes the implementation of the complete system, which nevertheless makes available
 the functionality for dealing with Boolean operators and phrasal queries.
