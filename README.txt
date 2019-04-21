@@ -394,6 +394,7 @@ are appended after the already returned documents.
 
 # diagram.png - visualisation of our entire system architecture
 # constants.py - constants file with global variables including file names and tuning settings
+# BONUS.docx - our query refinement techniques
 
 Indexing files:
 # data_helper.py - manages the direct file reading and writing
@@ -419,7 +420,7 @@ Data files:
 # properties.txt - document properties file storing normalisation constants and other properties of each document.
 
 Additional files:
-# duplicate_docs.txt - duplicate document IDs from corpus analysis
+# duplicate_docs - duplicate document IDs from corpus analysis
 # lookdoc.py - script to view the document using the document ID
 # lookvector.py - script to view the document vector using the document ID
 
