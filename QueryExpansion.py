@@ -128,7 +128,7 @@ def get_new_query_strings(line):
             else:
                 thesaurized = thesaurize_term(token) + [token]
                 newlinelist += thesaurized
-    result.append(convert_list_to_string(newlinelist, filter=True))  # original query
+    result.append(convert_list_to_string(newlinelist, filter=True))
     #####
 
     ###### 4.1 NO BOOL POS TAG Wordnet Synonyms (Not useful since the user's free text query can be quite bad)
@@ -143,6 +143,18 @@ def get_new_query_strings(line):
     #             newlinelist += thesaurized
     # result.append(convert_list_to_string(newlinelist, filter=True))
     ######
+
+    ##### 4.2 NO BOOL Wordnet Hynonyms (Too many terms returned and may explode)
+    # newlinelist = []
+    # for token in stokens:
+    #     if token != AND:
+    #         if token in unstemmed_stopwords:
+    #             newlinelist.append(token)
+    #         else:
+    #             thesaurized = hyponymise_term(token) + [token]
+    #             newlinelist += thesaurized
+    # result.append(convert_list_to_string(newlinelist, filter=True))
+    #####
 
     # Remove duplicates
     result = filter_duplicates(result)
