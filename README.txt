@@ -37,6 +37,14 @@ data). More specifically, this was in document 2044863. We did not add any speci
 because the case is isolated and it is unlikely that the user wants to look something up from the document.
 There are also other unicode characters that are not recognised. These can be easily resolved with utf-8 encoding.
 
+# System Architecture
+
+We divided our system into three main components: Indexing, Helper Modules, Searching.
+
+The indexing modules are used for the indexing algorithm.
+The helper modules are used for BOTH indexing and searching. (File reading and writing, shared term normalisation methods, shared constants)
+The searching modules work with document ranking and query expansion.
+
 # Indexing
 
 We first tokenise the documents using the nltk tokenisers with stemming and case folding as in previous homeworks.
@@ -169,6 +177,44 @@ A summary of the document properties we kept track of:
 - TRIGRAM_CONTENT_LENGTH: length of document TITLE + CONTENT triword index, for normalisation of triword terms
 - BIGRAM_TITLE_LENGTH: length of document TITLE only biword index, for normalisation of triword terms
 - TRIGRAM_TITLE_LENGTH: length of document TITLE only triword index, for normalisation of triword terms
+
+# Helper Modules
+
+We have three helper modules that are consistently used across indexing and searching.
+
+## data_helper.py
+
+The data helper contains shared methods, and direct file reading and writing.
+Shared methods includes NLTK tokenisation methods, since we want to apply consistent tokenisation for both the document and query.
+
+The direct file reading and writing is handled by pickle, but we abstract everything here so we could experiment with different
+serialisation modules (JSON, XML). We wanted to experiment with this aspect because our initial searching was very slow and inefficient.
+We did online research (see references) on serialisation methods, and tested them out. In the end, our results still directed us back to pickle.
+
+## properties_helper.py
+
+The properties helper module manages document properties. We store the constants needed to access the specific document properties here.
+Having this module was useful in our experimentation, because we could add more document metadata easily. Document properties have no 
+actual relevance to document retrieval, and they mostly help with the relative ranking of the retrieved documents, and for relevance feedback.
+
+For example:
+(1) lengths are used in normalisation of scores
+(2) court and data metadata can be weighed in the scores
+(3) document vectors are used for relevance feedback
+
+## constants.py
+
+(1) Test files
+This file contains the test files we were working with. For example, we only index the first 100 entries for most of the testing phase for
+indexing. We can run this indexing locally, and the indexing of the full 17 000 entries on Tembusu.
+
+(2) Intermediate files
+As shown above, we have a lot of intermediate files (that are not dictionary.txt and postings.txt). These file names are stored here to be
+written to at indexing time and read from at searching time.
+
+(3) Searching Parameters
+To facilitate our experimentation, we tried a lot of settings for the search. These settings are encapsulated here, for example we can
+set weights and ranking orders.
 
 # Searching
 

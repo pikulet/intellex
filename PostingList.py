@@ -8,7 +8,10 @@ except ImportError:
 A Postings class that collects all the posting lists.
 Each posting list is a dictionary mapping docIDs to a list [term frequency, list_of_positions]
 For example, doc1 has "egg" in position 1 and 15, doc2 has "egg" in position 3.
-"egg" -> { doc1 : [2, [1, 15]], doc2 : [1, [3]] }
+{ doc1 : [2, [1, 15]], doc2 : [1, [3]] }
+
+The Dictionary class stores the offset for the term "egg", which is used to retrieve this
+posting list (represented as a python dictionary).
 '''
 class PostingList():
 
