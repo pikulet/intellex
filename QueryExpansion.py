@@ -37,7 +37,7 @@ def get_new_query_strings(line):
     2. + Phrase - Bool
     3. - Phrase - Bool
     4. + Wordnet - Bool
-    5. Ricchio (not used here)
+    5. Rocchio (not used here)
     6. - Phrase + Bool
     A list of new query strings will be returned in the order of 3124. 
     If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted into the result.
