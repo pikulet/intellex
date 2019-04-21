@@ -100,11 +100,28 @@ giving a higher weight to the title field later on.
 
 However, it is likely that the title is too short and contains too many numbers and case references. When
 we experimented with weighing the title and content as two separate zones of the document, we did not get
-good results, often performing below the baseline.
+good results, often performing below the baseline. Here are the results when we assigned equal weightage
+to both TITLE and CONTENT separately:
+
+# result.1
+Average F: 0.0108201093105916
+# result.2
+Average F: 0.217724508769285
+# result.3
+Average F: 0.00957123821040243
+# result.4
+Average F: 0.496296296296296
+# result.5.txt content: 
+Average F: 0.0824991658324992
+# result.6.txt content: 
+Average F: 0.21474358974359
+
+
+Note that the baseline tf-idf assigns weight 0 to TITLE and weight 1 to CONTENT.
 
 As such, we decided to approach the baseline as closely as possible. We hypothesised that the baseline model
 merged both the title and content together, so we did just that. We had one set of processed data for TITLE
-only, one set of processed data for TITLE + CONTENT.
+only, one set of processed data for TITLE + CONTENT. We assigned 0 weight to TITLE and weight 1 to TITLE + CONTENT.
 
 DOCUMENT METADATA - COURT
 Without good prior knowledge on court orders and their nuances, we assigned courts a priority between 1 to 3,
