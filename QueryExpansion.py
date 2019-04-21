@@ -123,6 +123,26 @@ def get_new_query_strings(line):
     result.append(convert_list_to_string(newlinelist, filter=True))  # original query
     #####
 
+    #####
+    # ###### 4.1 NO BOOL POS TAG Wordnet Synonyms
+    # newlinelist = []
+    # tagged = pos_tag(tokens)
+    # for word, pos in tagged:
+    #     pos_in_wordnet = pos[0].lower()
+    #     # ignore stopwords
+    #     if word in stopwords:
+    #         newlinelist += [word]
+    #         continue
+
+    #     symlist = []
+    #     symlist.append(word) # add itself
+    #     symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
+        
+    #     newlinelist += symlist 
+    #     ###
+
+    # result.append(convert_list_to_string(newlinelist, filter=True))
+
     # Remove duplicates
     result = filter_duplicates(result)
 
