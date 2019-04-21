@@ -365,17 +365,13 @@ def tokenize(line):
     is_bool = False
     is_phrase = False
     line = " ".join(line.split())
-    regex = re.compile('("[^" ]* [^" ]*  [^" ]*")|("[^" ]* [^" ]*")|([^"]*)')
+    regex = re.compile('("[^" ]* [^" ]*  [^" ]*")|("[^" ]* [^" ]*")|([^" ]*)')
     result = []
     for group in regex.findall(line):
         for term in group:
             if term:
                 if term == "AND":
                     is_bool = True
-                if "AND" in term:
-                    for i in term.split():
-                        result.append(i)
-                    continue
                 if '"' in term:
                     is_phrase = True
                 term = term.strip('"')
