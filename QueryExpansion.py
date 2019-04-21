@@ -380,10 +380,10 @@ def trim_vector(vector):
 
 def extract_value(tuple):
     """
-    This method is to abstract away the format of vector.txt. Vector.txt keeps all vectors in a tf, df format. 
+    This method is to abstract away the format of vector file. Vector file keeps all vectors in a tf, df format. 
     Currently, this method produces tfidf.
 
-    :param: tuple: Tuple data that is saved inside vector.txt
+    :param: tuple: Tuple data that is saved inside vector file
     """
     return log_tf(tuple[0]) *\
         idf_transform(tuple[1])
@@ -391,9 +391,9 @@ def extract_value(tuple):
 
 def get_vector_from_docID_offset(offset):
     """
-    Given the docID offset, get the sparse vector from vector.txt
+    Given the docID offset, get the sparse vector from vector file
 
-    :param: offset: integer offset of the sparse vector inside vector.txt
+    :param: offset: integer offset of the sparse vector inside vector file
     """
 
     # vector are stored as sparse indexes

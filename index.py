@@ -58,7 +58,7 @@ def ntlk_tokenise_func(row):
     Data parallelization method to speed up nltk word_tokenize.
     Ultimate filter method to boost speed while cleaning up strings.
     '''
-    content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_CONTENT_NO])]))
+    content = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO] + row[DF_CONTENT_NO])]))
     title = list(filter(None, [normalise_term(w).strip() for w in word_tokenize(row[DF_TITLE_NO])]))
     date = row[DF_DATE_POSTED_NO]
     court = str(row[DF_COURT_NO])
