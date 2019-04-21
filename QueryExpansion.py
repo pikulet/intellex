@@ -90,7 +90,8 @@ def get_new_query_strings(line):
     for token in tokens:
         if token != AND:
             for subtoken in token.split():
-                newlinelist.append(subtoken)
+                if not (subtoken in unstemmed_stopwords):
+                    newlinelist.append(subtoken)
 
     result.append(convert_list_to_string(newlinelist))
     ######
