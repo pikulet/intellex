@@ -14,10 +14,6 @@ CONJUNCTION_OPERATOR = " AND "
 PHRASE_MARKER = "\""
 INVALID_TERM_DF = -1
 
-######################## FILE READING FUNCTIONS ########################
-
-### Retrieve the posting list for a particular term
-###
 def get_posting(postings_handler, dictionary, term):
     '''
     Retrieves the posting lists for a particular term. Each posting is
@@ -36,9 +32,6 @@ def get_posting(postings_handler, dictionary, term):
     except KeyError:
         # Term does not exist in dictionary
         return INVALID_TERM_DF, list()
-
-### Retrieve a query format given the query file
-###
 
 def get_query(query):
     '''
@@ -198,10 +191,12 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
                              [SINGLE_TERMS_WEIGHT, BIWORD_PHRASES_WEIGHT, TRIWORD_PHRASES_WEIGHT])
     return score_dict
 
-### comment properly
 def get_best_documents(postings_handler, dictionary, doc_properties, query):
     '''
-    Returns the top documents based on the content and title fields separately.
+    This function runs search on the top documents based on the content and title fields separately, and then
+    combines the cosine scores returned from
+
+
     :param postings_handler: a handler to access the postings list file.
     :param dictionary: the dictionary mapping terms to pointers to each posting list in the postings handler.
     :param doc_properties: the dictionary mapping documents to various properties such as document vector length.
@@ -252,13 +247,3 @@ def relevance_feedback(postings_handler, dictionary, doc_properties, query, rele
     new_query_scores = Eval(terms, posting_lists, dictionary, doc_properties, query_vector=tf_idf).eval_query()
     top_docs = get_top_scores_from_dict(new_query_scores)
     return top_docs
-
-'''
-def identify_courts(query_string):
-    #Returns courts that exist within a query string.
-    courts = []
-    for court in COURT_HIERARCHY:
-        if court in query_string:
-            courts.append(court)
-    return courts
-'''

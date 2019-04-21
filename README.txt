@@ -6,6 +6,8 @@ e0200996@u.nus.edu
 e0176788@u.nus.edu
 e0148858@u.nus.edu
 
+@@@ write the final decision
+
 == Python Version ==
 
 We're using Python Version <3.6> for this assignment.
@@ -34,7 +36,7 @@ data). More specifically, this was in document 2044863. We did not add any speci
 because the case is isolated and it is unlikely that the user wants to look something up from the document.
 There are also other unicode characters that are not recognised. These can be easily resolved with utf-8 encoding.
 
-# Indexing Algorithm
+# Indexing
 
 We first tokenise the documents using the nltk tokenisers with stemming and case folding as in previous homeworks.
 Our aim is to model the baseline tf-idf method as closely as possible. The increased features would mostly come
@@ -117,11 +119,11 @@ and take up little space (document length for biword and triword vectors) are do
 stored. The operations which can be done quickly, and take up too much space when stored (term frequencies 
 and document frequencies) are done at searching time.
 
-# Summary of index content
+## Summary of index content
 
 
 
-# Searching Algorithm
+# Searching
 
 At the top level of searching, query expansion is first done to the original query string to produce
 multiple versions of the same query (see section on query expansion). Every query can one of the following four types:
@@ -138,7 +140,7 @@ For a maximally complex query of type 1 (including boolean operator and phrases)
 these four types of queries can be permuted and experimented with to determine the importance of preserving
 the additional information of phrases and boolean operators.
 
-### Final decision here
+### Final decision here !!!!!!!!!!!
 
 Before any query is processed by the Vector Space Model (VSM) evaluation class Eval, it is parsed into a 
 list where each item is either a single term or a list of terms, which represents a phrase. The terms are 
@@ -178,7 +180,15 @@ algorithm in BooleanMerge is used (see below). After the reduced postings lists 
 proceeds as in a non-boolean query using the VSM evaluation. This is ensure that even though a strict 
 intersection of all terms is enforced, the documents can still be ranked.
 
-### Vector Space Model evaluation
+In addition, given that title and content were indexed separately, it is possible to run the same query twice
+to derive the cosine scores from searching the title and content fields, which are then combined using a linearly
+weighted function of the form:
+a*(score from title search) + b*(score from content search)
+This functionality was implemented, but due to lack of training data, it was not possible to learn the appropriate
+weights that should be assigned to each field. One experiment was done on assigning an equal weight, which performed
+worse than a simple tf-idf baseline and was hence omitted.
+
+## Vector Space Model evaluation
 
 The VSM evaluation follows the lnc.ltc ranking scheme, such that we compute tf-idf for the query, but only 
 log(tf) for the documents. To evaluate each query, a list of (term, term frequency) tuples is created from 
@@ -220,9 +230,13 @@ first found, followed by "B C", and the two postings lists are then merged toget
 
 ## Query expansion
 
-### Relaxing AND and phrasal queries
+### Relaxing boolean and phrasal queries
 
-
+The first stage of query expansion, as explained above, involves relaxing the restrictions placed on the query from
+phrases and boolean operators. Since the terms in the user queries may not be the exact terms desired, we need to
+relax the AND portion of the query, so that even if the term given is not correct, the results for other parts of the
+query can still be returned. To achieve a baseline tf-idf framework, all boolean operators and phrase markers were
+stripped from the query string.
 
 ### WordNet/Thesaurus Query Expansion
 
@@ -255,10 +269,6 @@ retrieval. For simplicity, the original query vector is made to be a free text q
 are removed and phrases are converted to single word terms. The additional documents found from relevance feedback
 are appended after the already returned documents.
 
-## Zoning
-
-
-
 ## Experimental Results
 
 F2 results for documents appended in the following order:
@@ -288,6 +298,7 @@ Mean Average F2: 0.184953056130269
 
 This performed worse than the baseline tf-idf.
 
+....
 
 == Files included with this submission ==
 
@@ -295,13 +306,12 @@ This performed worse than the baseline tf-idf.
 
 # data_helper.py - Manage the direct file reading and writing
 # index.py - The driver file for indexing
-# index-helper.py - The helper file for indexing, includes helper methods and data structures
 # search.py - The driver file for search and query processing.
 # search_helper.py - The helper file for search, query parsing and evaluation.
 # PositionalMerge.py - The helper file for merging of posting and postional lists for identifying phrase queries.
 # IntersectMerge.py - The helper file for merging of postings lists in Boolean queries.
 # Eval.py - Evaluation class for computing cosine scores based on Vector Space Model (VSM).
-# query_expander.py - ###
+# QueryExpansion.py - File including code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
 
 == Statement of individual work ==
 
