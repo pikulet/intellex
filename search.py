@@ -78,9 +78,10 @@ def main():
 
             if EXPAND_QUERY: 
                 query, is_boolean = get_query(strip_query_to_free_text(query_data[0])) 
-                relevant_docs = result[:NUM_DOCS_TO_FEEDBACK] 
-                extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs)
-                extra_docs = list(filter(lambda x: x not in result, extra_docs))
+                relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
+                extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs) 
+                extra_docs = list(filter(lambda x: x not in set(result), extra_docs)) 
+
                 f.write(' ' + ' '.join([str(x) for x in extra_docs]))
             
             f.write(END_LINE_MARKER)
@@ -112,6 +113,6 @@ if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time()
-    print("Time Taken: %.5fs" % (end-start) )
+    print("Time Taken: %.5fs" % (end-start))
 
 #python search.py -d ../dictionary.txt -p ../postings.txt -q queries.txt -o output.txt
