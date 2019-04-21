@@ -148,7 +148,7 @@ searching. Given a corpus size of 700MB, the uniword posting list and dictionary
 641MB of space. Storing the biword and triword information as separate indices would not be good in terms
 of space usage. As such, we took to using positional indexing to store data on biwords and triwords. That
 is, to find the term frequency of "fertility treatment" in document 1, we run a positional merge on the
-posting list of "fertiltiy" and "treatment" for document 1.
+posting list of "fertility" and "treatment" for document 1.
 
 However, we need information on vector length for the VSM scores. It is not efficient to calculate the
 document length at search time for the same reason why we store the entire document vector for the Rocchio
