@@ -274,9 +274,14 @@ Mean Average F2: 0.184953056130269
 While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
 system which does not take into account the additional restrictions of phrasal and boolean search does not perform
 much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
-one of the sample queries for which information is available: "fertility treatment" AND damages. We decide to keep
-the boolean and phrasal requirements because we assume that users using these additional restrictions want them
-to be in place.
+one of the sample queries for which information is available: "fertility treatment" AND damages. 
+
+We decide to keep the boolean and phrasal requirements because we assume that users using these additional restrictions
+want them to be in place. In particular, we keep searches of the form +PHRASE -BOOLEAN because of the occurrence of
+stopwords within phrases. For example, the user searches "statement of intent", stripping phrases will result in the
+stopword "of" appearing as a dimension in the VSM query evaluation. While idf will significantly reduce the weight on
+this dimension, there will be a very very high number of documents with a non-zero score that will be returned. As such,
+we keep this requirement.
 
 The final submission also includes results from WordNet expansion.
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
@@ -291,7 +296,7 @@ on our system's precision.
 
 The final order of documents we return is:
 1. POSITIVE LIST
-2. DOCUMENTS MATCHING BOTH BOOLEAN AND PHRASAL SEARCH
+2. DOCUMENTS MATCHING PHRASAL SEARCH (WITHOUT BOOLEAN SEARCH)
 3. BASELINE TF-IDF SEARCH
 4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
 5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
