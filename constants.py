@@ -16,10 +16,10 @@ QUERY_FILE_TEST = 'queries.txt'
 OUTPUT_FILE_TEST = 'output.txt'
 
 ## Intermediate files used to store more information
-TITLE_DICTIONARY_FILE = "../dictionary_title.txt"  # dictionary for document titles
-TITLE_POSTINGS_FILE = "../postings_title.txt"      # posting lists for document titles
-VECTOR_POSTINGS_FILE = "../vector.txt"             # document vectors
-DOCUMENT_PROPERTIES_FILE = "../properties.txt"     # document properties
+TITLE_DICTIONARY_FILE = "dictionary_title.txt"  # dictionary for document titles
+TITLE_POSTINGS_FILE = "postings_title.txt"      # posting lists for document titles
+VECTOR_POSTINGS_FILE = "vector.txt"             # document vectors
+DOCUMENT_PROPERTIES_FILE = "properties.txt"     # document properties
 
 #################################
 # TUNING SETTINGS FOR SEARCHING #
@@ -39,3 +39,4 @@ MULTIPLE_QUERIES_IN_FILE = False
 CONTENT_ONLY = True
 NUM_DOCS_TO_FEEDBACK = 50
 ROCCHIO_TERMS = 50
+TRIGGER_ROCCHIO_LEVEL = 2

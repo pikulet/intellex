@@ -85,19 +85,20 @@ def get_new_query_strings(line):
     print("Tokenizer output:")
     print(tokens)
 
-    ###### 6. NO PHRASE BOOL
+    ###### 3. NO PHRASE NO BOOL
     newlinelist = []
     for token in tokens:
         if token != AND:
             for subtoken in token.split():
-                newlinelist.append(subtoken)
+                if not (subtoken in unstemmed_stopwords):
+                    newlinelist.append(subtoken)
 
-    newlinelist = intersperse(newlinelist, AND)
     result.append(convert_list_to_string(newlinelist))
     ######
 
     ##### 4. NO BOOL Wordnet Synonyms
     newlinelist = []
+    count = 0
     for token in stokens:
         if token != AND:
             if token in unstemmed_stopwords:
@@ -105,8 +106,14 @@ def get_new_query_strings(line):
             else:
                 thesaurized = thesaurize_term(token) + [token]
                 newlinelist += thesaurized
+                if len(thesaurized) > 1:
+                    count += len(thesaurized) - 1
+    
+    # Special trigger to switch Rocchio on if Wordnet is not useful
+    if count < TRIGGER_ROCCHIO_LEVEL:
+        import constants
+        constants.EXPAND_QUERY = True
     result.append(convert_list_to_string(newlinelist, filter=True))
-
     #####
 
     # ##### 1. PHRASE BOOL (not used)

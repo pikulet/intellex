@@ -44,6 +44,8 @@ The helper modules are used for BOTH indexing and searching. (File reading and w
 shared term normalisation methods, shared constants)
 The searching modules work with document ranking and query expansion.
 
+The architecture can be visualised in diagram.png
+
 # Indexing
 
 We first tokenise the documents using the nltk tokenisers with stemming and case folding as in previous homeworks.
@@ -422,7 +424,7 @@ are appended after the already returned documents.
 
 # diagram.png - visualisation of our entire system architecture
 # constants.py - constants file with global variables including file names and tuning settings
-# BONUS.docx - our query refinement techniques
+# BONUS.docx - our query refinement techniques and experiments
 
 Indexing files:
 # data_helper.py - manages the direct file reading and writing

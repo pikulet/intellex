@@ -78,7 +78,8 @@ def main():
         with open(file_of_output, 'w') as f:
             f.write(' '.join([str(x) for x in result]))
 
-            if EXPAND_QUERY: 
+            import constants
+            if constants.EXPAND_QUERY: 
                 query, is_boolean = get_query(strip_query_to_free_text(query_data[0])) 
                 relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
                 extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs) 
