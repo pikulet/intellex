@@ -290,6 +290,19 @@ def convert_wordnet_terms(terms):
 
 ######################## UTIL FUNCTIONS ########################
 
+def drop_AND_phrase(line):
+    """
+    A really simple util function that strips out all bool and phrase markings
+    :param: line: Query string
+    """
+    result = []
+    b1, b2, tokens = tokenize(line)
+    for token in tokens: 
+        if token != AND:
+            for subtoken in token.split():
+                result.append(subtoken)
+    return convert_list_to_string(result)    
+
 def tokenize(line):
     """
     Tokenises a line to a list of words, using the delimiter as space or ".
