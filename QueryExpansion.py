@@ -368,18 +368,35 @@ def tokenize(line):
     is_bool = False
     is_phrase = False
     line = " ".join(line.split())
-    regex = re.compile('("[^" ]* [^" ]*  [^" ]*")|("[^" ]* [^" ]*")|([^" ]*)')
+
     result = []
-    for group in regex.findall(line):
-        for term in group:
-            if term:
-                if term == "AND":
-                    is_bool = True
-                if '"' in term:
-                    is_phrase = True
-                term = term.strip('"')
-                if term.strip():
-                    result.append(term.strip())
+
+    temp = ""
+    capture = False
+    for c in line:
+        if c == '"':
+            is_phrase = True
+            if capture == False:
+                capture = True
+            else:
+                result.append(temp.strip())
+                capture = False
+                temp = ""
+        elif c== " ":
+            if capture:
+                temp += c
+                continue
+            else:
+                result.append(temp.strip())
+                temp = ""
+        else:
+            temp += c
+    
+    result.append(temp.strip())
+    result = list(filter(None, result))
+    if "AND" in result:
+        is_bool = True
+
     return is_bool, is_phrase, result
 
 def intersperse(lst, item):
