@@ -122,24 +122,25 @@ def get_new_query_strings(line):
     ##### 4. NO BOOL Wordnet Synonyms
     newlinelist = []
     for token in stokens:
-        if token != AND and not (token in unstemmed_stopwords):
-            thesaurized = thesaurize_term(token)
-            if len(thesaurized) > 0:
-                newlinelist += thesaurized
+        if token != AND:
+            if token in unstemmed_stopwords:
+                newlinelist.append(token)
             else:
-                newlinelist += [token]
+                thesaurized = thesaurize_term(token) + [token]
+                newlinelist += thesaurized
     result.append(convert_list_to_string(newlinelist, filter=True))  # original query
     #####
 
-    ###### 4.1 NO BOOL POS TAG Wordnet Synonyms
+    ###### 4.1 NO BOOL POS TAG Wordnet Synonyms (Not useful since the user's free text query can be quite bad)
     # newlinelist = []
     # tagged = pos_tag(tokens)
     # for word, pos in tagged:
     #     if word != AND:
-    #         symlist = []
-    #         symlist.append(word) # add itself
-    #         symlist += thesaurize_term_with_pos(word, pos)
-    #         newlinelist += symlist 
+    #         if word in unstemmed_stopwords:
+    #             newlinelist.append(word)
+    #         else:
+    #             thesaurized = thesaurize_term_with_pos(word, pos) + [word]
+    #             newlinelist += thesaurized
     # result.append(convert_list_to_string(newlinelist, filter=True))
     ######
 
@@ -272,12 +273,14 @@ def thesaurize_term_with_pos(word, pos):
     :param: word: Word to be used against word
     :param: pos: POS Tag of the word
     """
-    if (len(word.split()) > 1):
-        word = word.replace(' ', '_')
+    word = word.replace(' ', '_')
+    terms = []
     for synset in wordnet.synsets(word, pos=get_wordnet_pos(pos)):
         for lemma in synset.lemmas():
             non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
-            yield non_lemmatized
+            terms.append(non_lemmatized)
+    
+    return (list(set(terms)))
 
 def get_wordnet_pos(treebank_tag):
     """
