@@ -2,7 +2,7 @@ from search_helper import get_best_documents, load_data, get_query, relevance_fe
 import getopt
 import sys
 from constants import *
-from QueryExpansion import get_new_query_strings
+from QueryExpansion import get_new_query_strings, strip_query_to_free_text
 
 ########################### DEFINE CONSTANTS ###########################
 
@@ -66,10 +66,7 @@ def main():
             f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
         if EXPAND_QUERY:
-            query = get_query(query_data[0])
-
-            ###
-
+            query = strip_query_to_free_text(get_query(query_data[0]))
             relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
             extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs)
             extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
