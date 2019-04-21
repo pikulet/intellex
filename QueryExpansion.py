@@ -81,7 +81,7 @@ def get_new_query_strings(line):
     # Create tokens out of the query string
     is_bool, is_phrase, tokens = tokenize(line) # no distinct.
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
-
+    print(tokens)
     ##### 1. PHRASE BOOL
     newlinelist = []
     for token in tokens:
@@ -364,17 +364,23 @@ def tokenize(line):
     """
     is_bool = False
     is_phrase = False
-    regex = re.compile('("[^"]* [^"]*")|([^"]*)')
+    line = " ".join(line.split())
+    regex = re.compile('("[^" ]* [^" ]*  [^" ]*")|("[^" ]* [^" ]*")|([^"]*)')
     result = []
     for group in regex.findall(line):
         for term in group:
             if term:
                 if term == "AND":
                     is_bool = True
+                if "AND" in term:
+                    for i in term.split():
+                        result.append(i)
+                    continue
                 if '"' in term:
                     is_phrase = True
                 term = term.strip('"')
-                result.append(term.strip())
+                if term.strip():
+                    result.append(term.strip())
     return is_bool, is_phrase, result
 
 def intersperse(lst, item):
