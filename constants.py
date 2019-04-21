@@ -18,7 +18,7 @@ OUTPUT_FILE_TEST = 'output.txt'
 ## Intermediate files used to store more information
 TITLE_DICTIONARY_FILE = "dictionary_title.txt"  # dictionary for document titles
 TITLE_POSTINGS_FILE = "postings_title.txt"      # posting lists for document titles
-VECTOR_POSTINGS_FILE = "vector.txt"             # document vectors
+VECTOR_POSTINGS_FILE = "postings_vector.txt"             # document vectors
 DOCUMENT_PROPERTIES_FILE = "properties.txt"     # document properties
 
 #################################
