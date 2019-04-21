@@ -290,9 +290,9 @@ def convert_wordnet_terms(terms):
 
 ######################## UTIL FUNCTIONS ########################
 
-def drop_AND_phrase(line):
+def strip_query_to_free_text(line):
     """
-    A really simple util function that strips out all bool and phrase markings
+    A really simple util function that strips out all boolean operators and phrase markings.
     :param: line: Query string
     """
     result = []
