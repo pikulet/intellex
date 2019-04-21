@@ -277,7 +277,9 @@ If the query is a boolean query with the operator "AND", the posting lists for e
 that they contain only documents that are shared between all postings lists. To do this, the merge
 algorithm in BooleanMerge is used (see below). After the reduced postings lists are found, evaluation
 proceeds as in a non-boolean query using the VSM evaluation. This is ensure that even though a strict
-intersection of all terms is enforced, the documents can still be ranked.
+intersection of all terms is enforced, the documents can still be ranked. The merging essentially retrieves
+a list of documents we want to consider. The VSM then tells us the relative scores of these documents
+that have been retrieved.
 
 In addition, given that title and content were indexed separately, it is possible to run the same query twice
 to derive the cosine scores from searching the title and content fields, which are then combined using a linearly
@@ -423,6 +425,7 @@ This performed worse than the baseline tf-idf.
 # postings_title.txt - postings file for document titles only
 # vector.txt - file storing document vectors
 # properties.txt - document properties file storing normalisation constants and other properties of each document.
+
 
 == Statement of individual work ==
 
