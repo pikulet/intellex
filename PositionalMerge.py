@@ -21,29 +21,31 @@ def get_skip_position(list, index, skip_dist):
 def get_postings_from_phrase(phrase, postings_lists):
     '''
     Returns a postings list where each posting is a (docID, tf) tuple for the given phrase.
-    The algorithm goes through the phrase and performs two-way merge for each contiguous pair in phrase.
-    The results of the pairwise merge are appended to a merge_results dictionary, which is later processed to ensure
-    that the pairs are contiguous.
+    The algorithm goes through the phrase and performs two-way merge for each contiguous pair in phrase, in the
+    case where the phrase has three words. Only one merge is done for biwords.
     :param phrase: a list of either 2 or 3 terms (biword or triword).
     :param postings_lists: the postings lists for each term in the phrase in order, where each posting is in the form
     [docID, tf, position list].
     '''
-    all_results = []
-    merge_results = {}
-    for i in range(len(phrase)-1):
-        postings_list_A = postings_lists[i]
-        postings_list_B = postings_lists[i+1]
+    if len(phrase) == 2:
+        postings_list_A = postings_lists[0]
+        postings_list_B = postings_lists[1]
         df_A = len(postings_list_A)
         df_B = len(postings_list_B)
         docs = intersect_lists(postings_list_A, postings_list_B, df_A, df_B)
-        all_results += docs
-        for doc in docs:
-            if doc[0] not in merge_results:
-                merge_results[doc[0]] = []
-            merge_results[doc[0]].append(doc[1])
-    for doc in merge_results:
-        merge_results[doc] = len(merge_n_position_lists(merge_results[doc]))
-    return list(merge_results.items())
+        result = list(map(lambda x: (x[0], x[1]), docs))
+    else: # len(phrase) == 3
+        postings_list_A = postings_lists[0]
+        postings_list_B = postings_lists[1]
+        postings_list_C = postings_lists[2]
+        df_A = len(postings_list_A)
+        df_B = len(postings_list_B)
+        df_C = len(postings_list_C)
+        first = intersect_lists(postings_list_A, postings_list_B, df_A, df_B)
+        second = intersect_lists(postings_list_B, postings_list_C, df_B, df_C)
+        docs = intersect_lists(first, second, len(first), len(second))
+        result = list(map(lambda x: (x[0], x[1]), docs))
+    return result
 
 def intersect_lists(listA, listB, A_length, B_length):
     '''
@@ -64,7 +66,7 @@ def intersect_lists(listA, listB, A_length, B_length):
             positions = intersect_postion_lists(listA[i][POSTINGS_INDEX], listB[j][POSTINGS_INDEX],
                                                 listA[i][TF_INDEX], listB[j][TF_INDEX])
             if positions:
-                result.append((docID_A, positions))
+                result.append((docID_A, len(positions), positions))
             i += 1
             j += 1
         elif docID_A < docID_B:
@@ -119,6 +121,8 @@ def merge_n_position_lists(position_lists):
     '''
     first_list = position_lists[0]
     results = []
+    if len(position_lists) == 1:
+        return results
     for pos in first_list:
         all_match = True
         for pos_list in range(1, len(position_lists[1:])):
