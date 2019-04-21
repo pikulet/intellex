@@ -332,11 +332,14 @@ def hyponymise_term(word):
 def convert_wordnet_terms(terms):
     """
     Convert wordnet format back to normal terms such as replacing _ with spaces.
+    Drops terms that are more than a triword
     :param: terms: List of terms in wordnet format
     """
     newterms = []
     for term in terms:
         term = term.replace("_", " ")
+        if len(term.split()) > 2:
+            pass
         newterms.append(term)
     return newterms
 
