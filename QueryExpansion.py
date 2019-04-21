@@ -88,7 +88,7 @@ def get_new_query_strings(line):
         print(tokens)
 
         ##### 1. Keep PHRASE Keep BOOL
-        result.append(line)
+        result.append(convert_list_to_string(tokens))
         #####
 
         ###### 3. NO PHRASE NO BOOL
