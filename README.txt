@@ -6,8 +6,6 @@ e0200996@u.nus.edu
 e0176788@u.nus.edu
 e0148858@u.nus.edu
 
-@@@ write the final decision
-
 == Python Version ==
 
 We're using Python Version <3.6> for this assignment.
@@ -42,7 +40,8 @@ There are also other unicode characters that are not recognised. These can be ea
 We divided our system into three main components: Indexing, Helper Modules, Searching.
 
 The indexing modules are used for the indexing algorithm.
-The helper modules are used for BOTH indexing and searching. (File reading and writing, shared term normalisation methods, shared constants)
+The helper modules are used for BOTH indexing and searching. (File reading and writing,
+shared term normalisation methods, shared constants)
 The searching modules work with document ranking and query expansion.
 
 # Indexing
@@ -404,21 +403,26 @@ This performed worse than the baseline tf-idf.
 
 # diagram.png - visualisation of our system architecture
 # duplicate_docs - duplicate document IDs from corpus analysis
+# constants.py - constants file with global variables including file names and tuning settings
+# data_helper.py - manages the direct file reading and writing
+# properties_helper.py - helper file for managing the document properties file
+# index.py - driver file for indexing
+# Dictionary.py - Dictionary class
+# PostingList.py - PostingList class
 
-# constants.py
-# data_helper.py - Manage the direct file reading and writing
-# properties_helper.py 
-
-# index.py - The driver file for indexing
-# Dictionary.py
-# PostingList.py
-
-# search.py - The driver file for search and query processing.
-# search_helper.py - The helper file for search, query parsing and evaluation.
-# PositionalMerge.py - The helper file for merging of posting and postional lists for identifying phrase queries.
-# BooleanMerge.py - The helper file for merging of postings lists in Boolean queries.
+# search.py - driver file for search and query processing.
+# search_helper.py - helper file for search, query parsing and evaluation.
+# PositionalMerge.py - helper file for merging of posting and postional lists for identifying phrase queries.
+# BooleanMerge.py - helper file for merging of postings lists in Boolean queries.
 # Eval.py - Evaluation class for computing cosine scores based on Vector Space Model (VSM).
-# QueryExpansion.py - File including code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
+# QueryExpansion.py - code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
+
+# dictionary.txt - dictionary file with title and content combined
+# postings.txt - postings file with title and content combined
+# dictionary_title.txt - dictionary file for document titles only
+# postings_title.txt - postings file for document titles only
+# vector.txt - file storing document vectors
+# properties.txt - document properties file storing normalisation constants and other properties of each document.
 
 == Statement of individual work ==
 
