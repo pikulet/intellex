@@ -222,7 +222,7 @@ def trim_vector(vector):
     new_vector = dict()
     number_of_terms_insert = 0
     from operator import itemgetter
-    sort = sorted(vector.items(), key=itemgetter(1))
+    sort = sorted(vector.items(), key=itemgetter(1), reverse=True)
     for key, value in sort:
         if (not (key in stemmed_stopwords)) and (not (key in punctuation)):
             new_vector[key] = value
