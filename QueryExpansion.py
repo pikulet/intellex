@@ -22,7 +22,7 @@ def idf_transform(x): return math.log(total_num_documents/x, 10)
 
 AND = "AND"
 
-stopwords =  set(stopwords.words('english'))
+stemmed_stopwords =  set([normalise_term(t) for t in stopwords.words('english')])
 punctuation = string.punctuation
 
 ######################## DRIVER FUNCTION ########################
@@ -37,7 +37,7 @@ def get_new_query_strings(line):
     2. + Phrase - Bool
     3. - Phrase - Bool
     4. + Wordnet - Bool
-    5. Riccho (not used here)
+    5. Ricchio (not used here)
     6. - Phrase + Bool
     A list of new query strings will be returned in the order of 3124. 
     If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted into the result.
@@ -211,7 +211,7 @@ def trim_vector(vector):
     from operator import itemgetter
     sort = sorted(vector.items(), key=itemgetter(1))
     for key, value in sort:
-        if (not (key in stopwords)) and (not (key in punctuation)):
+        if (not (key in stemmed_stopwords)) and (not (key in punctuation)):
             new_vector[key] = value
             number_of_terms_insert += 1
             if number_of_terms_insert > ROCCHIO_TERMS:
