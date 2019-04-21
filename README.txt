@@ -403,15 +403,17 @@ This performed worse than the baseline tf-idf.
 
 == Files included with this submission ==
 
-# diagram.png - visualisation of our system architecture
-# duplicate_docs - duplicate document IDs from corpus analysis
+# diagram.png - visualisation of our entire system architecture
 # constants.py - constants file with global variables including file names and tuning settings
+
+Indexing files:
 # data_helper.py - manages the direct file reading and writing
 # properties_helper.py - helper file for managing the document properties file
 # index.py - driver file for indexing
 # Dictionary.py - Dictionary class
 # PostingList.py - PostingList class
 
+Search files:
 # search.py - driver file for search and query processing.
 # search_helper.py - helper file for search, query parsing and evaluation.
 # PositionalMerge.py - helper file for merging of posting and postional lists for identifying phrase queries.
@@ -419,6 +421,7 @@ This performed worse than the baseline tf-idf.
 # Eval.py - Evaluation class for computing cosine scores based on Vector Space Model (VSM).
 # QueryExpansion.py - code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
 
+Data files:
 # dictionary.txt - dictionary file with title and content combined
 # postings.txt - postings file with title and content combined
 # dictionary_title.txt - dictionary file for document titles only
@@ -426,6 +429,10 @@ This performed worse than the baseline tf-idf.
 # vector.txt - file storing document vectors
 # properties.txt - document properties file storing normalisation constants and other properties of each document.
 
+Additional files:
+# duplicate_docs.txt - duplicate document IDs from corpus analysis
+# lookdoc.py - script to view the document using the document ID
+# lookvector.py - script to view the document vector using the document ID
 
 == Statement of individual work ==
 
