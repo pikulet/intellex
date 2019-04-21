@@ -227,7 +227,7 @@ def trim_vector(vector):
         if (not (key in stemmed_stopwords)) and (not (key in punctuation)):
             new_vector[key] = value
             number_of_terms_insert += 1
-            if number_of_terms_insert > ROCCHIO_TERMS:
+            if number_of_terms_insert >= ROCCHIO_TERMS:
                 break
 
     return new_vector
