@@ -98,6 +98,7 @@ def get_new_query_strings(line):
 
     ##### 4. NO BOOL Wordnet Synonyms
     newlinelist = []
+    count = 0
     for token in stokens:
         if token != AND:
             if token in unstemmed_stopwords:
@@ -105,8 +106,14 @@ def get_new_query_strings(line):
             else:
                 thesaurized = thesaurize_term(token) + [token]
                 newlinelist += thesaurized
+                if len(thesaurized) > 1:
+                    count += len(thesaurized) - 1
+    
+    # Special trigger to switch Ricchio on if Wordnet is not useful
+    if count < TRIGGER_ROCCHIO_LEVEL:
+        import constants
+        constants.EXPAND_QUERY = True
     result.append(convert_list_to_string(newlinelist, filter=True))
-
     #####
 
     # ##### 1. PHRASE BOOL (not used)
