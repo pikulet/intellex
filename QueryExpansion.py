@@ -23,6 +23,8 @@ def idf_transform(x): return math.log(total_num_documents/x, 10)
 AND = "AND"
 
 stemmed_stopwords =  set([normalise_term(t) for t in stopwords.words('english')])
+unstemmed_stopwords = stopwords.words('english')
+
 punctuation = string.punctuation
 
 ######################## DRIVER FUNCTION ########################
@@ -114,7 +116,7 @@ def get_new_query_strings(line):
     ##### 4. NO BOOL Wordnet Synonyms
     newlinelist = []
     for token in stokens:
-        if token != AND:
+        if token != AND and not (token in unstemmed_stopwords):
             thesaurized = thesaurize_term(token)
             if len(thesaurized) > 0:
                 newlinelist += thesaurized
@@ -123,25 +125,17 @@ def get_new_query_strings(line):
     result.append(convert_list_to_string(newlinelist, filter=True))  # original query
     #####
 
-    #####
-    # ###### 4.1 NO BOOL POS TAG Wordnet Synonyms
+    ###### 4.1 NO BOOL POS TAG Wordnet Synonyms
     # newlinelist = []
     # tagged = pos_tag(tokens)
     # for word, pos in tagged:
-    #     pos_in_wordnet = pos[0].lower()
-    #     # ignore stopwords
-    #     if word in stopwords:
-    #         newlinelist += [word]
-    #         continue
-
-    #     symlist = []
-    #     symlist.append(word) # add itself
-    #     symlist += thesaurize_term_with_pos(word, pos_in_wordnet)
-        
-    #     newlinelist += symlist 
-    #     ###
-
+    #     if word != AND:
+    #         symlist = []
+    #         symlist.append(word) # add itself
+    #         symlist += thesaurize_term_with_pos(word, pos)
+    #         newlinelist += symlist 
     # result.append(convert_list_to_string(newlinelist, filter=True))
+    ######
 
     # Remove duplicates
     result = filter_duplicates(result)
@@ -274,10 +268,25 @@ def thesaurize_term_with_pos(word, pos):
     """
     if (len(word.split()) > 1):
         word = word.replace(' ', '_')
-    for synset in wordnet.synsets(word, pos=pos):
+    for synset in wordnet.synsets(word, pos=get_wordnet_pos(pos)):
         for lemma in synset.lemmas():
             non_lemmatized = lemma.name().split('.', 1)[0].replace('_', ' ')
             yield non_lemmatized
+
+def get_wordnet_pos(treebank_tag):
+    """
+    Util function to convert word tokenise's pos tags to wordnet pos tag
+    """
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return ''
 
 
 def hyponymise_term(word):
