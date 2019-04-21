@@ -17,7 +17,7 @@ else:
     file_no = input().strip()
 
 print("Please wait...")
-filepath = "data/dataset.csv"
+filepath = "../dataset/dataset.csv"
 df = read_csv(filepath)
 
 rows = df[df["document_id"] == int(file_no)].iterrows()
