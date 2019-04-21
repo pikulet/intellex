@@ -402,14 +402,21 @@ This performed worse than the baseline tf-idf.
 
 == Files included with this submission ==
 
-### need to regenerate class diagram
+# diagram.png - visualisation of our system architecture
+# duplicate_docs - duplicate document IDs from corpus analysis
 
+# constants.py
 # data_helper.py - Manage the direct file reading and writing
+# properties_helper.py 
+
 # index.py - The driver file for indexing
+# Dictionary.py
+# PostingList.py
+
 # search.py - The driver file for search and query processing.
 # search_helper.py - The helper file for search, query parsing and evaluation.
 # PositionalMerge.py - The helper file for merging of posting and postional lists for identifying phrase queries.
-# IntersectMerge.py - The helper file for merging of postings lists in Boolean queries.
+# BooleanMerge.py - The helper file for merging of postings lists in Boolean queries.
 # Eval.py - Evaluation class for computing cosine scores based on Vector Space Model (VSM).
 # QueryExpansion.py - File including code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
 
