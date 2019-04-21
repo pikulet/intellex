@@ -112,11 +112,11 @@ def get_new_query_strings(line):
             newlinelist.append(token)
     result.append(convert_list_to_string(newlinelist))
 
-    ##### 4. NO BOOL Wordnet Hyponym
+    ##### 4. NO BOOL Wordnet Synonyms
     newlinelist = []
     for token in stokens:
         if token != AND:
-            thesaurized = hyponymise_term(token)
+            thesaurized = thesaurize_term(token)
             if len(thesaurized) > 0:
                 newlinelist += thesaurized
             else:
