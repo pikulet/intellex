@@ -7,6 +7,10 @@ from BooleanMerge import get_intersected_posting_lists
 from QueryExpansion import get_new_query_vector, tokenize, normalise_all_tokens_in_list
 import heapq
 
+"""
+The main functions in this file are get_best_documents and relevance_feedback.
+"""
+
 ########################### DEFINE CONSTANTS ###########################
 
 MAX_DOCS = 100000
@@ -135,6 +139,30 @@ def merge_doc_to_score_dicts(dicts, weights):
             score_dict[doc] += weights[dict_no] * curr_dict[doc]
     return score_dict
 
+def get_best_documents(postings_handler, dictionary, doc_properties, query):
+    '''
+    This function runs search on the top documents based on the content and title fields separately, and then
+    combines the cosine scores returned from the searches using some linear weights.
+    The second round of search on only the title is done only if CONTENT_ONLY is false.
+    In the final submission, search on the title only was omitted as we were unable to learn the appropriate weights
+    on each field. Search was thus done on the title and content combined without separation.
+    :param postings_handler: a handler to access the postings list file.
+    :param dictionary: the dictionary mapping terms to pointers to each posting list in the postings handler.
+    :param doc_properties: the dictionary mapping documents to various properties such as document vector length.
+    :param query: a list of terms, which can either be single words or phrases stored as lists.
+    '''
+    if CONTENT_ONLY:
+        content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
+        return get_top_scores_from_dict(content_doc_to_scores)
+    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
+    title_dictionary = load_data(TITLE_DICTIONARY_FILE)
+    title_postings = open(TITLE_POSTINGS_FILE, 'rb')
+    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
+
+    score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
+    top_docs = get_top_scores_from_dict(score_dict)
+    return top_docs
+
 def get_top_scores_from_dict(score_dict):
     '''
     Using a min-heap, the documents with the highest scores is retrieved.
@@ -190,29 +218,6 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     score_dict = merge_doc_to_score_dicts([single_word_scores, biword_scores, triword_scores],
                              [SINGLE_TERMS_WEIGHT, BIWORD_PHRASES_WEIGHT, TRIWORD_PHRASES_WEIGHT])
     return score_dict
-
-def get_best_documents(postings_handler, dictionary, doc_properties, query):
-    '''
-    This function runs search on the top documents based on the content and title fields separately, and then
-    combines the cosine scores returned from
-
-
-    :param postings_handler: a handler to access the postings list file.
-    :param dictionary: the dictionary mapping terms to pointers to each posting list in the postings handler.
-    :param doc_properties: the dictionary mapping documents to various properties such as document vector length.
-    :param query: a list of terms, which can either be single words or phrases stored as lists.
-    '''
-    if CONTENT_ONLY:
-        content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
-        return get_top_scores_from_dict(content_doc_to_scores)
-    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
-    title_dictionary = load_data(TITLE_DICTIONARY_FILE)
-    title_postings = open(TITLE_POSTINGS_FILE, 'rb')
-    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
-
-    score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
-    top_docs = get_top_scores_from_dict(score_dict)
-    return top_docs
 
 def relevance_feedback(postings_handler, dictionary, doc_properties, query, relevant_docs):
     '''
