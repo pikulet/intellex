@@ -12,7 +12,7 @@ BATCH_SIZE = 6 if TEMBUSU_MODE else 6
 CSV_FILE_TEST = "data\\first100.csv"        # test indexing file with 100 documents
 DICTIONARY_FILE_TEST = "dictionary.txt"
 POSTINGS_FILE_TEST = "postings.txt"
-QUERY_FILE_TEST = 'queries\\q1.txt'
+QUERY_FILE_TEST = 'queries.txt'
 OUTPUT_FILE_TEST = 'output.txt'
 
 ## Intermediate files used to store more information
