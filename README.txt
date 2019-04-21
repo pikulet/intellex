@@ -259,9 +259,8 @@ For a maximally complex query of type 1 (including boolean operator and phrases)
 these four types of queries can be permuted and experimented with to determine the importance of preserving
 the additional information of phrases and boolean operators.
 
-Limited experimentation did not show any significant benefit from prioritising documents which meet the boolean and
-phrase restrictions. The following shows the results from preserving the original structure of the query with both
-boolean operators and phrasal markers.
+Limited experimentation did not show any significant benefit from removing boolean operators but preserving
+the phrase markers. The following shows the results from this experiment.
 
 Q1 Average F2: 0.0318471337579618
 Q2 Average F2: 0.276839007986549
