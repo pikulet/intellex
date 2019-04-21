@@ -187,6 +187,8 @@ def get_new_query_vector(vector, docIDs):
     for key, value in offset.items():
         vector[key] = vector.get(key, 0.) + value
 
+    print("Rocchio Vector:")
+    print(vector)
     return vector
 
 def get_centroid_vector(docIDs):
