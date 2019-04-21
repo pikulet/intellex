@@ -248,10 +248,10 @@ def thesaurize_term(word):
 
 def thesaurize_term_with_pos(word, pos):
     """
-    Similar to theasurize term, this method takes in the pos tag of the word,
+    Similar to theasurize term, this method takes in the POS tag of the word,
     which helps wordnet to further reduce the number of terms returned
     :param: word: Word to be used against word
-    :param: pos: Pos Tag of the word
+    :param: pos: POS Tag of the word
     """
     if (len(word.split()) > 1):
         word = word.replace(' ', '_')

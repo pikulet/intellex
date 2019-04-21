@@ -14,12 +14,14 @@ We're using Python Version <3.6> for this assignment.
 
 # Analysis of the Corpus
 
-A short corpus analysis is done to understand the data we are working with: https://notebooks.azure.com/jason-soh/projects/homework4/html/index.ipynb
-There are a total of 17137 documents in the corpus, and 31 types of courts in the court field.  We found that all the fields were populated.
+A short corpus analysis is done to understand the data we are working with:
+https://notebooks.azure.com/jason-soh/projects/homework4/html/index.ipynb
+There are a total of 17137 documents in the corpus, and 31 types of courts in the court field.
+We found that all the fields were populated.
 
 We identified some cases of duplicate document IDs, which does not make sense in the context of document
-retrieval. We analysed these duplicate entries and found that these entries would have the title and 
-content being repeated, and the only field changed would be the metadata on the court. Such occurrences 
+retrieval (see duplicate_docs). We analysed these duplicate entries and found that these entries would have the
+title and content being repeated, and the only field changed would be the metadata on the court. Such occurrences
 make sense in real life, since legal cases can be transferred between courts depending on their 
 severity. To treat the case of a duplicate document, we simply update the court and keep the case with
 the highest priority. While this may compromise on accuracy, it is almost impossible to determine if the 
@@ -27,51 +29,15 @@ case went from a high-priority court to a low-priority court or vice versa. We b
 highest priority reflects the importance of a case better. We also update the total number of documents 
 (subtract 1), which is used in the calculation on idf on query terms.
 
-67          247336  ...               HK Court of First Instance
-68          247336  ...                            HK High Court
-109        2044863  ...               HK Court of First Instance
-110        2044863  ...                            HK High Court
-248        2145566  ...               Federal Court of Australia
-249        2145566  ...  Industrial Relations Court of Australia
-348        2147493  ...               Federal Court of Australia
-349        2147493  ...  Industrial Relations Court of Australia
-392        2148198  ...               Federal Court of Australia
-393        2148198  ...  Industrial Relations Court of Australia
-1207       2167027  ...               Federal Court of Australia
-1208       2167027  ...  Industrial Relations Court of Australia
-1554       2225321  ...                       UK Court of Appeal
-1555       2225321  ...                           UK Crown Court
-1565       2225341  ...                            UK High Court
-1566       2225341  ...                           UK Crown Court
-1638       2225516  ...                       UK Court of Appeal
-1639       2225516  ...                            UK High Court
-1672       2225597  ...                       UK Court of Appeal
-1673       2225597  ...                            UK High Court
-1674       2225598  ...                       UK Court of Appeal
-1675       2225598  ...                            UK High Court
-14027      3062427  ...               Federal Court of Australia
-14028      3062427  ...  Industrial Relations Court of Australia
-14029      3062433  ...               Federal Court of Australia
-14030      3062433  ...  Industrial Relations Court of Australia
-14036      3063259  ...               Federal Court of Australia
-14037      3063259  ...  Industrial Relations Court of Australia
-14039      3063522  ...               Federal Court of Australia
-14040      3063522  ...  Industrial Relations Court of Australia
-14638      3926753  ...                       UK Court of Appeal
-14639      3926753  ...                           UK Crown Court
-
-We also found some chinese documents from HK High Court and HK Court of First Instance (duplicated 
+We also found some Chinese documents from HK High Court and HK Court of First Instance (duplicated
 data). More specifically, this was in document 2044863. We did not add any special processing methods 
-because the case is isolated. It is unlikely that the user wants to look something up from the document.
-
-There are also other unicode characters that are not recognised, which some classmates have aptly 
-identified on the forum. These can be easily resolved with utf-8 encoding.
-
+because the case is isolated and it is unlikely that the user wants to look something up from the document.
+There are also other unicode characters that are not recognised. These can be easily resolved with utf-8 encoding.
 
 # Indexing Algorithm
 
-We first tokenise the documents using the same methods as in previous homeworks. Our aim is to model the 
-tf-idf method as closely as possible (especially wrt indexing). The increased features would mostly come 
+We first tokenise the documents using the nltk tokenisers with stemming and case folding as in previous homeworks.
+Our aim is to model the baseline tf-idf method as closely as possible. The increased features would mostly come
 from the searching stage, where we perform query expansion.
 
 ## Parallelising NLTK tokenisation
@@ -87,30 +53,28 @@ parallel, then process the tokenised data sequentially.
 
 ## Storing entire document vectors
 
-We process the document content body and title body separately, so we have two sets of a dictionary and 
+We processed the document content body and title body separately, so we have two sets of a dictionary and
 posting list, one for the content body and one for the title body.
 
 In the processing, we store the posting list data as in HW3. However, we also store the actual document 
 uniword vector. This vector maps the count of every term in the document. We subsequently apply log-tf on 
 the counts. Previously in HW3, we would just store the length of this vector as the document length. Now, 
-we also store the entire vector because we need the vector for relevance feedback (Rocchio Algorithm).
+we also store the entire vector because we need the vector for relevance feedback (see section on Rocchio Algorithm).
 
 While storing the entire vector takes up a lot of space (370MB), we chose to make this tradeoff. The 
 alternative was to run through the entire posting list to reconstruct the document vector during searching 
 time. Considering that this process has to be repeated for all the documents involved in the relevance 
-feedback, it would take up a lot of time in searching, compromising on the search efficiency. As such, we 
-made the tradeoff and directly stored the vectors.
-
-Of course, the next alternative is to forego Rocchio expansion altogether, but we still kept it since we were
-experimenting with Rocchio formula.
+feedback, it would take up a lot of time in searching, compromising on the search efficiency.
+Of course, the next alternative is to forego Rocchio expansion altogether, but we still kept it for experimentation
+purposes.
 
 ## Processing document metadata
 
 DOCUMENT METADATA - TITLE
 When considering how to process the document metadata, we saw that the title was mostly a repetition of
 the first line of the content. That is, there is no additional data in the title. This means that the 
-title was meant to separate parts of the content that were deemed more important. We can simply weight 
-this VSM score higher later on.
+title was meant to separate parts of the content that were deemed more important. We thus experimented with
+giving a higher weight to the title field later on.
 
 DOCUMENT METADATA - COURT
 Without good prior knowledge on court orders and their nuances, we assigned courts a priority between 1 to 3,
@@ -122,7 +86,6 @@ the date posted has no actual content that the user will look up. Users are only
 hearing or incident dates. We used the date posted, then, as an indicator of how recent the case was. 
 Nevertheless, the date posted is unlikely to be an important distinguishing factor. After some 
 experiments, we omitted this result from the document ranking, though we still kept the data.
-
 
 ## Storing biword and triword information
 
@@ -147,20 +110,21 @@ similar to the uniword vector, then saved the length of the biword and triword v
 At searching time, we retrieve term frequencies of phrases using positional merge, and lookup on the 
 document lengths for the biword and triword vectors. For the queries, we count the document frequencies of 
 phrases by compiling the results of the positional merge (combining posting list of "fertility" and 
-"treatment"). The idf is then calculate using this data.
+"treatment"). The idf is then calculated using this data.
 
 We found this method to be the best tradeoff between space and time. The operations which are inefficient 
 and take up little space (document length for biword and triword vectors) are done at indexing time and 
 stored. The operations which can be done quickly, and take up too much space when stored (term frequencies 
 and document frequencies) are done at searching time.
 
+# Summary of index content
+
+
 
 # Searching Algorithm
 
-### need to finalise and explain overall approach.
-
-Query expansion is done to the original query string to produce multiple versions of the same query (see 
-section on query expansion). Every query can one of the following four types:
+At the top level of searching, query expansion is first done to the original query string to produce
+multiple versions of the same query (see section on query expansion). Every query can one of the following four types:
 
 1. +phrase, + boolean: e.g. "fertility treatment" AND damages
 2. +phrase, -boolean: e.g. "fertility treatment" damages
@@ -170,6 +134,11 @@ section on query expansion). Every query can one of the following four types:
 For an original query string with both phrases and the "AND" boolean operator, query expansion can allow 
 us to relax these restrictions in order to produce the other 3 combinations. When the original query 
 either does not have phrases or the boolean operator, it can still be relaxed to the free text query.
+For a maximally complex query of type 1 (including boolean operator and phrases), the orders of search between
+these four types of queries can be permuted and experimented with to determine the importance of preserving
+the additional information of phrases and boolean operators.
+
+### Final decision here
 
 Before any query is processed by the Vector Space Model (VSM) evaluation class Eval, it is parsed into a 
 list where each item is either a single term or a list of terms, which represents a phrase. The terms are 
@@ -250,18 +219,45 @@ identify documents with triword phrases of the form "A B C". The posting list fo
 first found, followed by "B C", and the two postings lists are then merged together.
 
 ## Query expansion
+
 ### Relaxing AND and phrasal queries
 
-
-### Relevance Feedback and Rocchio Algorithm
 
 
 ### WordNet/Thesaurus Query Expansion
 
-WordNet offers interesting combinations of thesaurisation. For instance, we could generate all the 
-synonyms of a term. After more experimentation with WordNet, we found that we could also find hyperonyms 
-for phrases. Using hypernyms would be very useful for phrasal searches since the user already grouped the 
-terms together (e.g. "fertility treatment").
+The NLTK WordNet was used as a thesaurus to implement query expansion. In particular, the synonyms of the terms
+were found using the synset feature of WordNet. Additionally, we also experimented with using hypernyms and
+hyponyms to return related words, however, because too many of such words were returned, we decided to stick with
+synonyms. The additional synonyms retrieved were appended onto the free text version of the original query to create
+a longer free text query. Due to time constraints we were unable to implement a potential improvement, which involves
+ensuring for a boolean query that the synonyms were intersected. For example, a query 'quiet AND phone call' could be
+expanded to '(quiet OR silent) AND (phone call OR telephone call)'.
+
+### Relevance Feedback and Rocchio Algorithm
+
+For relevance feedback based on the Rocchio Algorithm, our system makes use of the top 1000 returned documents
+from the basic search which are assumed to be relevant, on top of the list of documents identified as relevant
+in the original query file. The document IDs are then used to retrieve precomputed and stored document vectors in
+the document properties file, which are then combined to give the centroid vector of the relevant documents. This is
+done such that there is no need to traverse the postings file to build the document vector for each relevant document,
+which would be extremely expensive.
+
+An additional optimisation involves storing the vectors as sparse vectors using a dictionary mapping terms to the tf
+values. This is necessary since the vectors would include many 0 terms if the dimension of the vector was the size of
+the entire dictionary. Furthermore, even after computing the centroid vector, there will still remain many non-zero
+dimensions in the centroid. In order to improve on efficiency, there is a need to remove some of the non-zero terms.
+To do this, each component was multiplied with idf in order to reduce the value of more common and hence less
+useful terms. The top 50 terms were chosen for the final centroid vector.
+
+The new centroid vector can then be added to the original query vector to derive a new query vector used for VSM
+retrieval. For simplicity, the original query vector is made to be a free text query such that boolean operators
+are removed and phrases are converted to single word terms. The additional documents found from relevance feedback
+are appended after the already returned documents.
+
+## Zoning
+
+
 
 ## Experimental Results
 

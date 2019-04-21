@@ -67,6 +67,9 @@ def main():
 
         if EXPAND_QUERY:
             query = get_query(query_data[0])
+
+            ###
+
             relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
             extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs)
             extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
