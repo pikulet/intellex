@@ -274,7 +274,9 @@ Mean Average F2: 0.184953056130269
 While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
 system which does not take into account the additional restrictions of phrasal and boolean search does not perform
 much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
-one of the sample queries for which information is available: "fertility treatment" AND damages.
+one of the sample queries for which information is available: "fertility treatment" AND damages. We decide to keep
+the boolean and phrasal requirements because we assume that users using these additional restrictions want them
+to be in place.
 
 The final submission also includes results from WordNet expansion.
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
@@ -295,6 +297,7 @@ The final order of documents we return is:
 5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
 
 Within each category, documents are ranked by their VSM scores. Documents are ranked in the highest category they fulfil.
+A more detailed explanation of our experimentation is in BONUS.docx.
 
 The remaining of this document describes the implementation of the complete system, which nevertheless makes available
 the functionality for dealing with Boolean operators and phrasal queries.
