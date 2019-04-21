@@ -85,14 +85,13 @@ def get_new_query_strings(line):
     print("Tokenizer output:")
     print(tokens)
 
-    ###### 6. NO PHRASE BOOL
+    ###### 3. NO PHRASE NO BOOL
     newlinelist = []
     for token in tokens:
         if token != AND:
             for subtoken in token.split():
                 newlinelist.append(subtoken)
 
-    newlinelist = intersperse(newlinelist, AND)
     result.append(convert_list_to_string(newlinelist))
     ######
 
