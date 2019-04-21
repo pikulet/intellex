@@ -113,9 +113,9 @@ Average F: 0.217724508769285
 Average F: 0.00957123821040243
 # result.4
 Average F: 0.496296296296296
-# result.5.txt content: 
+# result.5.txt content:
 Average F: 0.0824991658324992
-# result.6.txt content: 
+# result.6.txt content:
 Average F: 0.21474358974359
 
 Note that the baseline tf-idf assigns weight 0 to TITLE and weight 1 to CONTENT.
@@ -274,7 +274,7 @@ Mean Average F2: 0.184953056130269
 While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
 system which does not take into account the additional restrictions of phrasal and boolean search does not perform
 much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
-one of the sample queries for which information is available: "fertility treatment" AND damages. 
+one of the sample queries for which information is available: "fertility treatment" AND damages.
 
 We decide to keep the boolean and phrasal requirements because we assume that users using these additional restrictions
 want them to be in place. In particular, we keep searches of the form +PHRASE -BOOLEAN because of the occurrence of
@@ -289,7 +289,7 @@ query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relev
 algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
 appending additional documents from WordNet expansion.
 
-However, when the WordNet expansion does not return enough terms, then the term is rare and we will perform a 
+However, when the WordNet expansion does not return enough terms, then the term is rare and we will perform a
 Rocchio expansion to retrieve more documents and improve recall. Note that recall is favoured in an F2 system, so
 we decided to do Rocchio expansion. We only do it in the case of a weak WordNet expansion so as not to compromise
 on our system's precision.
