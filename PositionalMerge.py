@@ -113,22 +113,3 @@ def intersect_postion_lists(listA, listB, A_length, B_length):
             else:
                 j += 1
     return result
-
-def merge_n_position_lists(position_lists):
-    '''
-    Takes in n position lists which are the output of two-way pair merges.
-    Returns the starting position for phrases which are contiguous.
-    '''
-    first_list = position_lists[0]
-    results = []
-    if len(position_lists) == 1:
-        return results
-    for pos in first_list:
-        all_match = True
-        for pos_list in range(1, len(position_lists[1:])):
-            if pos + pos_list not in position_lists[pos_list]:
-                all_match = False
-                break
-        if all_match:
-            results.append(pos)
-    return results
