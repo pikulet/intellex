@@ -116,7 +116,6 @@ Average F: 0.0824991658324992
 # result.6.txt content: 
 Average F: 0.21474358974359
 
-
 Note that the baseline tf-idf assigns weight 0 to TITLE and weight 1 to CONTENT.
 
 As such, we decided to approach the baseline as closely as possible. We hypothesised that the baseline model

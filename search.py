@@ -77,7 +77,7 @@ def main():
             f.write(' '.join([str(x) for x in result]) + END_LINE_MARKER)
 
         if EXPAND_QUERY:
-            query = get_query(strip_query_to_free_text(query_data[0]))
+            query, is_boolean = get_query(strip_query_to_free_text(query_data[0]))
             relevant_docs = result[:NUM_DOCS_TO_FEEDBACK]
             extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs)
             extra_docs = list(filter(lambda x: x not in relevant_docs, extra_docs))
@@ -101,8 +101,8 @@ def get_results(query_data, postings_handler, dictionary, doc_properties):
     result = [] + positive_list
     result_set = set(result)
     for query in queries:
-        query = get_query(query)
-        docs = get_best_documents(postings_handler, dictionary, doc_properties, query)
+        query, is_boolean = get_query(query)
+        docs = get_best_documents(postings_handler, dictionary, doc_properties, query, is_boolean)
         docs = list(filter(lambda x: x not in result_set, docs))
         result_set = result_set.union(set(docs))
         result += docs

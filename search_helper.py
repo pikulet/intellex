@@ -49,7 +49,7 @@ def get_query(query):
         query_text = parse_boolean_query(query)
     else:
         query_text = parse_query(query)
-    return query_text
+    return query_text, is_boolean
 
 def parse_query(query):
     '''
@@ -139,7 +139,7 @@ def merge_doc_to_score_dicts(dicts, weights):
             score_dict[doc] += weights[dict_no] * curr_dict[doc]
     return score_dict
 
-def get_best_documents(postings_handler, dictionary, doc_properties, query):
+def get_best_documents(postings_handler, dictionary, doc_properties, query, is_boolean):
     '''
     This function runs search on the top documents based on the content and title fields separately, and then
     combines the cosine scores returned from the searches using some linear weights.
@@ -150,14 +150,15 @@ def get_best_documents(postings_handler, dictionary, doc_properties, query):
     :param dictionary: the dictionary mapping terms to pointers to each posting list in the postings handler.
     :param doc_properties: the dictionary mapping documents to various properties such as document vector length.
     :param query: a list of terms, which can either be single words or phrases stored as lists.
+    :param is_boolean: true if the query is boolean.
     '''
     if CONTENT_ONLY:
-        content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
+        content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_boolean, is_title=False)
         return get_top_scores_from_dict(content_doc_to_scores)
-    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_title=False)
+    content_doc_to_scores = process_query(postings_handler, dictionary, doc_properties, query, is_boolean, is_title=False)
     title_dictionary = load_data(TITLE_DICTIONARY_FILE)
     title_postings = open(TITLE_POSTINGS_FILE, 'rb')
-    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_title=True)
+    title_doc_to_scores = process_query(title_postings, title_dictionary, doc_properties, query, is_boolean, is_title=True)
 
     score_dict = merge_doc_to_score_dicts([content_doc_to_scores, title_doc_to_scores], [CONTENT_WEIGHT, TITLE_WEIGHT])
     top_docs = get_top_scores_from_dict(score_dict)
@@ -175,7 +176,7 @@ def get_top_scores_from_dict(score_dict):
     top_documents = list(map(lambda x: str(x[1]), top_results))
     return top_documents
 
-def process_query(postings_handler, dictionary, doc_properties, query, is_title):
+def process_query(postings_handler, dictionary, doc_properties, query, is_boolean, is_title):
     '''
     Each query is represented as a list of either single word terms or phrases stored as lists. The queries are
     processed as follows:
@@ -193,10 +194,10 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     :param doc_properties: the dictionary mapping documents to various properties such as document vector length.
     :param query: a list of terms, which can either be single words or phrases stored as lists.
     :param is_title: true if field to be searched is the title.
+    :param is_boolean: true if the query is boolean.
     '''
     query_terms = list(filter(lambda x: type(x) == list or x in dictionary, query)) # remove terms not in dic
     query_terms = get_term_frequencies(query_terms, dictionary)
-    query_is_boolean = CONJUNCTION_OPERATOR in query
 
     single_words = list(filter(lambda x: (type(x[0]) != tuple), query_terms))
     single_words += list(map(lambda x: (x[0][0], x[1]), list(filter(lambda x: (type(x[0]) == tuple and len(x[0]) == 1), query_terms))))
@@ -207,7 +208,7 @@ def process_query(postings_handler, dictionary, doc_properties, query, is_title)
     biword_plists = get_phrase_posting_lists(postings_handler, biwords, dictionary)
     triword_plists = get_phrase_posting_lists(postings_handler, triwords, dictionary)
 
-    if query_is_boolean:
+    if is_boolean:
         single_word_plists, biword_plists, triword_plists = get_intersected_posting_lists(single_word_plists,
                                                                                           biword_plists, triword_plists)
 
