@@ -41,7 +41,7 @@ def get_new_query_strings(line):
     5. Rocchio relevance feedback(not used here)
     6. - Phrase + Bool
 
-    A list of new query strings will be returned in the order of 3124. 
+    A list of new query strings will be returned in the order of 34. 
     If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted
     into the result.
 
@@ -81,27 +81,9 @@ def get_new_query_strings(line):
     # Create tokens out of the query string
     is_bool, is_phrase, tokens = tokenize(line) # no distinct.
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
+
+    print("Tokenizer output:")
     print(tokens)
-    ##### 1. PHRASE BOOL
-    newlinelist = []
-    for token in tokens:
-        if token != AND:
-            newlinelist.append(token)
-
-    newlinelist = intersperse(newlinelist, AND)
-    result.append(convert_list_to_string(newlinelist))
-    #####
-
-    ###### 6. NO PHRASE BOOL
-    newlinelist = []
-    for token in tokens:
-        if token != AND:
-            for subtoken in token.split():
-                newlinelist.append(subtoken)
-
-    newlinelist = intersperse(newlinelist, AND)
-    result.append(convert_list_to_string(newlinelist))
-    ######
 
     ###### 3. NO PHRASE NO BOOL
     newlinelist = []
@@ -111,14 +93,6 @@ def get_new_query_strings(line):
                 newlinelist.append(subtoken)
     result.append(convert_list_to_string(newlinelist))
     ######
-
-
-    ###### 2. PHRASE NO BOOL
-    newlinelist = []
-    for token in tokens:
-        if token != AND:
-            newlinelist.append(token)
-    result.append(convert_list_to_string(newlinelist))
 
     ##### 4. NO BOOL Wordnet Synonyms
     newlinelist = []
@@ -131,6 +105,34 @@ def get_new_query_strings(line):
                 newlinelist += thesaurized
     result.append(convert_list_to_string(newlinelist, filter=True))
     #####
+
+    # ##### 1. PHRASE BOOL (not used)
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         newlinelist.append(token)
+
+    # newlinelist = intersperse(newlinelist, AND)
+    # result.append(convert_list_to_string(newlinelist))
+    # #####
+
+    # ###### 2. PHRASE NO BOOL (not used)
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         newlinelist.append(token)
+    # result.append(convert_list_to_string(newlinelist))
+
+    # ###### 6. NO PHRASE BOOL (not used)
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         for subtoken in token.split():
+    #             newlinelist.append(subtoken)
+
+    # newlinelist = intersperse(newlinelist, AND)
+    # result.append(convert_list_to_string(newlinelist))
+    # ######
 
     ###### 4.1 NO BOOL POS TAG Wordnet Synonyms (Not useful since the user's free text query can be quite bad)
     # newlinelist = []
