@@ -6,8 +6,6 @@ e0200996@u.nus.edu
 e0176788@u.nus.edu
 e0148858@u.nus.edu
 
-@@@ write the final decision
-
 == Python Version ==
 
 We're using Python Version <3.6> for this assignment.
@@ -42,7 +40,8 @@ There are also other unicode characters that are not recognised. These can be ea
 We divided our system into three main components: Indexing, Helper Modules, Searching.
 
 The indexing modules are used for the indexing algorithm.
-The helper modules are used for BOTH indexing and searching. (File reading and writing, shared term normalisation methods, shared constants)
+The helper modules are used for BOTH indexing and searching. (File reading and writing,
+shared term normalisation methods, shared constants)
 The searching modules work with document ranking and query expansion.
 
 # Indexing
@@ -152,7 +151,9 @@ and document frequencies) are done at searching time.
 ## Summary of index content
 
 As mentioned above, we have two set of index contents, one for the TITLE ONLY and one for TITLE + CONTENT.
-We re-specify this in the "files included" section.
+We re-specify this in the "files included" section. In the dictionary, each entry contains a term, the document
+frequency and a pointer to the postings list in the postings file. In the postings file, each posting list is a
+dictionary mapping docIDs to a list [term frequency, list_of_positions].
 
 dictionary_title.txt - dictionary of terms that appear in all the titles
 postings_title.txt - posting lists for terms that appear in all the titles
@@ -160,11 +161,12 @@ postings_title.txt - posting lists for terms that appear in all the titles
 dictionary.txt - dictionary of terms that appear in all the title + content combined
 postings.txt - posting lists for terms that appear in all the title + content combined
 
+postings_vector.txt - storing all the actual document vectors.
+
 We also keep track of document properties and metadata, such as the document length and court.
 
-document_properties.txt - dictionary mapping docID to document properties
+properties.txt - dictionary mapping docID to document properties
 
-postings_vector.txt - storing all the actual document vectors.
 The byte offset needed for unpickling is stored as a document property.
 
 A summary of the document properties we kept track of:
@@ -185,17 +187,20 @@ We have three helper modules that are consistently used across indexing and sear
 ## data_helper.py
 
 The data helper contains shared methods, and direct file reading and writing.
-Shared methods includes NLTK tokenisation methods, since we want to apply consistent tokenisation for both the document and query.
+Shared methods includes NLTK tokenisation methods, since we want to apply consistent tokenisation for both the
+document and query.
 
-The direct file reading and writing is handled by pickle, but we abstract everything here so we could experiment with different
-serialisation modules (JSON, XML). We wanted to experiment with this aspect because our initial searching was very slow and inefficient.
-We did online research (see references) on serialisation methods, and tested them out. In the end, our results still directed us back to pickle.
+The direct file reading and writing is handled by pickle, but we abstract everything here so we could experiment
+with different serialisation modules (JSON, XML). We wanted to experiment with this aspect because our initial
+searching was very slow and inefficient. We did online research (see references) on serialisation methods, and
+tested them out. In the end, our results still directed us back to pickle.
 
 ## properties_helper.py
 
-The properties helper module manages document properties. We store the constants needed to access the specific document properties here.
-Having this module was useful in our experimentation, because we could add more document metadata easily. Document properties have no 
-actual relevance to document retrieval, and they mostly help with the relative ranking of the retrieved documents, and for relevance feedback.
+The properties helper module manages document properties. We store the constants needed to access the specific
+document properties here. Having this module was useful in our experimentation, because we could add more document
+metadata easily. Document properties have no actual relevance to document retrieval, and they mostly help with the
+elative ranking of the retrieved documents, and for relevance feedback.
 
 For example:
 (1) lengths are used in normalisation of scores
@@ -205,16 +210,17 @@ For example:
 ## constants.py
 
 (1) Test files
-This file contains the test files we were working with. For example, we only index the first 100 entries for most of the testing phase for
-indexing. We can run this indexing locally, and the indexing of the full 17 000 entries on Tembusu.
+This file contains the test files we were working with. For example, we only index the first 100 entries for most
+of the testing phase for indexing. We can run this indexing locally, and the indexing of the full 17 000 entries on
+Tembusu.
 
 (2) Intermediate files
-As shown above, we have a lot of intermediate files (that are not dictionary.txt and postings.txt). These file names are stored here to be
-written to at indexing time and read from at searching time.
+As shown above, we have a lot of intermediate files (that are not dictionary.txt and postings.txt).
+These file names are stored here to be written to at indexing time and read from at searching time.
 
 (3) Searching Parameters
-To facilitate our experimentation, we tried a lot of settings for the search. These settings are encapsulated here, for example we can
-set weights and ranking orders.
+To facilitate our experimentation, we tried a lot of settings for the search. These settings are encapsulated here,
+for example we can set weights and ranking orders.
 
 # Searching
 
@@ -351,7 +357,7 @@ expanded to '(quiet OR silent) AND (phone call OR telephone call)'.
 For relevance feedback based on the Rocchio Algorithm, our system makes use of the top 1000 returned documents
 from the basic search which are assumed to be relevant, on top of the list of documents identified as relevant
 in the original query file. The document IDs are then used to retrieve precomputed and stored document vectors in
-the document properties file, which are then combined to give the centroid vector of the relevant documents. This is
+the postings vectors file, which are then combined to give the centroid vector of the relevant documents. This is
 done such that there is no need to traverse the postings file to build the document vector for each relevant document,
 which would be extremely expensive.
 
@@ -369,24 +375,36 @@ are appended after the already returned documents.
 
 == Files included with this submission ==
 
-# diagram.png - visualisation of our system architecture
-# duplicate_docs - duplicate document IDs from corpus analysis
+# diagram.png - visualisation of our entire system architecture
+# constants.py - constants file with global variables including file names and tuning settings
 
-# constants.py
-# data_helper.py - Manage the direct file reading and writing
-# properties_helper.py 
+Indexing files:
+# data_helper.py - manages the direct file reading and writing
+# properties_helper.py - helper file for managing the document properties file
+# index.py - driver file for indexing
+# Dictionary.py - Dictionary class
+# PostingList.py - PostingList class
 
-# index.py - The driver file for indexing
-# Dictionary.py
-# PostingList.py
-
-# search.py - The driver file for search and query processing.
-# search_helper.py - The helper file for search, query parsing and evaluation.
-# PositionalMerge.py - The helper file for merging of posting and postional lists for identifying phrase queries.
-# BooleanMerge.py - The helper file for merging of postings lists in Boolean queries.
+Search files:
+# search.py - driver file for search and query processing.
+# search_helper.py - helper file for search, query parsing and evaluation.
+# PositionalMerge.py - helper file for merging of posting and postional lists for identifying phrase queries.
+# BooleanMerge.py - helper file for merging of postings lists in Boolean queries.
 # Eval.py - Evaluation class for computing cosine scores based on Vector Space Model (VSM).
-# QueryExpansion.py - File including code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
+# QueryExpansion.py - code for query expansion, WordNet/thesaurus expansion, and relevance feedback.
 
+Data files:
+# dictionary.txt - dictionary file with title and content combined
+# postings.txt - postings file with title and content combined
+# dictionary_title.txt - dictionary file for document titles only
+# postings_title.txt - postings file for document titles only
+# vector.txt - file storing document vectors
+# properties.txt - document properties file storing normalisation constants and other properties of each document.
+
+Additional files:
+# duplicate_docs.txt - duplicate document IDs from corpus analysis
+# lookdoc.py - script to view the document using the document ID
+# lookvector.py - script to view the document vector using the document ID
 
 == Statement of individual work ==
 
