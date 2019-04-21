@@ -29,35 +29,41 @@ punctuation = string.punctuation
 
 def get_new_query_strings(line):
     """
-
     First Level Query Refinement Public Method
-    This method takes a str as the input. This str should be the original query string that is fed into the program.
+    This method takes a string as the input. This string should be the original query string that is fed into the program.
     The possible transformations available are:
     1. + Phrase + Bool
     2. + Phrase - Bool
     3. - Phrase - Bool
     4. + Wordnet - Bool
-    5. Rocchio (not used here)
+    5. Rocchio relevance feedback(not used here)
     6. - Phrase + Bool
+
     A list of new query strings will be returned in the order of 3124. 
-    If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted into the result.
+    If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted
+    into the result.
 
     Bool Query Example:
     quiet AND "phone call" ->
     1 'quiet AND "phone call"',
     2 '"phone call" quiet', 
     3 'phone call quiet', 
-    4 'smooth mute "quiet down" tranquil tranquillis still tranquil quiet subdu restrain hush placid tranquil quietli quieten placid tranquil "pipe down" repos tranquil silenc quiesc unruffl hush lull calm seren "calm down" "phone call" "telephon call" call'
+    4 'smooth mute "quiet down" tranquil tranquillis still tranquil quiet subdu restrain hush placid tranquil quietli
+    quieten placid tranquil "pipe down" repos tranquil silenc quiesc unruffl hush lull calm seren "calm down"
+    "phone call" "telephon call" call'
+
     Free Text Query Example:
     quiet "phone call" ->
     1 'quiet AND "phone call"',
     2 'quiet "phone call"',
     3 'quiet phone call',
-    4 'subdu mute tranquil tranquil tranquil hush smooth hush "quiet down" restrain calm still placid placid quietli quiesc silenc lull "pipe down" tranquillis seren repos unruffl "calm down" tranquil tranquil quiet quieten call "telephon call" "phone call"'
-
+    4 'subdu mute tranquil tranquil tranquil hush smooth hush "quiet down" restrain calm still placid placid
+    quietli quiesc silenc lull "pipe down" tranquillis seren repos unruffl "calm down" tranquil tranquil
+    quiet quieten call "telephon call" "phone call"'
 
     Additional information:
-    Wordnet finds the possible synonyms/hyponym of each term in the query string and puts all of them back into the query string
+    Wordnet finds the possible synonyms/hyponym of each term in the query string and puts all of them back into
+    the query string.
 
     :param line: Query String to be expanded
     """
