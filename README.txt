@@ -113,9 +113,9 @@ Average F: 0.217724508769285
 Average F: 0.00957123821040243
 # result.4
 Average F: 0.496296296296296
-# result.5.txt content: 
+# result.5.txt content:
 Average F: 0.0824991658324992
-# result.6.txt content: 
+# result.6.txt content:
 Average F: 0.21474358974359
 
 Note that the baseline tf-idf assigns weight 0 to TITLE and weight 1 to CONTENT.
@@ -273,9 +273,14 @@ Mean Average F2: 0.184953056130269
 While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
 system which does not take into account the additional restrictions of phrasal and boolean search does not perform
 much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
-one of the sample queries for which information is available: "fertility treatment" AND damages. Hence, we decided
-to go ahead with preserving the original query string, followed by removing all the boolean operators and phrasal markers
-to do a baseline search.
+one of the sample queries for which information is available: "fertility treatment" AND damages.
+
+We decide to keep the boolean and phrasal requirements because we assume that users using these additional restrictions
+want them to be in place. In particular, we keep searches of the form +PHRASE -BOOLEAN because of the occurrence of
+stopwords within phrases. For example, the user searches "statement of intent", stripping phrases will result in the
+stopword "of" appearing as a dimension in the VSM query evaluation. While idf will significantly reduce the weight on
+this dimension, there will be a very very high number of documents with a non-zero score that will be returned. As such,
+we keep this requirement.
 
 The final submission also includes results from WordNet expansion.
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
@@ -283,19 +288,20 @@ query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relev
 algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
 appending additional documents from WordNet expansion.
 
-However, when the WordNet expansion does not return enough terms, then the term is rare and we will perform a 
+However, when the WordNet expansion does not return enough terms, then the term is rare and we will perform a
 Rocchio expansion to retrieve more documents and improve recall. Note that recall is favoured in an F2 system, so
 we decided to do Rocchio expansion. We only do it in the case of a weak WordNet expansion so as not to compromise
 on our system's precision.
 
 The final order of documents we return is:
 1. POSITIVE LIST
-2. DOCUMENTS MATCHING BOTH BOOLEAN AND PHRASAL SEARCH
+2. DOCUMENTS MATCHING PHRASAL SEARCH (WITHOUT BOOLEAN SEARCH)
 3. BASELINE TF-IDF SEARCH
 4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
 5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
 
 Within each category, documents are ranked by their VSM scores. Documents are ranked in the highest category they fulfil.
+A more detailed explanation of our experimentation is in BONUS.docx.
 
 The remaining of this document describes the implementation of the complete system, which nevertheless makes available
 the functionality for dealing with Boolean operators and phrasal queries.
