@@ -82,7 +82,7 @@ def main():
             extra_docs = relevance_feedback(p, dictionary, doc_properties, query, relevant_docs) 
             extra_docs = list(filter(lambda x: x not in result, extra_docs)) 
 
-            with open(file_of_output, 'wa') as f: 
+            with open(file_of_output, 'a') as f: 
                 f.write(' '.join([str(x) for x in extra_docs]) + END_LINE_MARKER)
 
 def get_results(query_data, postings_handler, dictionary, doc_properties):
