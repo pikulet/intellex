@@ -148,7 +148,7 @@ searching. Given a corpus size of 700MB, the uniword posting list and dictionary
 641MB of space. Storing the biword and triword information as separate indices would not be good in terms
 of space usage. As such, we took to using positional indexing to store data on biwords and triwords. That
 is, to find the term frequency of "fertility treatment" in document 1, we run a positional merge on the
-posting list of "fertility" and "treatment" for document 1.
+posting list of "fertiltiy" and "treatment" for document 1.
 
 However, we need information on vector length for the VSM scores. It is not efficient to calculate the
 document length at search time for the same reason why we store the entire document vector for the Rocchio
@@ -259,10 +259,9 @@ For a maximally complex query of type 1 (including boolean operator and phrases)
 these four types of queries can be permuted and experimented with to determine the importance of preserving
 the additional information of phrases and boolean operators.
 
-In the final submission, we have decided to omit boolean and phrase search, because limited experimentation
-did not show any significant benefit from prioritising documents which meet the boolean and phrase restrictions.
-The following shows the results from preserving the original structure of the query with both boolean operators and
-phrasal markers.
+Limited experimentation did not show any significant benefit from prioritising documents which meet the boolean and
+phrase restrictions. The following shows the results from preserving the original structure of the query with both
+boolean operators and phrasal markers.
 
 Q1 Average F2: 0.0318471337579618
 Q2 Average F2: 0.276839007986549
@@ -277,12 +276,16 @@ system which does not take into account the additional restrictions of phrasal a
 much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
 one of the sample queries for which information is available: "fertility treatment" AND damages.
 
-The final submission also includes results from WordNet expansion but excludes feedback from the Rocchio algorithm.
+The final submission also includes results from WordNet expansion.
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
 query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relevance feedback from the Rocchio
 algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
-appending additional documents from WordNet expansion. When the WordNet does not thesaurise the term enough, we perform
-Rocchio expansion. A full explanation can befound in BONUS.docx.
+appending additional documents from WordNet expansion.
+
+However, when the WordNet expansion does not return enough terms, then the term is rare and we will perform a 
+Rocchio expansion to retrieve more documents and improve recall. Note that recall is favoured in an F2 system, so
+we decided to do Rocchio expansion. We only do it in the case of a weak WordNet expansion so as not to compromise
+on our system's precision.
 
 The final order of documents we return is:
 1. POSITIVE LIST
@@ -290,6 +293,8 @@ The final order of documents we return is:
 3. BASELINE TF-IDF SEARCH
 4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
 5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
+
+Within each category, documents are ranked by their VSM scores. Documents are ranked in the highest category they fulfil.
 
 The remaining of this document describes the implementation of the complete system, which nevertheless makes available
 the functionality for dealing with Boolean operators and phrasal queries.
