@@ -75,14 +75,14 @@ def get_new_query_strings(line):
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
     ###### 6. NO PHRASE BOOL
-    # newlinelist = []
-    # for token in tokens:
-    #     if token != AND:
-    #         for subtoken in token.split():
-    #             newlinelist.append(subtoken)
+    newlinelist = []
+    for token in tokens:
+        if token != AND:
+            for subtoken in token.split():
+                newlinelist.append(subtoken)
 
-    # newlinelist = intersperse(newlinelist, AND)
-    # result.append(convert_list_to_string(newlinelist))
+    newlinelist = intersperse(newlinelist, AND)
+    result.append(convert_list_to_string(newlinelist))
     ######
 
     ###### 3. NO PHRASE NO BOOL
