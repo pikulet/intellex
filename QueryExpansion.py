@@ -42,7 +42,7 @@ def get_new_query_strings(line):
     5. Rocchio relevance feedback (not used here)
     6. - Phrase + Bool
 
-    A list of new query strings will be returned in the order of 0134+6. 
+    A list of new query strings will be returned in the order of 034+6. 
     If any of the query strings are duplicated as a result of the transformation, only one of them will be inserted
     into the result.
 
@@ -80,18 +80,13 @@ def get_new_query_strings(line):
     is_bool, is_phrase, tokens = tokenize(line) # no distinct.
     stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
-
-    ##### 1. Keep PHRASE Keep BOOL
-    result.append(convert_list_to_string(tokens))
-    #####
-
     ###### 3. NO PHRASE NO BOOL
     newlinelist = []
     for token in tokens:
         if token != AND:
             for subtoken in token.split():
-                if not (subtoken in unstemmed_stopwords):
-                    newlinelist.append(subtoken)
+                # if not (subtoken in unstemmed_stopwords):
+                newlinelist.append(subtoken)
 
     result.append(convert_list_to_string(newlinelist))
     ######
@@ -114,6 +109,11 @@ def get_new_query_strings(line):
         import constants
         constants.EXPAND_QUERY = True
     result.append(convert_list_to_string(newlinelist, filter=True))
+    #####
+
+    
+    ##### 1. Keep PHRASE Keep BOOL
+    # result.append(convert_list_to_string(tokens))
     #####
 
     ###### 2. PHRASE NO BOOL (not used)
