@@ -70,110 +70,99 @@ def get_new_query_strings(line):
 
     :param line: Query String to be expanded
     """
-    try:
-        if not isinstance(line, str):
-            raise Exception("Wrong usage of method: query string should be a str")
+    if not isinstance(line, str):
+        raise Exception("Wrong usage of method: query string should be a str")
 
-        print ("Original Query:")
-        print (line)
+    # This is the result to be returned
+    result = []
 
-        # This is the result to be returned
-        result = []
+    # Create tokens out of the query string
+    is_bool, is_phrase, tokens = tokenize(line) # no distinct.
+    stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
-        # Create tokens out of the query string
-        is_bool, is_phrase, tokens = tokenize(line) # no distinct.
-        stokens = filter_duplicates(tokens)     # distinct. No longer works with AND.
 
-        print("Tokenizer output:")
-        print(tokens)
+    ##### 1. Keep PHRASE Keep BOOL
+    result.append(convert_list_to_string(tokens))
+    #####
 
-        ##### 1. Keep PHRASE Keep BOOL
-        result.append(convert_list_to_string(tokens))
-        #####
+    ###### 3. NO PHRASE NO BOOL
+    newlinelist = []
+    for token in tokens:
+        if token != AND:
+            for subtoken in token.split():
+                if not (subtoken in unstemmed_stopwords):
+                    newlinelist.append(subtoken)
 
-        ###### 3. NO PHRASE NO BOOL
-        newlinelist = []
-        for token in tokens:
-            if token != AND:
-                for subtoken in token.split():
-                    if not (subtoken in unstemmed_stopwords):
-                        newlinelist.append(subtoken)
+    result.append(convert_list_to_string(newlinelist))
+    ######
 
-        result.append(convert_list_to_string(newlinelist))
-        ######
+    ##### 4. NO BOOL Wordnet Synonyms
+    newlinelist = []
+    count = 0
+    for token in stokens:
+        if token != AND:
+            if token in unstemmed_stopwords:
+                newlinelist.append(token)
+            else:
+                thesaurized = thesaurize_term(token) + [token]
+                newlinelist += thesaurized
+                if len(thesaurized) > 1:
+                    count += len(thesaurized) - 1
+    
+    # Special trigger to switch Rocchio on if Wordnet is not useful
+    if count < TRIGGER_ROCCHIO_LEVEL:
+        import constants
+        constants.EXPAND_QUERY = True
+    result.append(convert_list_to_string(newlinelist, filter=True))
+    #####
 
-        ##### 4. NO BOOL Wordnet Synonyms
-        newlinelist = []
-        count = 0
-        for token in stokens:
-            if token != AND:
-                if token in unstemmed_stopwords:
-                    newlinelist.append(token)
-                else:
-                    thesaurized = thesaurize_term(token) + [token]
-                    newlinelist += thesaurized
-                    if len(thesaurized) > 1:
-                        count += len(thesaurized) - 1
-        
-        # Special trigger to switch Rocchio on if Wordnet is not useful
-        if count < TRIGGER_ROCCHIO_LEVEL:
-            import constants
-            constants.EXPAND_QUERY = True
-        result.append(convert_list_to_string(newlinelist, filter=True))
-        #####
+    ###### 2. PHRASE NO BOOL (not used)
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         newlinelist.append(token)
+    # result.append(convert_list_to_string(newlinelist))
 
-        ###### 2. PHRASE NO BOOL (not used)
-        # newlinelist = []
-        # for token in tokens:
-        #     if token != AND:
-        #         newlinelist.append(token)
-        # result.append(convert_list_to_string(newlinelist))
+    # ###### 6. NO PHRASE BOOL (not used)
+    # newlinelist = []
+    # for token in tokens:
+    #     if token != AND:
+    #         for subtoken in token.split():
+    #             newlinelist.append(subtoken)
 
-        # ###### 6. NO PHRASE BOOL (not used)
-        # newlinelist = []
-        # for token in tokens:
-        #     if token != AND:
-        #         for subtoken in token.split():
-        #             newlinelist.append(subtoken)
+    # newlinelist = intersperse(newlinelist, AND)
+    # result.append(convert_list_to_string(newlinelist))
+    # ######
 
-        # newlinelist = intersperse(newlinelist, AND)
-        # result.append(convert_list_to_string(newlinelist))
-        # ######
+    ###### 4.1 NO BOOL POS TAG Wordnet Synonyms (Not useful since the user's free text query can be quite bad)
+    # newlinelist = []
+    # tagged = pos_tag(tokens)
+    # for word, pos in tagged:
+    #     if word != AND:
+    #         if word in unstemmed_stopwords:
+    #             newlinelist.append(word)
+    #         else:
+    #             thesaurized = thesaurize_term_with_pos(word, pos) + [word]
+    #             newlinelist += thesaurized
+    # result.append(convert_list_to_string(newlinelist, filter=True))
+    ######
 
-        ###### 4.1 NO BOOL POS TAG Wordnet Synonyms (Not useful since the user's free text query can be quite bad)
-        # newlinelist = []
-        # tagged = pos_tag(tokens)
-        # for word, pos in tagged:
-        #     if word != AND:
-        #         if word in unstemmed_stopwords:
-        #             newlinelist.append(word)
-        #         else:
-        #             thesaurized = thesaurize_term_with_pos(word, pos) + [word]
-        #             newlinelist += thesaurized
-        # result.append(convert_list_to_string(newlinelist, filter=True))
-        ######
+    ##### 4.2 NO BOOL Wordnet Hynonyms (Too many terms returned and may explode)
+    # newlinelist = []
+    # for token in stokens:
+    #     if token != AND:
+    #         if token in unstemmed_stopwords:
+    #             newlinelist.append(token)
+    #         else:
+    #             thesaurized = hyponymise_term(token) + [token]
+    #             newlinelist += thesaurized
+    # result.append(convert_list_to_string(newlinelist, filter=True))
+    #####
 
-        ##### 4.2 NO BOOL Wordnet Hynonyms (Too many terms returned and may explode)
-        # newlinelist = []
-        # for token in stokens:
-        #     if token != AND:
-        #         if token in unstemmed_stopwords:
-        #             newlinelist.append(token)
-        #         else:
-        #             thesaurized = hyponymise_term(token) + [token]
-        #             newlinelist += thesaurized
-        # result.append(convert_list_to_string(newlinelist, filter=True))
-        #####
+    # Remove duplicates
+    result = filter_duplicates(result)
 
-        # Remove duplicates
-        result = filter_duplicates(result)
-
-        print("New Query:")
-        print(result)
-
-        return result
-    except Exception:
-        return [line]
+    return result
 
 ######################## RELEVANCE FEEDBACK METHODS ########################
 
@@ -195,11 +184,13 @@ def get_new_query_vector(vector, docIDs):
         raise Exception("Wrong usage of method: docIDs should be a list")
 
     offset = get_centroid_vector(docIDs)
-    for key, value in offset.items():
-        vector[key] = vector.get(key, 0.) + value
 
-    print("Rocchio Vector:")
-    print(vector)
+    for key, value in vector.items():
+        vector[key] = vector[key] * ROCCHIO_ORIGINAL_QUERY_WEIGHT
+
+    for key, value in offset.items():
+        vector[key] = vector.get(key, 0.) + value * ROCCHIO_CENTROID_WEIGHT
+
     return vector
 
 def get_centroid_vector(docIDs):
