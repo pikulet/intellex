@@ -259,8 +259,7 @@ For a maximally complex query of type 1 (including boolean operator and phrases)
 these four types of queries can be permuted and experimented with to determine the importance of preserving
 the additional information of phrases and boolean operators.
 
-Limited experimentation did not show any significant benefit from removing boolean operators but preserving
-the phrase markers. The following shows the results from this experiment.
+Limited experimentation did not show any significant benefit from these permutations.
 
 Q1 Average F2: 0.0318471337579618
 Q2 Average F2: 0.276839007986549
@@ -270,22 +269,14 @@ Q5 Average F2: 0.103200491131526
 Q6 Average F2: 0.172659817351598
 Mean Average F2: 0.184953056130269
 
-While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that a simple
-system which does not take into account the additional restrictions of phrasal and boolean search does not perform
-much more poorly. Nevertheless, we note that taking into account additional restrictions has positive effect on
+While Q1 and Q4 performed better than the baseline, the average results decreased. This suggests that the baseline
+search would give us better results, given our limited understanding of legal corpora.
+ Nevertheless, we note that taking into account additional restrictions has positive effect on
 one of the sample queries for which information is available: "fertility treatment" AND damages.
-
-We decide to keep the boolean and phrasal requirements because we assume that users using these additional restrictions
-want them to be in place. In particular, we keep searches of the form +PHRASE -BOOLEAN because of the occurrence of
-stopwords within phrases. For example, the user searches "statement of intent", stripping phrases will result in the
-stopword "of" appearing as a dimension in the VSM query evaluation. While idf will significantly reduce the weight on
-this dimension, there will be a very high number of documents with a non-zero score that will be returned. As such,
-we keep this requirement.
 
 The final submission also includes results from WordNet expansion.
 This is because the sample query q1 (quiet phone call) gives evidence that it is important to retrieve synonyms for the
-query terms (e.g. 'silent', 'telephone call'). However, it is unclear that relevance feedback from the Rocchio
-algorithm will help us in this respect (see BONUS.docx). Hence, a free text query string is searched, followed by
+query terms (e.g. 'silent', 'telephone call'). Hence, a free text query string is searched, followed by
 appending additional documents from WordNet expansion.
 
 However, when the WordNet expansion does not return enough terms, then the term is rare and we will perform a
@@ -294,17 +285,16 @@ we decided to do Rocchio expansion. We only do it in the case of a weak WordNet 
 on our system's precision.
 
 The final order of documents we return is:
-1. POSITIVE LIST
-2. DOCUMENTS MATCHING PHRASAL SEARCH (WITHOUT BOOLEAN SEARCH)
-3. BASELINE TF-IDF SEARCH
-4. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
-5. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
+1. POSITIVE LIST** (The sample queries on the competition framework did not seem to have a positive list)
+2. BASELINE TF-IDF SEARCH
+3. WORDNET EXPANSION WITHOUT BOOLEAN SEARCH
+4. if the wordnet expansion returns fewer than 2 terms (the term is rare), then we perform Rocchio expansion
 
 Within each category, documents are ranked by their VSM scores. Documents are ranked in the highest category they fulfil.
 A more detailed explanation of our experimentation is in BONUS.docx.
 
-The remaining of this document describes the implementation of the complete system, which nevertheless makes available
-the functionality for dealing with Boolean operators and phrasal queries.
+The remaining of this document describes the implementation of the complete system, which was not used in our final model
+after extensive testing did not yield good results.
 
 ## Search system
 

@@ -57,8 +57,7 @@ def main():
     5. WordNet expanded free text query
     The second stage involves relevance feedback using the Rocchio algorithm. The topmost relevant documents are
     used to generate new queries which are appended after the documents already returned.
-    In the final submission, we have decided to only 1. search the original string, including boolean and phrasal
-    search if present, 2. remove all boolean operators and phrase markers to create a free text query. Finally,
+    In the final submission, we have decided to only 1. remove all boolean operators and phrase markers to create a free text query. Finally,
     WordNet query expansion is applied and the additional results are appended.
     Relevance feedback using the Rocchio algorithm is applied only when WordNet expansion returns fewer than 2 additional
     terms.
