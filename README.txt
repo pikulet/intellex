@@ -1,10 +1,8 @@
-This is the README file for the submission of
-A0172868M-A0171426J-A0168355W-A0164816Y
-
-e0202438@u.nus.edu
-e0200996@u.nus.edu
-e0176788@u.nus.edu
-e0148858@u.nus.edu
+This is the README file for the submission of:
+SOH JASON
+CHOW KENGJI
+JOYCE YEO SHUHUI
+TAN YAN ZHEN, NATALIE
 
 == Python Version ==
 
